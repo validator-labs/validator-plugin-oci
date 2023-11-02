@@ -1,0 +1,134 @@
+apiVersion: validation.spectrocloud.labs/v1alpha1
+kind: AwsValidator
+metadata:
+  name: awsvalidator-spectro-cloud-eks
+spec:
+  auth:
+    secretName: aws-creds
+  defaultRegion: us-west-1
+  iamRoleRules:
+  - iamPolicies:
+    - name: Controllers EKS Policy
+      statements:
+      - actions:
+        - "ssm:GetParameter"
+        effect: Allow
+        resources:
+        - "arn:*:ssm:*:*:parameter/aws/service/eks/optimized-ami/*"
+      - actions:
+        - "iam:CreateServiceLinkedRole"
+        condition:
+          type: StringLike
+          key: "iam:AWSServiceName"
+          values:
+          - eks.amazonaws.com
+        effect: Allow
+        resources:
+        - "arn:*:iam::*:role/aws-service-role/eks.amazonaws.com/AWSServiceRoleForAmazonEKS"
+      - actions:
+        - "iam:CreateServiceLinkedRole"
+        condition:
+          type: StringLike
+          key: "iam:AWSServiceName"
+          values:
+          - eks-nodegroup.amazonaws.com
+        effect: Allow
+        resources:
+        - "arn:*:iam::*:role/aws-service-role/eks-nodegroup.amazonaws.com/AWSServiceRoleForAmazonEKSNodegroup"
+      - actions:
+        - "iam:CreateServiceLinkedRole"
+        condition:
+          type: StringLike
+          key: "iam:AWSServiceName"
+          values:
+          - eks-fargate.amazonaws.com
+        effect: Allow
+        resources:
+        - "arn:*:iam::*:role/aws-service-role/eks-fargate-pods.amazonaws.com/AWSServiceRoleForAmazonEKSForFargate"
+      - actions:
+        - "iam:AddClientIDToOpenIDConnectProvider"
+        - "iam:CreateOpenIDConnectProvider"
+        - "iam:DeleteOpenIDConnectProvider"
+        - "iam:ListOpenIDConnectProviders"
+        - "iam:UpdateOpenIDConnectProviderThumbprint"
+        effect: Allow
+        resources:
+        - "*"
+      - actions:
+        - "iam:GetRole"
+        - "iam:ListAttachedRolePolicies"
+        - "iam:DetachRolePolicy"
+        - "iam:DeleteRole"
+        - "iam:CreateRole"
+        - "iam:TagRole"
+        - "iam:AttachRolePolicy"
+        effect: Allow
+        resources:
+        - "arn:*:iam::*:role/*"
+      - actions:
+        - "iam:GetPolicy"
+        effect: Allow
+        resources:
+        - "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+      - actions:
+        - "eks:DescribeCluster"
+        - "eks:ListClusters"
+        - "eks:CreateCluster"
+        - "eks:TagResource"
+        - "eks:UpdateClusterVersion"
+        - "eks:DeleteCluster"
+        - "eks:UpdateClusterConfig"
+        - "eks:UntagResource"
+        - "eks:UpdateNodegroupVersion"
+        - "eks:DescribeNodegroup"
+        - "eks:DeleteNodegroup"
+        - "eks:UpdateNodegroupConfig"
+        - "eks:CreateNodegroup"
+        - "eks:AssociateEncryptionConfig"
+        - "eks:ListIdentityProviderConfigs"
+        - "eks:AssociateIdentityProviderConfig"
+        - "eks:DescribeIdentityProviderConfig"
+        - "eks:DisassociateIdentityProviderConfig"
+        effect: Allow
+        resources:
+        - "arn:*:eks:*:*:cluster/*"
+        - "arn:*:eks:*:*:nodegroup/*/*/*"
+      - actions:
+        - "ec2:AssociateVpcCidrBlock"
+        - "ec2:DisassociateVpcCidrBlock"
+        - "eks:ListAddons"
+        - "eks:CreateAddon"
+        - "eks:DescribeAddonVersions"
+        - "eks:DescribeAddon"
+        - "eks:DeleteAddon"
+        - "eks:UpdateAddon"
+        - "eks:TagResource"
+        - "eks:DescribeFargateProfile"
+        - "eks:CreateFargateProfile"
+        - "eks:DeleteFargateProfile"
+        effect: Allow
+        resources:
+        - "*"
+      - actions:
+        - "iam:PassRole"
+        condition:
+          type: StringEquals
+          key: "iam:PassedToService"
+          values:
+          - eks.amazonaws.com
+        effect: Allow
+        resources:
+        - "*"
+      - actions:
+        - "kms:CreateGrant"
+        - "kms:DescribeKey"
+        condition:
+          type: "ForAnyValue:StringLike"
+          key: "kms:ResourceAliases"
+          values:
+          - "alias/cluster-api-provider-aws-*"
+        effect: Allow
+        resources:
+        - "*"
+      version: "2012-10-17"
+    iamRoleName: SpectroCloudRole

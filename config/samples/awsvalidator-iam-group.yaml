@@ -1,0 +1,19 @@
+apiVersion: validation.spectrocloud.labs/v1alpha1
+kind: AwsValidator
+metadata:
+  name: awsvalidator-sample-iam-group
+spec:
+  auth:
+    secretName: aws-creds
+  defaultRegion: us-west-1
+  iamGroupRules:
+  - iamPolicies:
+    - name: Group Policy
+      statements:
+      - actions:
+        - "s3:GetObject"
+        effect: Allow
+        resources:
+        - "*"
+      version: "2012-10-17"
+    iamGroupName: PaletteClusterAdministrators
