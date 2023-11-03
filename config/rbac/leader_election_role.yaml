@@ -6,8 +6,8 @@ metadata:
     app.kubernetes.io/name: role
     app.kubernetes.io/instance: leader-election-role
     app.kubernetes.io/component: rbac
-    app.kubernetes.io/created-by: validator-plugin-aws
-    app.kubernetes.io/part-of: validator-plugin-aws
+    app.kubernetes.io/created-by: validator-plugin-oci
+    app.kubernetes.io/part-of: validator-plugin-oci
     app.kubernetes.io/managed-by: kustomize
   name: leader-election-role
 rules:

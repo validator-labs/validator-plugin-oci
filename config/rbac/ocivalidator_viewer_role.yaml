@@ -1,24 +1,27 @@
+# permissions for end users to view ocivalidators.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: proxy-role
-    app.kubernetes.io/component: kube-rbac-proxy
+    app.kubernetes.io/instance: ocivalidator-viewer-role
+    app.kubernetes.io/component: rbac
     app.kubernetes.io/created-by: validator-plugin-oci
     app.kubernetes.io/part-of: validator-plugin-oci
     app.kubernetes.io/managed-by: kustomize
-  name: proxy-role
+  name: ocivalidator-viewer-role
 rules:
 - apiGroups:
-  - authentication.k8s.io
+  - validation.spectrocloud.labs
   resources:
-  - tokenreviews
+  - ocivalidators
   verbs:
-  - create
+  - get
+  - list
+  - watch
 - apiGroups:
-  - authorization.k8s.io
+  - validation.spectrocloud.labs
   resources:
-  - subjectaccessreviews
+  - ocivalidators/status
   verbs:
-  - create
+  - get

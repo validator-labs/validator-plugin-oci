@@ -1,6 +1,6 @@
 
 # Image URL to use all building/pushing image targets
-IMG ?= quay.io/spectrocloud-labs/validator-plugin-aws:latest
+IMG ?= quay.io/spectrocloud-labs/validator-plugin-oci:latest
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -188,15 +188,19 @@ $(HELMIFY): $(LOCALBIN)
 helm-build: helm helmify manifests kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG) && cd ../../
 	$(KUSTOMIZE) build config/default | $(HELMIFY) -crd-dir
-	cat hack/extra-values.yaml >> chart/validator-plugin-aws/values.yaml
+	cat hack/extra-values.yaml >> chart/validator-plugin-oci/values.yaml
 
 .PHONY: helm-package
 helm-package: generate manifests
-	$(HELM) package --version $(CHART_VERSION) chart/validator-plugin-aws/
+	$(HELM) package --version $(CHART_VERSION) chart/validator-plugin-oci/
 	mkdir -p charts && mv validator-*.tgz charts
-	$(HELM) repo index --url https://spectrocloud-labs.github.io/validator-plugin-aws ./chart
-	mv charts/validator-plugin-aws/index.yaml index.yaml
+	$(HELM) repo index --url https://spectrocloud-labs.github.io/validator-plugin-oci ./chart
+	mv charts/validator-plugin-oci/index.yaml index.yaml
 
 .PHONY: frigate
 frigate:
-	frigate gen chart/validator-plugin-aws --no-deps -o markdown > chart/validator-plugin-aws/README.md
+	frigate gen chart/validator-plugin-oci --no-deps -o markdown > chart/validator-plugin-oci/README.md
+
+.PHONY: dev
+dev:
+	devspace dev -n validator-plugin-oci-system

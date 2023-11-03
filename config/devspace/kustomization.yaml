@@ -2,7 +2,7 @@ resources:
 - ../default
 
 images:
-- name: quay.io/spectrocloud-labs/aws-validator:latest
+- name: quay.io/spectrocloud-labs/oci-validator:latest
   newTag: dev
 
 patches:
@@ -18,7 +18,7 @@ patches:
       labels:
         control-plane: controller-manager
       name: controller-manager
-      namespace: validator-plugin-aws-system
+      namespace: validator-plugin-oci-system
     spec:
       template:
         spec:

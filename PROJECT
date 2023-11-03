@@ -5,8 +5,8 @@
 domain: spectrocloud.labs
 layout:
 - go.kubebuilder.io/v4
-projectName: validator-plugin-aws
-repo: github.com/spectrocloud-labs/validator-plugin-aws
+projectName: validator-plugin-oci
+repo: github.com/spectrocloud-labs/validator-plugin-oci
 resources:
 - api:
     crdVersion: v1
@@ -14,7 +14,7 @@ resources:
   controller: true
   domain: spectrocloud.labs
   group: validation
-  kind: AwsValidator
-  path: github.com/spectrocloud-labs/validator-plugin-aws/api/v1alpha1
+  kind: OciValidator
+  path: github.com/spectrocloud-labs/validator-plugin-oci/api/v1alpha1
   version: v1alpha1
 version: "3"

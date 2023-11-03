@@ -1,8 +1,15 @@
----
+# permissions for end users to edit ocivalidators.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: manager-role
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: ocivalidator-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: validator-plugin-oci
+    app.kubernetes.io/part-of: validator-plugin-oci
+    app.kubernetes.io/managed-by: kustomize
+  name: ocivalidator-editor-role
 rules:
 - apiGroups:
   - validation.spectrocloud.labs
@@ -20,23 +27,7 @@ rules:
 - apiGroups:
   - validation.spectrocloud.labs
   resources:
-  - ocivalidators/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - validation.spectrocloud.labs
-  resources:
   - ocivalidators/status
   - validationresults/status
   verbs:
   - get
-  - patch
-  - update
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - list
-  - watch

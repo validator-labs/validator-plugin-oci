@@ -31,8 +31,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	validationv1alpha1 "github.com/spectrocloud-labs/validator-plugin-aws/api/v1alpha1"
-	"github.com/spectrocloud-labs/validator-plugin-aws/internal/controller"
+	validationv1alpha1 "github.com/spectrocloud-labs/validator-plugin-oci/api/v1alpha1"
+	"github.com/spectrocloud-labs/validator-plugin-oci/internal/controller"
 	validatorv1alpha1 "github.com/spectrocloud-labs/validator/api/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
@@ -86,12 +86,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controller.AwsValidatorReconciler{
+	if err = (&controller.OciValidatorReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("AwsValidator"),
+		Log:    ctrl.Log.WithName("controllers").WithName("OciValidator"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "AwsValidator")
+		setupLog.Error(err, "unable to create controller", "controller", "OciValidator")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

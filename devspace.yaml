@@ -1,11 +1,11 @@
-name: validator-plugin-aws
+name: validator-plugin-oci
 version: v2beta1
 
 vars:
-  IMAGE: quay.io/spectrocloud-labs/validator-plugin-aws
+  IMAGE: quay.io/spectrocloud-labs/validator-plugin-oci
 
 images:
-  validator-plugin-aws:
+  validator-plugin-oci:
     image: ${IMAGE}
     tags:
     - dev
@@ -15,15 +15,15 @@ images:
     docker: {}
 
 deployments:
-  validator-plugin-aws:
-    namespace: validator-plugin-aws-system
+  validator-plugin-oci:
+    namespace: validator-plugin-oci-system
     kubectl:
       kustomize: true
       manifests:
       - config/devspace
 
 dev:
-  validator-plugin-aws:
+  validator-plugin-oci:
     imageSelector: ${IMAGE}
     terminal:
       enabled: true

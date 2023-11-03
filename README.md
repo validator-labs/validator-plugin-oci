@@ -1,49 +1,29 @@
-![Build](https://github.com/spectrocloud-labs/validator-plugin-aws/actions/workflows/build_container.yaml/badge.svg)
-[![Go Report Card](https://goreportcard.com/badge/github.com/spectrocloud-labs/validator-plugin-aws)](https://goreportcard.com/report/github.com/spectrocloud-labs/validator-plugin-aws)
-[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/spectrocloud-labs/validator-plugin-aws/issues)
-[![Go Reference](https://pkg.go.dev/badge/github.com/spectrocloud-labs/validator-plugin-aws.svg)](https://pkg.go.dev/github.com/spectrocloud-labs/validator-plugin-aws)
+![Build](https://github.com/spectrocloud-labs/validator-plugin-oci/actions/workflows/build_container.yaml/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/spectrocloud-labs/validator-plugin-oci)](https://goreportcard.com/report/github.com/spectrocloud-labs/validator-plugin-oci)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/spectrocloud-labs/validator-plugin-oci/issues)
+[![Go Reference](https://pkg.go.dev/badge/github.com/spectrocloud-labs/validator-plugin-oci.svg)](https://pkg.go.dev/github.com/spectrocloud-labs/validator-plugin-oci)
 
-# validator-plugin-aws
-The AWS [validator](https://github.com/spectrocloud-labs/validator) plugin ensures that your AWS environment matches a user-configurable expected state.
+# validator-plugin-oci
+The OCI [validator](https://github.com/spectrocloud-labs/validator) plugin ensures that your OCI configuration matches a user-configurable expected state.
 
 ## Description
-The AWS validator plugin reconciles `AwsValidator` custom resources to perform the following validations against your AWS environment:
+The OCI validator plugin reconciles `OciValidator` custom resources to perform the following validations against your OCI registry:
 
-1. Compare the IAM permissions associated with an IAM user / group / role / policy against an expected permission set
-2. Compare the usage for a particular service quota against the active quota
-3. Compare the tags associated with a subnet against an expected tag set
+1. Validate OCI registry authentication
+2. Validate the existence of arbitrary OCI artifacts (pack, image, etc.)
+3. Validate downloading arbitrary OCI artifacts
 
-Each `AwsValidator` CR is (re)-processed every two minutes to continuously ensure that your AWS environment matches the expected state.
+Each `OciValidator` CR is (re)-processed every two minutes to continuously ensure that your OCI registry matches the expected state.
 
-See the [samples](https://github.com/spectrocloud-labs/validator-plugin-aws/tree/main/config/samples) directory for example `AwsValidator` configurations.
-
-## Supported Service Quotas by AWS Service
-EC2:
-- EC2-VPC Elastic IPs
-- Public AMIs
-
-EFS:
-- File systems per account
-
-ELB:
-- Application Load Balancers per Region
-- Classic Load Balancers per Region
-- Network Load Balancers per Region
-
-VPC:
-- Internet gateways per Region
-- Network interfaces per Region
-- VPCs per Region
-- NAT gateways per Availability Zone
-- Subnets per VPC
+See the [samples](https://github.com/spectrocloud-labs/validator-plugin-oci/tree/main/config/samples) directory for example `OciValidator` configurations.
 
 ## Installation
-The AWS validator plugin is meant to be [installed by validator](https://github.com/spectrocloud-labs/validator/tree/gh_pages#installation) (via a ValidatorConfig), but it can also be installed directly as follows:
+The OCI validator plugin is meant to be [installed by validator](https://github.com/spectrocloud-labs/validator/tree/gh_pages#installation) (via a ValidatorConfig), but it can also be installed directly as follows:
 
 ```bash
-helm repo add validator-plugin-aws https://spectrocloud-labs.github.io/validator-plugin-aws
+helm repo add validator-plugin-oci https://spectrocloud-labs.github.io/validator-plugin-oci
 helm repo update
-helm install validator-plugin-aws validator-plugin-aws/validator-plugin-aws -n validator-plugin-aws --create-namespace
+helm install validator-plugin-oci validator-plugin-oci/validator-plugin-oci -n validator-plugin-oci --create-namespace
 ```
 
 ## Getting Started
@@ -60,13 +40,13 @@ kubectl apply -f config/samples/
 2. Build and push your image to the location specified by `IMG`:
 
 ```sh
-make docker-build docker-push IMG=<some-registry>/validator-plugin-aws:tag
+make docker-build docker-push IMG=<some-registry>/validator-plugin-oci:tag
 ```
 
 3. Deploy the controller to the cluster with the image specified by `IMG`:
 
 ```sh
-make deploy IMG=<some-registry>/validator-plugin-aws:tag
+make deploy IMG=<some-registry>/validator-plugin-oci:tag
 ```
 
 ### Uninstall CRDs

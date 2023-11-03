@@ -8,9 +8,9 @@
       "bump-patch-for-minor-pre-major": true,
       "draft": false,
       "extra-files": [
-        "chart/validator-plugin-aws/Chart.yaml",
-        "chart/validator-plugin-aws/values.yaml",
-        "chart/validator-plugin-aws/README.md"
+        "chart/validator-plugin-oci/Chart.yaml",
+        "chart/validator-plugin-oci/values.yaml",
+        "chart/validator-plugin-oci/README.md"
       ],
       "changelog-sections": [
         {
