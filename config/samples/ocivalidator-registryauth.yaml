@@ -1,8 +1,0 @@
-apiVersion: validation.spectrocloud.labs/v1alpha1
-kind: OciValidator
-metadata:
-  name: ocivalidator-sample-registry-auth
-spec:
-  registryAuthRules:
-  - placeholder: "placeholder 1"
-  - placeholder: "placeholder 2"

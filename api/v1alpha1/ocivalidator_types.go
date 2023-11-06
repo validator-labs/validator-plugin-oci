@@ -17,26 +17,59 @@ limitations under the License.
 package v1alpha1
 
 import (
-	validatorv1alpha1 "github.com/spectrocloud-labs/validator/api/v1alpha1"
+	"fmt"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // OciValidatorSpec defines the desired state of OciValidator
 type OciValidatorSpec struct {
-	RegistryAuthRules []RegistryAuthRule `json:"registryAuthRules,omitempty" yaml:"registryAuthRules,omitempty"`
+	OciRegistryRules []OciRegistryRule `json:"ociRegistryRules,omitempty" yaml:"ociRegistryRules,omitempty"`
+	EcrRegistryRules []EcrRegistryRule `json:"ecrRegistryRules,omitempty" yaml:"ecrRegistryRules,omitempty"`
 }
 
-type RegistryAuthRule struct {
-	Placeholder string `json:"placeholder" yaml:"placeholder"`
+func (s OciValidatorSpec) ResultCount() int {
+	return len(s.EcrRegistryRules) + len(s.OciRegistryRules)
+}
+
+type OciRegistryRule struct {
+	Host           string    `json:"host" yaml:"host"`
+	RepositoryPath string    `json:"repositoryPath,omitempty" yaml:"repositoryPath,omitempty"`
+	Auth           BasicAuth `json:"auth,omitempty" yaml:"auth,omitempty"`
+	Cert           string    `json:"cert,omitempty" yaml:"cert,omitempty"`
+}
+
+func (r OciRegistryRule) Name() string {
+	return fmt.Sprintf("%s/%s", r.Host, r.RepositoryPath)
+}
+
+type BasicAuth struct {
+	Username string `json:"username" yaml:"username"`
+	Password string `json:"password" yaml:"password"`
+}
+
+type EcrRegistryRule struct {
+	Host           string  `json:"host" yaml:"host"`
+	RepositoryPath string  `json:"repositoryPath,omitempty" yaml:"repositoryPath,omitempty"`
+	Auth           EcrAuth `json:"auth,omitempty" yaml:"auth,omitempty"`
+}
+
+func (r EcrRegistryRule) Name() string {
+	return fmt.Sprintf("%s/%s", r.Host, r.RepositoryPath)
+}
+
+type EcrAuth struct {
+	RoleArn        string         `json:"roleArn,omitempty" yaml:"roleArn,omitempty"`
+	EcrCredentials EcrCredentials `json:"ecrCredentials,omitempty" yaml:"ecrCredentials,omitempty"`
+}
+
+type EcrCredentials struct {
+	AccessKey       string `json:"accessKey" yaml:"accessKey"`
+	SecretAccessKey string `json:"secretAccessKey" yaml:"secretAccessKey"`
 }
 
 // OciValidatorStatus defines the observed state of OciValidator
-type OciValidatorStatus struct {
-	// +optional
-	// +patchMergeKey=type
-	// +patchStrategy=merge
-	Conditions []validatorv1alpha1.ValidationCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
-}
+type OciValidatorStatus struct{}
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status

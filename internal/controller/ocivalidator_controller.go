@@ -30,9 +30,9 @@ import (
 
 	"github.com/spectrocloud-labs/validator-plugin-oci/api/v1alpha1"
 	"github.com/spectrocloud-labs/validator-plugin-oci/internal/constants"
-	"github.com/spectrocloud-labs/validator-plugin-oci/internal/validators/registryauth"
+	"github.com/spectrocloud-labs/validator-plugin-oci/internal/validators/ecr"
+	"github.com/spectrocloud-labs/validator-plugin-oci/internal/validators/oci"
 	vapi "github.com/spectrocloud-labs/validator/api/v1alpha1"
-	"github.com/spectrocloud-labs/validator/pkg/types"
 	vres "github.com/spectrocloud-labs/validator/pkg/validationresult"
 )
 
@@ -68,35 +68,38 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		Namespace: req.Namespace,
 	}
 	if err := r.Get(ctx, nn, vr); err == nil {
-		res, err := vres.HandleExistingValidationResult(nn, vr, r.Log)
-		if res != nil {
-			return *res, err
-		}
+		vres.HandleExistingValidationResult(nn, vr, r.Log)
 	} else {
 		if !apierrs.IsNotFound(err) {
 			r.Log.V(0).Error(err, "unexpected error getting ValidationResult", "name", nn.Name, "namespace", nn.Namespace)
 		}
-		res, err := vres.HandleNewValidationResult(r.Client, constants.PluginCode, nn, vr, r.Log)
-		if res != nil {
-			return *res, err
+
+		if err := vres.HandleNewValidationResult(
+			r.Client, constants.PluginCode, validator.Spec.ResultCount(), nn, r.Log,
+		); err != nil {
+			return ctrl.Result{}, err
 		}
 	}
 
-	failed := &types.MonotonicBool{}
-
-	// Registry Auth rules
-	for _, rule := range validator.Spec.RegistryAuthRules {
-		registryAuthService := registryauth.NewRegistryAuthRuleService(
-			r.Log,
-		)
-		validationResult, err := registryAuthService.ReconcileRegistryAuthRule(rule)
+	// OCI Registry rules
+	for _, rule := range validator.Spec.OciRegistryRules {
+		ociRuleService := oci.NewOciRuleService(r.Log)
+		validationResult, err := ociRuleService.ReconcileOciRegistryRule(rule)
 		if err != nil {
-			r.Log.V(0).Error(err, "failed to reconcile Registry Auth rule")
+			r.Log.V(0).Error(err, "failed to reconcile OCI Registry rule")
 		}
-		vres.SafeUpdateValidationResult(r.Client, nn, validationResult, failed, err, r.Log)
+		vres.SafeUpdateValidationResult(r.Client, nn, validationResult, err, r.Log)
 	}
 
-	// TODO: execute more validation rules here
+	// ECR Registry rules
+	for _, rule := range validator.Spec.EcrRegistryRules {
+		ecrRuleService := ecr.NewEcrRuleService(r.Log)
+		validationResult, err := ecrRuleService.ReconcileEcrRegistryRule(rule)
+		if err != nil {
+			r.Log.V(0).Error(err, "failed to reconcile ECR Registry rule")
+		}
+		vres.SafeUpdateValidationResult(r.Client, nn, validationResult, err, r.Log)
+	}
 
 	r.Log.V(0).Info("Requeuing for re-validation in two minutes.", "name", req.Name, "namespace", req.Namespace)
 	return ctrl.Result{RequeueAfter: time.Second * 120}, nil

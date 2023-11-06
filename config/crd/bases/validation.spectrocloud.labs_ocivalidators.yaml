@@ -34,62 +34,58 @@ spec:
           spec:
             description: OciValidatorSpec defines the desired state of OciValidator
             properties:
-              registryAuthRules:
+              ecrRegistryRules:
                 items:
                   properties:
-                    placeholder:
+                    auth:
+                      properties:
+                        ecrCredentials:
+                          properties:
+                            accessKey:
+                              type: string
+                            secretAccessKey:
+                              type: string
+                          required:
+                          - accessKey
+                          - secretAccessKey
+                          type: object
+                        roleArn:
+                          type: string
+                      type: object
+                    host:
+                      type: string
+                    repositoryPath:
                       type: string
                   required:
-                  - placeholder
+                  - host
+                  type: object
+                type: array
+              ociRegistryRules:
+                items:
+                  properties:
+                    auth:
+                      properties:
+                        password:
+                          type: string
+                        username:
+                          type: string
+                      required:
+                      - password
+                      - username
+                      type: object
+                    cert:
+                      type: string
+                    host:
+                      type: string
+                    repositoryPath:
+                      type: string
+                  required:
+                  - host
                   type: object
                 type: array
             type: object
           status:
             description: OciValidatorStatus defines the observed state of OciValidator
-            properties:
-              conditions:
-                items:
-                  properties:
-                    details:
-                      description: Human-readable messages indicating additional details
-                        for the last transition.
-                      items:
-                        type: string
-                      type: array
-                    failures:
-                      description: Human-readable messages indicating additional failure
-                        details for the last transition.
-                      items:
-                        type: string
-                      type: array
-                    lastValidationTime:
-                      description: Timestamp of most recent execution of the validation
-                        rule associated with the condition.
-                      format: date-time
-                      type: string
-                    message:
-                      description: Human-readable message indicating details about
-                        the last transition.
-                      type: string
-                    status:
-                      description: True if the validation rule succeeded, otherwise
-                        False
-                      type: string
-                    validationRule:
-                      description: Unique, one-word description of the validation
-                        rule associated with the condition.
-                      type: string
-                    validationType:
-                      description: Unique, one-word description of the validation
-                        type associated with the condition.
-                      type: string
-                  required:
-                  - lastValidationTime
-                  - status
-                  - validationRule
-                  - validationType
-                  type: object
-                type: array
             type: object
         type: object
     served: true
