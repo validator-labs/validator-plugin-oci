@@ -6,7 +6,7 @@ require (
 	github.com/go-logr/logr v1.3.0
 	github.com/onsi/ginkgo/v2 v2.13.1
 	github.com/onsi/gomega v1.30.0
-	github.com/spectrocloud-labs/validator v0.0.15
+	github.com/spectrocloud-labs/validator v0.0.18
 	k8s.io/apimachinery v0.28.3
 	k8s.io/client-go v0.28.3
 	oras.land/oras-go/v2 v2.3.1
@@ -51,7 +51,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.25.0 // indirect
-	golang.org/x/exp v0.0.0-20231108232855-2478ac86f678 // indirect
+	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
 	golang.org/x/net v0.18.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
@@ -74,5 +74,5 @@ require (
 	k8s.io/utils v0.0.0-20230406110748-d93618cff8a2 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
-	sigs.k8s.io/yaml v1.3.0 // indirect
+	sigs.k8s.io/yaml v1.4.0 // indirect
 )
