@@ -63,31 +63,49 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 	}
 
 	ctx := context.Background()
-	repoList := make([]string, 0)
+	if len(rule.RepositoryPaths) == 0 {
+		err := s.validateRepo(ctx, reg, rule.Host, "", vr)
+		if err != nil {
+			return vr, err
+		}
+	} else {
+		for _, repo := range rule.RepositoryPaths {
+			err := s.validateRepo(ctx, reg, rule.Host, repo, vr)
+			if err != nil {
+				return vr, err
+			}
+		}
+	}
 
+	return vr, nil
+}
+
+func (s *OciRuleService) validateRepo(ctx context.Context, reg *remote.Registry, host string, repoPath string, vr *types.ValidationResult) error {
 	// Get chosen repositories
-	if rule.RepositoryPath == "" {
-		err = reg.Repositories(ctx, "", func(repos []string) error {
+	repoList := make([]string, 0)
+	if repoPath == "" {
+		err := reg.Repositories(ctx, "", func(repos []string) error {
 			for _, repo := range repos {
 				repoList = append(repoList, repo)
 			}
 			return nil
 		})
 		if err != nil {
-			s.log.V(0).Error(err, "failed to list repositories in registry", "host", rule.Host)
-			return vr, err
+			s.log.V(0).Error(err, "failed to list repositories in registry", "host", host)
+			return err
 		}
 
 		if len(repoList) == 0 {
 			// no repositories in registry, not possible to run any further validations
 			vr.Condition.Details = append(vr.Condition.Details, "no repositories found in registry")
-			return vr, nil
+			return nil
 		}
 	} else {
-		repoList = append(repoList, rule.RepositoryPath)
+		repoList = append(repoList, repoPath)
 	}
 
 	var repo registry.Repository
+	var err error
 	for _, curRepo := range repoList {
 		// Try to get repo from regisry
 		if repo, err = reg.Repository(ctx, curRepo); err == nil {
@@ -96,8 +114,8 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 	}
 
 	if repo == nil || err != nil {
-		s.log.V(0).Error(err, "unable to authenticate to a repository", "host", rule.Host, "path", rule.RepositoryPath)
-		return vr, err
+		s.log.V(0).Error(err, "unable to authenticate to a repository", "host", host, "path", repoPath)
+		return err
 	}
 
 	// Get tags on artifacts in repository
@@ -109,11 +127,11 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 		return nil
 	})
 	if err != nil {
-		s.log.V(0).Error(err, "failed to pull tags from repository", "host", rule.Host, "path", rule.RepositoryPath)
-		return vr, err
+		s.log.V(0).Error(err, "failed to pull tags from repository", "host", host, "path", repoPath)
+		return err
 	}
 
-	return vr, nil
+	return nil
 }
 
 func newHTTPClient(cert string) (*http.Client, error) {

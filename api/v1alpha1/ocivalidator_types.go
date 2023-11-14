@@ -33,14 +33,14 @@ func (s OciValidatorSpec) ResultCount() int {
 }
 
 type OciRegistryRule struct {
-	Host           string    `json:"host" yaml:"host"`
-	RepositoryPath string    `json:"repositoryPath,omitempty" yaml:"repositoryPath,omitempty"`
-	Auth           BasicAuth `json:"auth,omitempty" yaml:"auth,omitempty"`
-	Cert           string    `json:"cert,omitempty" yaml:"cert,omitempty"`
+	Host            string    `json:"host" yaml:"host"`
+	RepositoryPaths []string  `json:"repositoryPaths,omitempty" yaml:"repositoryPaths,omitempty"`
+	Auth            BasicAuth `json:"auth,omitempty" yaml:"auth,omitempty"`
+	Cert            string    `json:"cert,omitempty" yaml:"cert,omitempty"`
 }
 
 func (r OciRegistryRule) Name() string {
-	return fmt.Sprintf("%s/%s", r.Host, r.RepositoryPath)
+	return fmt.Sprintf("%s/%s", r.Host, r.RepositoryPaths)
 }
 
 type BasicAuth struct {
@@ -49,13 +49,13 @@ type BasicAuth struct {
 }
 
 type EcrRegistryRule struct {
-	Host           string  `json:"host" yaml:"host"`
-	RepositoryPath string  `json:"repositoryPath,omitempty" yaml:"repositoryPath,omitempty"`
-	Auth           EcrAuth `json:"auth,omitempty" yaml:"auth,omitempty"`
+	Host            string   `json:"host" yaml:"host"`
+	RepositoryPaths []string `json:"repositoryPaths,omitempty" yaml:"repositoryPaths,omitempty"`
+	Auth            EcrAuth  `json:"auth,omitempty" yaml:"auth,omitempty"`
 }
 
 func (r EcrRegistryRule) Name() string {
-	return fmt.Sprintf("%s/%s", r.Host, r.RepositoryPath)
+	return fmt.Sprintf("%s/%s", r.Host, r.RepositoryPaths)
 }
 
 type EcrAuth struct {
