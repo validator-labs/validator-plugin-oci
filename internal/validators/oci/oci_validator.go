@@ -21,6 +21,7 @@ import (
 	vapi "github.com/spectrocloud-labs/validator/api/v1alpha1"
 	"github.com/spectrocloud-labs/validator/pkg/types"
 	vapitypes "github.com/spectrocloud-labs/validator/pkg/types"
+	"github.com/spectrocloud-labs/validator/pkg/util/ptr"
 )
 
 type OciRuleService struct {
@@ -42,14 +43,18 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 	// Create a new registry instance
 	reg, err := remote.NewRegistry(rule.Host)
 	if err != nil {
-		s.log.V(0).Error(err, "failed to create registry client")
-		return vr, err
+		errMsg := "failed to create registry client"
+		s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name())
+		s.updateResult(vr, []error{err}, errMsg, rule.Name())
+		return vr, nil
 	}
 
 	httpClient, err := newHTTPClient(rule.Cert)
 	if err != nil {
-		s.log.V(0).Error(err, "failed to create http client", "cert", rule.Cert)
-		return vr, err
+		errMsg := "failed to create http client"
+		s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "cert", rule.Cert)
+		s.updateResult(vr, []error{err}, errMsg, rule.Name())
+		return vr, nil
 	}
 
 	// Setup credentials if username and password are provided
@@ -64,26 +69,41 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 		}
 	}
 
+	errs := make([]error, 0)
+	details := make([]string, 0)
 	ctx := context.Background()
 	if len(rule.RepositoryPaths) == 0 {
-		err := s.validateRepos(ctx, reg, rule.Host, vr)
+		errMsg := "failed to validate repos in registry"
+		detail, err := s.validateRepos(ctx, reg, rule.Host, vr)
 		if err != nil {
-			return vr, err
+			errs = append(errs, err)
+			s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host)
 		}
-	} else {
-		for _, repo := range rule.RepositoryPaths {
-			err := s.validateArtifact(ctx, reg, rule.Host, repo, vr)
-			if err != nil {
-				return vr, err
-			}
+		if detail != "" {
+			details = append(details, detail)
 		}
+
+		s.updateResult(vr, errs, errMsg, rule.Name(), details...)
+		return vr, nil
 	}
 
+	errMsg := "failed to validate artifact in registry"
+	for _, repo := range rule.RepositoryPaths {
+		detail, err := s.validateArtifact(ctx, reg, rule.Host, repo, vr)
+		if err != nil {
+			errs = append(errs, err)
+			s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host, "repo", repo)
+		}
+		if detail != "" {
+			details = append(details, detail)
+		}
+	}
+	s.updateResult(vr, errs, errMsg, rule.Name(), details...)
 	return vr, nil
 }
 
 // validateRepo validates repos within a registry. This function is to be used when no particular repo or artifact is specified
-func (s *OciRuleService) validateRepos(ctx context.Context, reg *remote.Registry, host string, vr *types.ValidationResult) error {
+func (s *OciRuleService) validateRepos(ctx context.Context, reg *remote.Registry, host string, vr *types.ValidationResult) (string, error) {
 	// Get chosen repositories
 	repoList := make([]string, 0)
 	err := reg.Repositories(ctx, "", func(repos []string) error {
@@ -93,14 +113,11 @@ func (s *OciRuleService) validateRepos(ctx context.Context, reg *remote.Registry
 		return nil
 	})
 	if err != nil {
-		s.log.V(0).Error(err, "failed to list repositories in registry", "host", host)
-		return err
+		return fmt.Sprintf("failed to list repositories in registry"), err
 	}
 
 	if len(repoList) == 0 {
-		// no repositories in registry, not possible to run any further validations
-		vr.Condition.Details = append(vr.Condition.Details, "no repositories found in registry")
-		return nil
+		return fmt.Sprintf("no repositories found in registry"), nil
 	}
 
 	var repo registry.Repository
@@ -111,8 +128,7 @@ func (s *OciRuleService) validateRepos(ctx context.Context, reg *remote.Registry
 		}
 	}
 	if repo == nil || err != nil {
-		s.log.V(0).Error(err, "failed to authenticate to a repository", "host", host)
-		return err
+		return fmt.Sprintf("failed to authenticate to a repository"), err
 	}
 
 	// Get tags on artifacts in repository
@@ -124,26 +140,23 @@ func (s *OciRuleService) validateRepos(ctx context.Context, reg *remote.Registry
 		return nil
 	})
 	if err != nil {
-		s.log.V(0).Error(err, "failed to pull tags from repository", "host", host)
-		return err
+		return fmt.Sprintf("failed to pull tags from repository"), err
 	}
 
-	return nil
+	return "", nil
 }
 
 // validateArtifact validates a single artifact within a registry. This function is to be used when a path to a repo or an individual artifact is provided
-func (s *OciRuleService) validateArtifact(ctx context.Context, reg *remote.Registry, host string, repoPath string, vr *types.ValidationResult) error {
+func (s *OciRuleService) validateArtifact(ctx context.Context, reg *remote.Registry, host string, repoPath string, vr *types.ValidationResult) (string, error) {
 	path, ref, err := parseArtifact(repoPath)
 	if err != nil {
-		s.log.V(0).Error(err, "failed to get artifact path and reference", "host", host, "path", path)
-		return err
+		return fmt.Sprintf("failed to get artifact path and reference"), err
 	}
 
 	// Try to get repo from registry
 	repo, err := reg.Repository(ctx, path)
 	if err != nil {
-		s.log.V(0).Error(err, "failed to authenticate to a repository", "host", host, "path", path)
-		return err
+		return fmt.Sprintf("failed to authenticate to a repository"), err
 	}
 
 	if ref == "" {
@@ -156,20 +169,18 @@ func (s *OciRuleService) validateArtifact(ctx context.Context, reg *remote.Regis
 			return nil
 		})
 		if err != nil {
-			s.log.V(0).Error(err, "failed to pull tags from repository", "host", host)
-			return err
+			return fmt.Sprintf("failed to pull tags from repository"), err
 		}
-		return nil
+		return "", nil
 	}
 
 	// Get reference of artifact
 	_, _, err = repo.FetchReference(ctx, ref)
 	if err != nil {
-		s.log.V(0).Error(err, "failed to fetch reference to artifact", "host", host, "path", path, "reference", ref)
-		return err
+		return fmt.Sprintf("failed to fetch reference to artifact"), err
 	}
 
-	return nil
+	return "", nil
 }
 
 func newHTTPClient(cert string) (*http.Client, error) {
@@ -198,12 +209,12 @@ func newHTTPClient(cert string) (*http.Client, error) {
 	return httpClient, nil
 }
 
-func parseArtifact(repoPath string) (string, string, error) {
+func parseArtifact(artifactPath string) (string, string, error) {
 	path := ""
 	ref := ""
-	parts := strings.Split(repoPath, "@")
+	parts := strings.Split(artifactPath, "@")
 	if len(parts) > 2 {
-		return "", "", errors.New("invalid repoPath")
+		return "", "", errors.New("invalid artifact path")
 	}
 
 	path = parts[0]
@@ -224,4 +235,17 @@ func buildValidationResult(rule v1alpha1.OciRegistryRule) *types.ValidationResul
 	latestCondition.ValidationRule = rule.Name()
 	latestCondition.ValidationType = constants.OciRegistry
 	return &types.ValidationResult{Condition: &latestCondition, State: &state}
+}
+
+func (s *OciRuleService) updateResult(vr *types.ValidationResult, errs []error, errMsg, ruleName string, details ...string) {
+	if len(errs) > 0 {
+		vr.State = ptr.Ptr(vapi.ValidationFailed)
+		vr.Condition.Message = errMsg
+		for _, err := range errs {
+			vr.Condition.Failures = append(vr.Condition.Failures, err.Error())
+		}
+	}
+	for _, detail := range details {
+		vr.Condition.Details = append(vr.Condition.Details, detail)
+	}
 }
