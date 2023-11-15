@@ -54,8 +54,10 @@ spec:
                       type: object
                     host:
                       type: string
-                    repositoryPath:
-                      type: string
+                    repositoryPaths:
+                      items:
+                        type: string
+                      type: array
                   required:
                   - host
                   type: object
@@ -77,8 +79,10 @@ spec:
                       type: string
                     host:
                       type: string
-                    repositoryPath:
-                      type: string
+                    repositoryPaths:
+                      items:
+                        type: string
+                      type: array
                   required:
                   - host
                   type: object
