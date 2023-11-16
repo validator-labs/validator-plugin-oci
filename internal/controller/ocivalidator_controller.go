@@ -23,6 +23,7 @@ import (
 
 	"github.com/go-logr/logr"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ktypes "k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -33,6 +34,7 @@ import (
 	"github.com/spectrocloud-labs/validator-plugin-oci/internal/validators/ecr"
 	"github.com/spectrocloud-labs/validator-plugin-oci/internal/validators/oci"
 	vapi "github.com/spectrocloud-labs/validator/api/v1alpha1"
+	"github.com/spectrocloud-labs/validator/pkg/util/ptr"
 	vres "github.com/spectrocloud-labs/validator/pkg/validationresult"
 )
 
@@ -53,18 +55,16 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	validator := &v1alpha1.OciValidator{}
 	if err := r.Get(ctx, req.NamespacedName, validator); err != nil {
-		// Ignore not-found errors, since they can't be fixed by an immediate requeue
-		if apierrs.IsNotFound(err) {
-			return ctrl.Result{}, nil
+		if !apierrs.IsNotFound(err) {
+			r.Log.Error(err, "failed to fetch OciValidator", "key", req)
 		}
-		r.Log.Error(err, "failed to fetch OciValidator")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	// Get the active validator's validation result
 	vr := &vapi.ValidationResult{}
 	nn := ktypes.NamespacedName{
-		Name:      fmt.Sprintf("validator-plugin-oci-%s", validator.Name),
+		Name:      validationResultName(validator),
 		Namespace: req.Namespace,
 	}
 	if err := r.Get(ctx, nn, vr); err == nil {
@@ -73,10 +73,7 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if !apierrs.IsNotFound(err) {
 			r.Log.V(0).Error(err, "unexpected error getting ValidationResult", "name", nn.Name, "namespace", nn.Namespace)
 		}
-
-		if err := vres.HandleNewValidationResult(
-			r.Client, constants.PluginCode, validator.Spec.ResultCount(), nn, r.Log,
-		); err != nil {
+		if err := vres.HandleNewValidationResult(r.Client, buildValidationResult(validator), r.Log); err != nil {
 			return ctrl.Result{}, err
 		}
 	}
@@ -110,4 +107,30 @@ func (r *OciValidatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.OciValidator{}).
 		Complete(r)
+}
+
+func buildValidationResult(validator *v1alpha1.OciValidator) *vapi.ValidationResult {
+	return &vapi.ValidationResult{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      validationResultName(validator),
+			Namespace: validator.Namespace,
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: validator.APIVersion,
+					Kind:       validator.Kind,
+					Name:       validator.Name,
+					UID:        validator.UID,
+					Controller: ptr.Ptr(true),
+				},
+			},
+		},
+		Spec: vapi.ValidationResultSpec{
+			Plugin:          constants.PluginCode,
+			ExpectedResults: validator.Spec.ResultCount(),
+		},
+	}
+}
+
+func validationResultName(validator *v1alpha1.OciValidator) string {
+	return fmt.Sprintf("validator-plugin-oci-%s", validator.Name)
 }
