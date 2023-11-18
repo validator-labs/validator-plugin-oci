@@ -6,7 +6,7 @@ require (
 	github.com/go-logr/logr v1.3.0
 	github.com/onsi/ginkgo/v2 v2.13.1
 	github.com/onsi/gomega v1.30.0
-	github.com/spectrocloud-labs/validator v0.0.21
+	github.com/spectrocloud-labs/validator v0.0.25
 	github.com/stretchr/testify v1.8.4
 	k8s.io/apimachinery v0.28.4
 	k8s.io/client-go v0.28.4
