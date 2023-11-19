@@ -64,6 +64,10 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./... -coverprofile cover.out
 
+.PHONY: dev
+dev: ## Run a controller via devspace
+	devspace dev -n validator-plugin-oci-system
+
 ##@ Build
 
 .PHONY: build
@@ -202,7 +206,3 @@ helm-package: generate manifests
 .PHONY: frigate
 frigate:
 	frigate gen chart/validator-plugin-oci --no-deps -o markdown > chart/validator-plugin-oci/README.md
-
-.PHONY: dev
-dev:
-	devspace dev -n validator-plugin-oci-system

@@ -10,6 +10,7 @@ import (
 	vapi "github.com/spectrocloud-labs/validator/api/v1alpha1"
 	"github.com/spectrocloud-labs/validator/pkg/types"
 	vapitypes "github.com/spectrocloud-labs/validator/pkg/types"
+	"github.com/spectrocloud-labs/validator/pkg/util/ptr"
 )
 
 type EcrRuleService struct {
@@ -28,7 +29,6 @@ func (s *EcrRuleService) ReconcileEcrRegistryRule(rule v1alpha1.EcrRegistryRule)
 	// Build the default ValidationResult for this rule
 	vr := buildValidationResult(rule)
 
-	s.log.Info("ecr registry rule validation is unimplemented")
 	return vr, nil
 }
 
@@ -42,4 +42,17 @@ func buildValidationResult(rule v1alpha1.EcrRegistryRule) *types.ValidationResul
 	latestCondition.ValidationRule = rule.Name()
 	latestCondition.ValidationType = constants.EcrRegistry
 	return &types.ValidationResult{Condition: &latestCondition, State: &state}
+}
+
+func (s *EcrRuleService) updateResult(vr *types.ValidationResult, errs []error, errMsg, ruleName string, details ...string) {
+	if len(errs) > 0 {
+		vr.State = ptr.Ptr(vapi.ValidationFailed)
+		vr.Condition.Message = errMsg
+		for _, err := range errs {
+			vr.Condition.Failures = append(vr.Condition.Failures, err.Error())
+		}
+	}
+	for _, detail := range details {
+		vr.Condition.Details = append(vr.Condition.Details, detail)
+	}
 }
