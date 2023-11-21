@@ -31,8 +31,7 @@ import (
 
 	"github.com/spectrocloud-labs/validator-plugin-oci/api/v1alpha1"
 	"github.com/spectrocloud-labs/validator-plugin-oci/internal/constants"
-	"github.com/spectrocloud-labs/validator-plugin-oci/internal/validators/ecr"
-	"github.com/spectrocloud-labs/validator-plugin-oci/internal/validators/oci"
+	val "github.com/spectrocloud-labs/validator-plugin-oci/internal/validators"
 	vapi "github.com/spectrocloud-labs/validator/api/v1alpha1"
 	"github.com/spectrocloud-labs/validator/pkg/util/ptr"
 	vres "github.com/spectrocloud-labs/validator/pkg/validationresult"
@@ -80,20 +79,10 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	// OCI Registry rules
 	for _, rule := range validator.Spec.OciRegistryRules {
-		ociRuleService := oci.NewOciRuleService(r.Log)
+		ociRuleService := val.NewOciRuleService(r.Log)
 		validationResult, err := ociRuleService.ReconcileOciRegistryRule(rule)
 		if err != nil {
 			r.Log.V(0).Error(err, "failed to reconcile OCI Registry rule")
-		}
-		vres.SafeUpdateValidationResult(r.Client, nn, validationResult, err, r.Log)
-	}
-
-	// ECR Registry rules
-	for _, rule := range validator.Spec.EcrRegistryRules {
-		ecrRuleService := ecr.NewEcrRuleService(r.Log)
-		validationResult, err := ecrRuleService.ReconcileEcrRegistryRule(rule)
-		if err != nil {
-			r.Log.V(0).Error(err, "failed to reconcile ECR Registry rule")
 		}
 		vres.SafeUpdateValidationResult(r.Client, nn, validationResult, err, r.Log)
 	}

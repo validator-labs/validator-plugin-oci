@@ -34,12 +34,32 @@ spec:
           spec:
             description: OciValidatorSpec defines the desired state of OciValidator
             properties:
-              ecrRegistryRules:
+              ociRegistryRules:
                 items:
                   properties:
+                    artifacts:
+                      description: "Artifacts is a slice of artifacts in the host
+                        registry that should be validated. An individual artifact
+                        can take any of the following forms: <repository-path>/<artifact-name>
+                        <repository-path>/<artifact-name>:<tag> <repository-path>/<artifact-name>@<digest>
+                        \n When no tag or digest are specified, the default tag \"latest\"
+                        is used."
+                      items:
+                        type: string
+                      type: array
                     auth:
                       properties:
-                        ecrCredentials:
+                        basic:
+                          properties:
+                            password:
+                              type: string
+                            username:
+                              type: string
+                          required:
+                          - password
+                          - username
+                          type: object
+                        ecr:
                           properties:
                             accessKey:
                               type: string
@@ -49,41 +69,16 @@ spec:
                           - accessKey
                           - secretAccessKey
                           type: object
-                        roleArn:
-                          type: string
                       type: object
-                    host:
-                      type: string
-                    repositoryPaths:
-                      items:
-                        type: string
-                      type: array
-                  required:
-                  - host
-                  type: object
-                type: array
-              ociRegistryRules:
-                items:
-                  properties:
-                    auth:
-                      properties:
-                        password:
-                          type: string
-                        username:
-                          type: string
-                      required:
-                      - password
-                      - username
-                      type: object
-                    cert:
+                    caCert:
+                      description: CaCert is the base64 encoded CA Certificate
                       type: string
                     host:
+                      description: Host is a reference to the host URL of an OCI compliant
+                        registry
                       type: string
-                    repositoryPaths:
-                      items:
-                        type: string
-                      type: array
                   required:
+                  - artifacts
                   - host
                   type: object
                 type: array

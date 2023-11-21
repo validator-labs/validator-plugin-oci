@@ -1,4 +1,4 @@
-package oci
+package validators
 
 import (
 	"context"
@@ -49,22 +49,22 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 		return vr, nil
 	}
 
-	httpClient, err := newHTTPClient(rule.Cert)
+	httpClient, err := newHTTPClient(rule.CaCert)
 	if err != nil {
 		errMsg := "failed to create http client"
-		s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "cert", rule.Cert)
+		s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "caCert", rule.CaCert)
 		s.updateResult(vr, []error{err}, errMsg, rule.Name())
 		return vr, nil
 	}
 
 	// Setup credentials if username and password are provided
-	if rule.Auth.Username != "" && rule.Auth.Password != "" {
+	if rule.Auth.Basic.Username != "" && rule.Auth.Basic.Password != "" {
 		reg.Client = &auth.Client{
 			Client: httpClient,
 			Cache:  auth.DefaultCache,
 			Credential: auth.StaticCredential(rule.Host, auth.Credential{
-				Username: rule.Auth.Username,
-				Password: rule.Auth.Password,
+				Username: rule.Auth.Basic.Username,
+				Password: rule.Auth.Basic.Password,
 			}),
 		}
 	}
@@ -72,7 +72,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 	errs := make([]error, 0)
 	details := make([]string, 0)
 	ctx := context.Background()
-	if len(rule.RepositoryPaths) == 0 {
+	if len(rule.Artifacts) == 0 {
 		errMsg := "failed to validate repos in registry"
 		detail, err := s.validateRepos(ctx, reg, rule.Host, vr)
 		if err != nil {
@@ -88,11 +88,11 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 	}
 
 	errMsg := "failed to validate artifact in registry"
-	for _, repo := range rule.RepositoryPaths {
-		detail, err := s.validateArtifact(ctx, reg, rule.Host, repo, vr)
+	for _, artifact := range rule.Artifacts {
+		detail, err := s.validateArtifact(ctx, reg, rule.Host, artifact, vr)
 		if err != nil {
 			errs = append(errs, err)
-			s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host, "repo", repo)
+			s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host, "artifact", artifact)
 		}
 		if detail != "" {
 			details = append(details, detail)
@@ -183,12 +183,12 @@ func (s *OciRuleService) validateArtifact(ctx context.Context, reg *remote.Regis
 	return "", nil
 }
 
-func newHTTPClient(cert string) (*http.Client, error) {
+func newHTTPClient(caCert string) (*http.Client, error) {
 	httpClient := retry.DefaultClient
 
 	// Add cert as trust
-	if cert != "" {
-		repoCert, err := base64.StdEncoding.DecodeString(cert)
+	if caCert != "" {
+		cert, err := base64.StdEncoding.DecodeString(caCert)
 		if err != nil {
 			return nil, err
 		}
@@ -197,7 +197,7 @@ func newHTTPClient(cert string) (*http.Client, error) {
 		if err != nil {
 			return nil, err
 		}
-		caCertPool.AppendCertsFromPEM(repoCert)
+		caCertPool.AppendCertsFromPEM(cert)
 
 		tlsConfig := &tls.Config{
 			MinVersion: tls.VersionTLS12,
