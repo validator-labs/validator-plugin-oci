@@ -90,16 +90,18 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 }
 
 // validateArtifact validates a single artifact within a registry. This function is to be used when a path to a repo or an individual artifact is provided
-func validateArtifact(ctx context.Context, host string, artifact string, opts []remote.Option, vr *types.ValidationResult) (string, error) {
-	ref, err := generateRef(host, artifact, vr)
+func validateArtifact(ctx context.Context, host string, artifact v1alpha1.Artifact, opts []remote.Option, vr *types.ValidationResult) (string, error) {
+	ref, err := generateRef(host, artifact.Ref, vr)
 	if err != nil {
 		return fmt.Sprintf("failed to generate reference for artifact %v/%v", host, artifact), err
 	}
 
-	// download image without storing it on disk
-	_, err = remote.Image(ref, opts...)
-	if err != nil {
-		return fmt.Sprintf("failed to download artifact %v", ref.Name()), err
+	if artifact.Download {
+		// download image without storing it on disk
+		_, err = remote.Image(ref, opts...)
+		if err != nil {
+			return fmt.Sprintf("failed to download artifact %v", ref.Name()), err
+		}
 	}
 
 	return "", nil

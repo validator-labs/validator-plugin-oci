@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	"fmt"
+	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -36,13 +37,7 @@ type OciRegistryRule struct {
 	Host string `json:"host" yaml:"host"`
 
 	// Artifacts is a slice of artifacts in the host registry that should be validated.
-	// An individual artifact can take any of the following forms:
-	// <repository-path>/<artifact-name>
-	// <repository-path>/<artifact-name>:<tag>
-	// <repository-path>/<artifact-name>@<digest>
-	//
-	// When no tag or digest are specified, the default tag "latest" is used.
-	Artifacts []string `json:"artifacts" yaml:"artifacts"`
+	Artifacts []Artifact `json:"artifacts,omitempty" yaml:"artifacts,omitempty"`
 
 	// Auth provides authentication information for the registry
 	Auth Auth `json:"auth,omitempty" yaml:"auth,omitempty"`
@@ -52,7 +47,32 @@ type OciRegistryRule struct {
 }
 
 func (r OciRegistryRule) Name() string {
-	return fmt.Sprintf("%s/%s", r.Host, r.Artifacts)
+	var artifacts strings.Builder
+	artifacts.WriteString("[")
+	l := len(r.Artifacts)
+	for i, a := range r.Artifacts {
+		artifacts.WriteString(a.Ref)
+		if i < l-1 {
+			artifacts.WriteString(", ")
+		}
+	}
+	artifacts.WriteString("]")
+
+	return fmt.Sprintf("%s/%s", r.Host, artifacts.String())
+}
+
+type Artifact struct {
+	// Ref is the path to the artifact in the host registry that should be validated.
+	// An individual artifact can take any of the following forms:
+	// <repository-path>/<artifact-name>
+	// <repository-path>/<artifact-name>:<tag>
+	// <repository-path>/<artifact-name>@<digest>
+	//
+	// When no tag or digest are specified, the default tag "latest" is used.
+	Ref string `json:"ref" yaml:"ref"`
+
+	// Download specifies whether a download attempt should be made for the artifact
+	Download bool `json:"download" yaml:"download"`
 }
 
 type Auth struct {

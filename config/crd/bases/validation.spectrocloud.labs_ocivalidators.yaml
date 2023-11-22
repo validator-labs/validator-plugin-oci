@@ -38,14 +38,26 @@ spec:
                 items:
                   properties:
                     artifacts:
-                      description: "Artifacts is a slice of artifacts in the host
-                        registry that should be validated. An individual artifact
-                        can take any of the following forms: <repository-path>/<artifact-name>
-                        <repository-path>/<artifact-name>:<tag> <repository-path>/<artifact-name>@<digest>
-                        \n When no tag or digest are specified, the default tag \"latest\"
-                        is used."
+                      description: Artifacts is a slice of artifacts in the host registry
+                        that should be validated.
                       items:
-                        type: string
+                        properties:
+                          download:
+                            description: Download specifies whether a download attempt
+                              should be made for the artifact
+                            type: boolean
+                          ref:
+                            description: "Ref is the path to the artifact in the host
+                              registry that should be validated. An individual artifact
+                              can take any of the following forms: <repository-path>/<artifact-name>
+                              <repository-path>/<artifact-name>:<tag> <repository-path>/<artifact-name>@<digest>
+                              \n When no tag or digest are specified, the default
+                              tag \"latest\" is used."
+                            type: string
+                        required:
+                        - download
+                        - ref
+                        type: object
                       type: array
                     auth:
                       description: Auth provides authentication information for the
@@ -71,7 +83,6 @@ spec:
                         registry
                       type: string
                   required:
-                  - artifacts
                   - host
                   type: object
                 type: array
