@@ -204,10 +204,10 @@ func getECRLoginToken(username, password, region string) (string, error) {
 	return "", fmt.Errorf("no authorization data available")
 }
 
-func parseRegion(ecrURL string) (string, error) {
-	parts := strings.Split(ecrURL, ".")
-	if len(parts) < 4 {
-		return "", errors.New(fmt.Sprintf("Invalid ecr url %v", ecrURL))
+func parseEcrRegion(URL string) (string, error) {
+	parts := strings.Split(URL, ".")
+	if len(parts) != 6 || parts[2] != "ecr" {
+		return "", errors.New(fmt.Sprintf("Invalid ecr url %v", URL))
 	}
 
 	region := parts[3]
@@ -218,13 +218,13 @@ func setupAuthOpts(opts []remote.Option, registryName string, authentication v1a
 	var auth authn.Authenticator
 
 	if strings.Contains(registryName, "amazonaws.com") {
-		region, err := parseRegion(registryName)
+		region, err := parseEcrRegion(registryName)
 		if err != nil {
 			fmt.Printf("failed to parse ecr region: %v", err)
 			return nil, err
 		}
 
-		// TODO: handle when auhtentication is nill or username/passwords are ""
+		// TODO: handle when authentication is nill or username/passwords are ""
 
 		token, err := getECRLoginToken(authentication.Username, authentication.Password, region)
 		if err != nil {
@@ -253,8 +253,6 @@ func setupAuthOpts(opts []remote.Option, registryName string, authentication v1a
 	} else {
 		auth = authn.Anonymous
 	}
-
-	// validate that authentication works
 
 	opts = append(opts, remote.WithAuth(auth))
 	return opts, nil

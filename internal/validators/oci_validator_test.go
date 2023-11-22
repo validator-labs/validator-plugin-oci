@@ -1,53 +1,54 @@
 package validators
 
-/*
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseArtifact(t *testing.T) {
+const (
+	validURL  = "745150053801.dkr.ecr.us-east-1.amazonaws.com"
+	longURL   = "745150053801.dkr.ecr.us-east-1.amazonaws.com.invalid"
+	shortURL  = "dkr.ecr.us-east-1.amazonaws.com"
+	notEcrURL = "745150053801.dkr.notEcr.us-east-1.amazonaws.com"
+)
+
+func TestParseEcrRegion(t *testing.T) {
 	type testCase struct {
-		repoPath     string
-		expectedPath string
-		expectedRef  string
-		expectedErr  error
+		URL            string
+		expectedRegion string
+		expectedErr    error
 	}
 
 	testCases := []testCase{
 		{
-			repoPath:     "repo/artifact",
-			expectedPath: "repo/artifact",
-			expectedRef:  "",
-			expectedErr:  nil,
+			URL:            validURL,
+			expectedRegion: "us-east-1",
+			expectedErr:    nil,
 		},
 		{
-			repoPath:     "repo/artifact@v1.1.1",
-			expectedPath: "repo/artifact",
-			expectedRef:  "v1.1.1",
-			expectedErr:  nil,
+			URL:            longURL,
+			expectedRegion: "",
+			expectedErr:    errors.New(fmt.Sprintf("Invalid ecr url %v", longURL)),
 		},
 		{
-			repoPath:     "repo/artifact@sha256:65ae8fd8713ede1977d26991821ba7eb3beb48ec575b31947568f30dbdd36863",
-			expectedPath: "repo/artifact",
-			expectedRef:  "sha256:65ae8fd8713ede1977d26991821ba7eb3beb48ec575b31947568f30dbdd36863",
-			expectedErr:  nil,
+			URL:            longURL,
+			expectedRegion: "",
+			expectedErr:    errors.New(fmt.Sprintf("Invalid ecr url %v", longURL)),
 		},
 		{
-			repoPath:     "repo/artifact@v1.1.1@invalid",
-			expectedPath: "",
-			expectedRef:  "",
-			expectedErr:  errors.New("invalid artifact path"),
+			URL:            notEcrURL,
+			expectedRegion: "",
+			expectedErr:    errors.New(fmt.Sprintf("Invalid ecr url %v", notEcrURL)),
 		},
 	}
 
 	for _, tc := range testCases {
-		path, ref, err := parseArtifact(tc.repoPath)
+		region, err := parseEcrRegion(tc.URL)
 
-		assert.Equal(t, tc.expectedPath, path)
-		assert.Equal(t, tc.expectedRef, ref)
+		assert.Equal(t, tc.expectedRegion, region)
 		if tc.expectedErr != nil {
 			assert.EqualError(t, err, tc.expectedErr.Error())
 		} else {
@@ -55,4 +56,3 @@ func TestParseArtifact(t *testing.T) {
 		}
 	}
 }
-*/
