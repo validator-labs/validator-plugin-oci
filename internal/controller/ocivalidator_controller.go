@@ -54,9 +54,6 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	validator := &v1alpha1.OciValidator{}
 	if err := r.Get(ctx, req.NamespacedName, validator); err != nil {
-		if !apierrs.IsNotFound(err) {
-			r.Log.Error(err, "failed to fetch OciValidator", "key", req)
-		}
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 

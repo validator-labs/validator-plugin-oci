@@ -44,7 +44,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 	if err != nil {
 		errMsg := "failed to setup http client transport"
 		s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "caCert", rule.CaCert)
-		fmt.Println("failed to generate transport: ", err)
+		s.updateResult(vr, []error{err}, errMsg, rule.Name())
 		return vr, nil
 	}
 
@@ -91,7 +91,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 
 // validateArtifact validates a single artifact within a registry. This function is to be used when a path to a repo or an individual artifact is provided
 func validateArtifact(ctx context.Context, host string, artifact string, opts []remote.Option, vr *types.ValidationResult) (string, error) {
-	ref, err := generateRef(host, artifact)
+	ref, err := generateRef(host, artifact, vr)
 	if err != nil {
 		return fmt.Sprintf("failed to generate reference for artifact %v/%v", host, artifact), err
 	}
@@ -147,7 +147,7 @@ func validateRepos(ctx context.Context, host string, opts []remote.Option, vr *t
 		}
 
 		tag := tags[0]
-		ref, err = generateRef(host, fmt.Sprintf("%v:%v", curRepo, tag))
+		ref, err = generateRef(host, fmt.Sprintf("%v:%v", curRepo, tag), vr)
 		if err != nil {
 			details = append(details, fmt.Sprintf("failed to generate reference for artifact %v/%v:%v", host, curRepo, tag))
 			continue
@@ -168,13 +168,13 @@ func validateRepos(ctx context.Context, host string, opts []remote.Option, vr *t
 	return []string{}, nil
 }
 
-func generateRef(registry, artifact string) (name.Reference, error) {
+func generateRef(registry, artifact string, vr *types.ValidationResult) (name.Reference, error) {
 	if strings.Contains(artifact, "@sha256:") {
 		return name.NewDigest(fmt.Sprintf("%s/%s", registry, artifact))
 	}
 
 	if !strings.Contains(artifact, ":") {
-		fmt.Println("WARNING: defaulting to tag:latest")
+		vr.Condition.Details = append(vr.Condition.Details, fmt.Sprintf("artifact %v does not contain a tag or digest, defaulting to \"latest\" tag", artifact))
 	}
 
 	return name.NewTag(fmt.Sprintf("%s/%s", registry, artifact))
@@ -220,28 +220,22 @@ func setupAuthOpts(opts []remote.Option, registryName string, authentication v1a
 	if strings.Contains(registryName, "amazonaws.com") {
 		region, err := parseEcrRegion(registryName)
 		if err != nil {
-			fmt.Printf("failed to parse ecr region: %v", err)
 			return nil, err
 		}
 
-		// TODO: handle when authentication is nill or username/passwords are ""
-
 		token, err := getECRLoginToken(authentication.Username, authentication.Password, region)
 		if err != nil {
-			fmt.Printf("failed to get ECR login token: %v", err)
 			return nil, err
 		}
 
 		decodedToken, err := base64.StdEncoding.DecodeString(token)
 		if err != nil {
-			fmt.Printf("failed to decode ECR login token: %v", err)
 			return nil, err
 		}
 
 		parts := strings.SplitN(string(decodedToken), ":", 2)
 		if len(parts) != 2 {
-			fmt.Printf("malformed ECR login token: %v", token)
-			return nil, err
+			return nil, fmt.Errorf("malformed ECR login token: %v", token)
 		}
 
 		authentication.Username = parts[0]
