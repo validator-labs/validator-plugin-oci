@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -77,7 +78,9 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	// OCI Registry rules
 	for _, rule := range validator.Spec.OciRegistryRules {
 		ociRuleService := val.NewOciRuleService(r.Log)
-		validationResult, err := ociRuleService.ReconcileOciRegistryRule(rule)
+		username, password := r.secretKeyAuth(req, rule)
+
+		validationResult, err := ociRuleService.ReconcileOciRegistryRule(rule, username, password)
 		if err != nil {
 			r.Log.V(0).Error(err, "failed to reconcile OCI Registry rule")
 		}
@@ -93,6 +96,39 @@ func (r *OciValidatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.OciValidator{}).
 		Complete(r)
+}
+
+func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.OciRegistryRule) (string, string) {
+	authSecret := &corev1.Secret{}
+	nn := ktypes.NamespacedName{Name: rule.Auth.SecretName, Namespace: req.Namespace}
+
+	if rule.Auth.SecretName == "" {
+		return "", ""
+	}
+
+	if err := r.Get(context.Background(), nn, authSecret); err != nil {
+		if apierrs.IsNotFound(err) {
+			// no secrets found, set creds to empty string
+			r.Log.V(0).Error(err, fmt.Sprintf("auth secret %v not found for rule %v", rule.Auth.SecretName, rule.Name()))
+			return "", ""
+		} else {
+			r.Log.V(0).Error(err, fmt.Sprintf("failed to fetch auth secret %v for rule %v", rule.Auth.SecretName, rule.Name()))
+			return "", ""
+		}
+	}
+
+	errMalformedSecret := fmt.Errorf("malformed secret %s/%s", authSecret.Namespace, authSecret.Name)
+	username, ok := authSecret.Data["username"]
+	if !ok {
+		r.Log.V(0).Error(errMalformedSecret, "Auth secret missing username, defaulting to empty username", "name", rule.Auth.SecretName, "namespace", req.Namespace)
+	}
+
+	password, ok := authSecret.Data["password"]
+	if !ok {
+		r.Log.V(0).Error(errMalformedSecret, "Auth secret missing password, defaulting to empty password", "name", rule.Auth.SecretName, "namespace", req.Namespace)
+	}
+
+	return string(username), string(password)
 }
 
 func buildValidationResult(validator *v1alpha1.OciValidator) *vapi.ValidationResult {

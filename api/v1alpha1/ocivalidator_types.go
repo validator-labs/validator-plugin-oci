@@ -76,13 +76,7 @@ type Artifact struct {
 }
 
 type Auth struct {
-	// Username is the username to use for authentication.
-	// This may also be an AWS_ACCESS_KEY_ID.
-	Username string `json:"username" yaml:"username"`
-
-	// Password is the password to use for authentication.
-	// This may also be an AWS_SECRET_ACCESS_KEY.
-	Password string `json:"password" yaml:"password"`
+	SecretName string `json:"secretName" yaml:"secretName"`
 }
 
 // OciValidatorStatus defines the observed state of OciValidator

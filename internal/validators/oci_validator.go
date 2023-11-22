@@ -37,7 +37,7 @@ func NewOciRuleService(log logr.Logger) *OciRuleService {
 }
 
 // ReconcileOciRegistryRule reconciles an OCI registry rule from the OCIValidator config
-func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule) (*vapitypes.ValidationResult, error) {
+func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule, username, password string) (*vapitypes.ValidationResult, error) {
 	vr := buildValidationResult(rule)
 
 	opts, err := setupTransportOpts([]remote.Option{}, rule.CaCert)
@@ -48,7 +48,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 		return vr, nil
 	}
 
-	opts, err = setupAuthOpts(opts, rule.Host, rule.Auth)
+	opts, err = setupAuthOpts(opts, rule.Host, username, password)
 	if err != nil {
 		errMsg := "failed to setup authentication"
 		s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host, "auth", rule.Auth)
@@ -216,7 +216,7 @@ func parseEcrRegion(url string) (string, error) {
 	return region, nil
 }
 
-func setupAuthOpts(opts []remote.Option, registryName string, authentication v1alpha1.Auth) ([]remote.Option, error) {
+func setupAuthOpts(opts []remote.Option, registryName, username, password string) ([]remote.Option, error) {
 	var auth authn.Authenticator
 
 	if strings.Contains(registryName, "amazonaws.com") {
@@ -225,7 +225,7 @@ func setupAuthOpts(opts []remote.Option, registryName string, authentication v1a
 			return nil, err
 		}
 
-		token, err := getEcrLoginToken(authentication.Username, authentication.Password, region)
+		token, err := getEcrLoginToken(username, password, region)
 		if err != nil {
 			return nil, err
 		}
@@ -240,12 +240,12 @@ func setupAuthOpts(opts []remote.Option, registryName string, authentication v1a
 			return nil, fmt.Errorf("malformed ECR login token: %v", token)
 		}
 
-		authentication.Username = parts[0]
-		authentication.Password = parts[1]
+		username = parts[0]
+		password = parts[1]
 	}
 
-	if authentication.Username != "" && authentication.Password != "" {
-		auth = &authn.Basic{Username: authentication.Username, Password: authentication.Password}
+	if username != "" && password != "" {
+		auth = &authn.Basic{Username: username, Password: password}
 	} else {
 		auth = authn.Anonymous
 	}
