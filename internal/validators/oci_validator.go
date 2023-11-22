@@ -180,7 +180,7 @@ func generateRef(registry, artifact string, vr *types.ValidationResult) (name.Re
 	return name.NewTag(fmt.Sprintf("%s/%s", registry, artifact))
 }
 
-func getECRLoginToken(username, password, region string) (string, error) {
+func getEcrLoginToken(username, password, region string) (string, error) {
 	cfg, err := config.LoadDefaultConfig(
 		context.Background(),
 		config.WithRegion(region),
@@ -204,10 +204,10 @@ func getECRLoginToken(username, password, region string) (string, error) {
 	return "", fmt.Errorf("no authorization data available")
 }
 
-func parseEcrRegion(URL string) (string, error) {
-	parts := strings.Split(URL, ".")
+func parseEcrRegion(url string) (string, error) {
+	parts := strings.Split(url, ".")
 	if len(parts) != 6 || parts[2] != "ecr" {
-		return "", errors.New(fmt.Sprintf("Invalid ecr url %v", URL))
+		return "", errors.New(fmt.Sprintf("Invalid ECR URL %v", url))
 	}
 
 	region := parts[3]
@@ -223,7 +223,7 @@ func setupAuthOpts(opts []remote.Option, registryName string, authentication v1a
 			return nil, err
 		}
 
-		token, err := getECRLoginToken(authentication.Username, authentication.Password, region)
+		token, err := getEcrLoginToken(authentication.Username, authentication.Password, region)
 		if err != nil {
 			return nil, err
 		}

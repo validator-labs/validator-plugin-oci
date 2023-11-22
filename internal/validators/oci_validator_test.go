@@ -31,17 +31,17 @@ func TestParseEcrRegion(t *testing.T) {
 		{
 			URL:            longURL,
 			expectedRegion: "",
-			expectedErr:    errors.New(fmt.Sprintf("Invalid ecr url %v", longURL)),
+			expectedErr:    errors.New(fmt.Sprintf("Invalid ECR URL %v", longURL)),
 		},
 		{
 			URL:            longURL,
 			expectedRegion: "",
-			expectedErr:    errors.New(fmt.Sprintf("Invalid ecr url %v", longURL)),
+			expectedErr:    errors.New(fmt.Sprintf("Invalid ECR URL %v", longURL)),
 		},
 		{
 			URL:            notEcrURL,
 			expectedRegion: "",
-			expectedErr:    errors.New(fmt.Sprintf("Invalid ecr url %v", notEcrURL)),
+			expectedErr:    errors.New(fmt.Sprintf("Invalid ECR URL %v", notEcrURL)),
 		},
 	}
 
