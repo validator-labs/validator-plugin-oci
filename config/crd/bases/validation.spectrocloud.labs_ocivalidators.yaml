@@ -48,27 +48,20 @@ spec:
                         type: string
                       type: array
                     auth:
+                      description: Auth provides authentication information for the
+                        registry
                       properties:
-                        basic:
-                          properties:
-                            password:
-                              type: string
-                            username:
-                              type: string
-                          required:
-                          - password
-                          - username
-                          type: object
-                        ecr:
-                          properties:
-                            accessKey:
-                              type: string
-                            secretAccessKey:
-                              type: string
-                          required:
-                          - accessKey
-                          - secretAccessKey
-                          type: object
+                        password:
+                          description: Password is the password to use for authentication.
+                            This may also be an AWS_SECRET_ACCESS_KEY.
+                          type: string
+                        username:
+                          description: Username is the username to use for authentication.
+                            This may also be an AWS_ACCESS_KEY_ID.
+                          type: string
+                      required:
+                      - password
+                      - username
                       type: object
                     caCert:
                       description: CaCert is the base64 encoded CA Certificate

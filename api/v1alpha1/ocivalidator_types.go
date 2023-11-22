@@ -43,7 +43,9 @@ type OciRegistryRule struct {
 	//
 	// When no tag or digest are specified, the default tag "latest" is used.
 	Artifacts []string `json:"artifacts" yaml:"artifacts"`
-	Auth      Auth     `json:"auth,omitempty" yaml:"auth,omitempty"`
+
+	// Auth provides authentication information for the registry
+	Auth Auth `json:"auth,omitempty" yaml:"auth,omitempty"`
 
 	// CaCert is the base64 encoded CA Certificate
 	CaCert string `json:"caCert,omitempty" yaml:"caCert,omitempty"`
@@ -54,18 +56,13 @@ func (r OciRegistryRule) Name() string {
 }
 
 type Auth struct {
-	Basic Basic `json:"basic,omitempty" yaml:"basic,omitempty"`
-	Ecr   Ecr   `json:"ecr,omitempty" yaml:"ecr,omitempty"`
-}
-
-type Basic struct {
+	// Username is the username to use for authentication.
+	// This may also be an AWS_ACCESS_KEY_ID.
 	Username string `json:"username" yaml:"username"`
-	Password string `json:"password" yaml:"password"`
-}
 
-type Ecr struct {
-	AccessKey       string `json:"accessKey" yaml:"accessKey"`
-	SecretAccessKey string `json:"secretAccessKey" yaml:"secretAccessKey"`
+	// Password is the password to use for authentication.
+	// This may also be an AWS_SECRET_ACCESS_KEY.
+	Password string `json:"password" yaml:"password"`
 }
 
 // OciValidatorStatus defines the observed state of OciValidator

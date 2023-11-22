@@ -10,11 +10,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/go-logr/logr"
-	"oras.land/oras-go/v2/registry"
-	"oras.land/oras-go/v2/registry/remote"
-	"oras.land/oras-go/v2/registry/remote/auth"
-	"oras.land/oras-go/v2/registry/remote/retry"
+	"github.com/google/go-containerregistry/pkg/authn"
+	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
 
 	"github.com/spectrocloud-labs/validator-plugin-oci/api/v1alpha1"
 	"github.com/spectrocloud-labs/validator-plugin-oci/internal/constants"
@@ -36,51 +38,36 @@ func NewOciRuleService(log logr.Logger) *OciRuleService {
 
 // ReconcileOciRegistryRule reconciles an OCI registry rule from the OCIValidator config
 func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule) (*vapitypes.ValidationResult, error) {
-
-	// Build the default ValidationResult for this rule
 	vr := buildValidationResult(rule)
 
-	// Create a new registry instance
-	reg, err := remote.NewRegistry(rule.Host)
+	opts, err := setupTransportOpts([]remote.Option{}, rule.CaCert)
 	if err != nil {
-		errMsg := "failed to create registry client"
-		s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name())
-		s.updateResult(vr, []error{err}, errMsg, rule.Name())
-		return vr, nil
-	}
-
-	httpClient, err := newHTTPClient(rule.CaCert)
-	if err != nil {
-		errMsg := "failed to create http client"
+		errMsg := "failed to setup http client transport"
 		s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "caCert", rule.CaCert)
-		s.updateResult(vr, []error{err}, errMsg, rule.Name())
+		fmt.Println("failed to generate transport: ", err)
 		return vr, nil
 	}
 
-	// Setup credentials if username and password are provided
-	if rule.Auth.Basic.Username != "" && rule.Auth.Basic.Password != "" {
-		reg.Client = &auth.Client{
-			Client: httpClient,
-			Cache:  auth.DefaultCache,
-			Credential: auth.StaticCredential(rule.Host, auth.Credential{
-				Username: rule.Auth.Basic.Username,
-				Password: rule.Auth.Basic.Password,
-			}),
-		}
+	opts, err = setupAuthOpts(opts, rule.Host, rule.Auth)
+	if err != nil {
+		errMsg := "failed to setup authentication"
+		s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host, "auth", rule.Auth)
+		s.updateResult(vr, []error{err}, errMsg, rule.Name())
+		return vr, nil
 	}
 
 	errs := make([]error, 0)
 	details := make([]string, 0)
 	ctx := context.Background()
 	if len(rule.Artifacts) == 0 {
-		errMsg := "failed to validate repos in registry"
-		detail, err := s.validateRepos(ctx, reg, rule.Host, vr)
+		errMsg := "failed to validate repositories in registry"
+		d, err := validateRepos(ctx, rule.Host, opts, vr)
 		if err != nil {
 			errs = append(errs, err)
 			s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host)
 		}
-		if detail != "" {
-			details = append(details, detail)
+		if len(d) > 0 {
+			details = append(details, d...)
 		}
 
 		s.updateResult(vr, errs, errMsg, rule.Name(), details...)
@@ -89,7 +76,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 
 	errMsg := "failed to validate artifact in registry"
 	for _, artifact := range rule.Artifacts {
-		detail, err := s.validateArtifact(ctx, reg, rule.Host, artifact, vr)
+		detail, err := validateArtifact(ctx, rule.Host, artifact, opts, vr)
 		if err != nil {
 			errs = append(errs, err)
 			s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host, "artifact", artifact)
@@ -102,91 +89,178 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 	return vr, nil
 }
 
-// validateRepo validates repos within a registry. This function is to be used when no particular repo or artifact is specified
-func (s *OciRuleService) validateRepos(ctx context.Context, reg *remote.Registry, host string, vr *types.ValidationResult) (string, error) {
-	// Get chosen repositories
-	repoList := make([]string, 0)
-	err := reg.Repositories(ctx, "", func(repos []string) error {
-		for _, repo := range repos {
-			repoList = append(repoList, repo)
-		}
-		return nil
-	})
+// validateArtifact validates a single artifact within a registry. This function is to be used when a path to a repo or an individual artifact is provided
+func validateArtifact(ctx context.Context, host string, artifact string, opts []remote.Option, vr *types.ValidationResult) (string, error) {
+	ref, err := generateRef(host, artifact)
 	if err != nil {
-		return fmt.Sprintf("failed to list repositories in registry"), err
+		return fmt.Sprintf("failed to generate reference for artifact %v/%v", host, artifact), err
+	}
+
+	// download image without storing it on disk
+	_, err = remote.Image(ref, opts...)
+	if err != nil {
+		return fmt.Sprintf("failed to download artifact %v", ref.Name()), err
+	}
+
+	return "", nil
+}
+
+// validateRepos validates repos within a registry. This function is to be used when no particular artifact in a registry is provided
+func validateRepos(ctx context.Context, host string, opts []remote.Option, vr *types.ValidationResult) ([]string, error) {
+	details := make([]string, 0)
+
+	reg, err := name.NewRegistry(host)
+	if err != nil {
+		details = append(details, fmt.Sprintf("failed to get registry %v", host))
+		return details, err
+	}
+
+	repoList, err := remote.Catalog(context.Background(), reg, opts...)
+	if err != nil {
+		details = append(details, fmt.Sprintf("failed to list repositories in registry %v", host))
+		return details, err
 	}
 
 	if len(repoList) == 0 {
-		return fmt.Sprintf("no repositories found in registry"), nil
+		details = append(details, fmt.Sprintf("no repositories found in registry %v", host))
+		return details, nil
 	}
 
-	var repo registry.Repository
+	var repo name.Repository
+	var ref name.Reference
 	for _, curRepo := range repoList {
-		// Try to get repo from registry
-		if repo, err = reg.Repository(ctx, curRepo); err == nil {
-			break
-		}
-	}
-	if repo == nil || err != nil {
-		return fmt.Sprintf("failed to authenticate to a repository"), err
-	}
-
-	// Get tags on artifacts in repository
-	var tagList []string
-	err = repo.Tags(ctx, "", func(tags []string) error {
-		for _, tag := range tags {
-			tagList = append(tagList, tag)
-		}
-		return nil
-	})
-	if err != nil {
-		return fmt.Sprintf("failed to pull tags from repository"), err
-	}
-
-	return "", nil
-}
-
-// validateArtifact validates a single artifact within a registry. This function is to be used when a path to a repo or an individual artifact is provided
-func (s *OciRuleService) validateArtifact(ctx context.Context, reg *remote.Registry, host string, repoPath string, vr *types.ValidationResult) (string, error) {
-	path, ref, err := parseArtifact(repoPath)
-	if err != nil {
-		return fmt.Sprintf("failed to get artifact path and reference"), err
-	}
-
-	// Try to get repo from registry
-	repo, err := reg.Repository(ctx, path)
-	if err != nil {
-		return fmt.Sprintf("failed to authenticate to a repository"), err
-	}
-
-	if ref == "" {
-		// Get all tags on artifacts in repository
-		var tagList []string
-		err = repo.Tags(ctx, "", func(tags []string) error {
-			for _, tag := range tags {
-				tagList = append(tagList, tag)
-			}
-			return nil
-		})
+		repo, err = name.NewRepository(host + "/" + curRepo)
 		if err != nil {
-			return fmt.Sprintf("failed to pull tags from repository"), err
+			details = append(details, fmt.Sprintf("failed to get repository %v/%v", host, curRepo))
+			continue
 		}
-		return "", nil
-	}
 
-	// Get reference of artifact
-	_, _, err = repo.FetchReference(ctx, ref)
+		tags, err := remote.List(repo, opts...)
+		if err != nil {
+			details = append(details, fmt.Sprintf("failed to get tags for repository %v/%v", host, curRepo))
+			continue
+		}
+
+		if len(tags) == 0 {
+			details = append(details, fmt.Sprintf("no tags found in repository %v/%v", host, curRepo))
+			continue
+		}
+
+		tag := tags[0]
+		ref, err = generateRef(host, fmt.Sprintf("%v:%v", curRepo, tag))
+		if err != nil {
+			details = append(details, fmt.Sprintf("failed to generate reference for artifact %v/%v:%v", host, curRepo, tag))
+			continue
+		}
+		break
+	}
 	if err != nil {
-		return fmt.Sprintf("failed to fetch reference to artifact"), err
+		return details, err
 	}
 
-	return "", nil
+	// download image without storing it on disk
+	_, err = remote.Image(ref, opts...)
+	if err != nil {
+		details = append(details, fmt.Sprintf("failed to download artifact %v", ref.Name()))
+		return details, err
+	}
+
+	return []string{}, nil
 }
 
-func newHTTPClient(caCert string) (*http.Client, error) {
-	httpClient := retry.DefaultClient
+func generateRef(registry, artifact string) (name.Reference, error) {
+	if strings.Contains(artifact, "@sha256:") {
+		return name.NewDigest(fmt.Sprintf("%s/%s", registry, artifact))
+	}
 
-	// Add cert as trust
+	if !strings.Contains(artifact, ":") {
+		fmt.Println("WARNING: defaulting to tag:latest")
+	}
+
+	return name.NewTag(fmt.Sprintf("%s/%s", registry, artifact))
+}
+
+func getECRLoginToken(username, password, region string) (string, error) {
+	cfg, err := config.LoadDefaultConfig(
+		context.Background(),
+		config.WithRegion(region),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(username, password, "")),
+	)
+	if err != nil {
+		return "", fmt.Errorf("failed to load configuration, %v", err)
+	}
+
+	client := ecr.NewFromConfig(cfg)
+
+	output, err := client.GetAuthorizationToken(context.TODO(), &ecr.GetAuthorizationTokenInput{})
+	if err != nil {
+		return "", fmt.Errorf("failed to get ECR authorization token: %v", err)
+	}
+
+	for _, data := range output.AuthorizationData {
+		return *data.AuthorizationToken, nil
+	}
+
+	return "", fmt.Errorf("no authorization data available")
+}
+
+func parseRegion(ecrURL string) (string, error) {
+	parts := strings.Split(ecrURL, ".")
+	if len(parts) < 4 {
+		return "", errors.New(fmt.Sprintf("Invalid ecr url %v", ecrURL))
+	}
+
+	region := parts[3]
+	return region, nil
+}
+
+func setupAuthOpts(opts []remote.Option, registryName string, authentication v1alpha1.Auth) ([]remote.Option, error) {
+	var auth authn.Authenticator
+
+	if strings.Contains(registryName, "amazonaws.com") {
+		region, err := parseRegion(registryName)
+		if err != nil {
+			fmt.Printf("failed to parse ecr region: %v", err)
+			return nil, err
+		}
+
+		// TODO: handle when auhtentication is nill or username/passwords are ""
+
+		token, err := getECRLoginToken(authentication.Username, authentication.Password, region)
+		if err != nil {
+			fmt.Printf("failed to get ECR login token: %v", err)
+			return nil, err
+		}
+
+		decodedToken, err := base64.StdEncoding.DecodeString(token)
+		if err != nil {
+			fmt.Printf("failed to decode ECR login token: %v", err)
+			return nil, err
+		}
+
+		parts := strings.SplitN(string(decodedToken), ":", 2)
+		if len(parts) != 2 {
+			fmt.Printf("malformed ECR login token: %v", token)
+			return nil, err
+		}
+
+		authentication.Username = parts[0]
+		authentication.Password = parts[1]
+	}
+
+	if authentication.Username != "" && authentication.Password != "" {
+		auth = &authn.Basic{Username: authentication.Username, Password: authentication.Password}
+	} else {
+		auth = authn.Anonymous
+	}
+
+	// validate that authentication works
+
+	opts = append(opts, remote.WithAuth(auth))
+	return opts, nil
+}
+
+func setupTransportOpts(opts []remote.Option, caCert string) ([]remote.Option, error) {
 	if caCert != "" {
 		cert, err := base64.StdEncoding.DecodeString(caCert)
 		if err != nil {
@@ -203,26 +277,9 @@ func newHTTPClient(caCert string) (*http.Client, error) {
 			MinVersion: tls.VersionTLS12,
 			RootCAs:    caCertPool,
 		}
-		httpClient.Transport = &http.Transport{TLSClientConfig: tlsConfig}
+		opts = append(opts, remote.WithTransport(&http.Transport{TLSClientConfig: tlsConfig}))
 	}
-
-	return httpClient, nil
-}
-
-func parseArtifact(artifactPath string) (string, string, error) {
-	path := ""
-	ref := ""
-	parts := strings.Split(artifactPath, "@")
-	if len(parts) > 2 {
-		return "", "", errors.New("invalid artifact path")
-	}
-
-	path = parts[0]
-	if len(parts) > 1 {
-		ref = parts[1]
-	}
-
-	return path, ref, nil
+	return opts, nil
 }
 
 // buildValidationResult builds a default ValidationResult for a given validation type

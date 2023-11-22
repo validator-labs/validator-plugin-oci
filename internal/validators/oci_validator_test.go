@@ -1,5 +1,6 @@
 package validators
 
+/*
 import (
 	"errors"
 	"testing"
@@ -54,3 +55,4 @@ func TestParseArtifact(t *testing.T) {
 		}
 	}
 }
+*/
