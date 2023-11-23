@@ -18,7 +18,6 @@ package v1alpha1
 
 import (
 	"fmt"
-	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -47,18 +46,7 @@ type OciRegistryRule struct {
 }
 
 func (r OciRegistryRule) Name() string {
-	var artifacts strings.Builder
-	artifacts.WriteString("[")
-	l := len(r.Artifacts)
-	for i, a := range r.Artifacts {
-		artifacts.WriteString(a.Ref)
-		if i < l-1 {
-			artifacts.WriteString(", ")
-		}
-	}
-	artifacts.WriteString("]")
-
-	return fmt.Sprintf("%s/%s", r.Host, artifacts.String())
+	return fmt.Sprintf("%s/%v", r.Host, len(r.Artifacts))
 }
 
 type Artifact struct {
@@ -72,7 +60,7 @@ type Artifact struct {
 	Ref string `json:"ref" yaml:"ref"`
 
 	// Download specifies whether a download attempt should be made for the artifact
-	Download bool `json:"download" yaml:"download"`
+	Download bool `json:"download,omitempty" yaml:"download,omitempty"`
 }
 
 type Auth struct {

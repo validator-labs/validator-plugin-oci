@@ -17,6 +17,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/go-containerregistry/pkg/v1/validate"
 
 	"github.com/spectrocloud-labs/validator-plugin-oci/api/v1alpha1"
 	"github.com/spectrocloud-labs/validator-plugin-oci/internal/constants"
@@ -76,7 +77,15 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 
 	errMsg := "failed to validate artifact in registry"
 	for _, artifact := range rule.Artifacts {
-		detail, err := validateArtifact(ctx, rule.Host, artifact, opts, vr)
+		ref, err := generateRef(rule.Host, artifact.Ref, vr)
+		if err != nil {
+			details = append(details, fmt.Sprintf("failed to generate reference for artifact %v/%v", rule.Host, artifact.Ref))
+			errs = append(errs, err)
+			s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host, "artifact", artifact)
+			continue
+		}
+
+		detail, err := validateReference(ref, artifact.Download, opts)
 		if err != nil {
 			errs = append(errs, err)
 			s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host, "artifact", artifact)
@@ -89,18 +98,38 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 	return vr, nil
 }
 
-// validateArtifact validates a single artifact within a registry. This function is to be used when a path to a repo or an individual artifact is provided
-func validateArtifact(ctx context.Context, host string, artifact v1alpha1.Artifact, opts []remote.Option, vr *types.ValidationResult) (string, error) {
-	ref, err := generateRef(host, artifact.Ref, vr)
-	if err != nil {
-		return fmt.Sprintf("failed to generate reference for artifact %v/%v", host, artifact), err
+func generateRef(registry, artifact string, vr *types.ValidationResult) (name.Reference, error) {
+	if strings.Contains(artifact, "@sha256:") {
+		return name.NewDigest(fmt.Sprintf("%s/%s", registry, artifact))
 	}
 
-	if artifact.Download {
+	if !strings.Contains(artifact, ":") {
+		vr.Condition.Details = append(vr.Condition.Details, fmt.Sprintf("artifact %v does not contain a tag or digest, defaulting to \"latest\" tag", artifact))
+	}
+
+	return name.NewTag(fmt.Sprintf("%s/%s", registry, artifact))
+}
+
+// validateArtifact validates a single artifact within a registry. This function is to be used when a path to a repo or an individual artifact is provided
+func validateReference(ref name.Reference, download bool, opts []remote.Option) (string, error) {
+	// validate artifact existence by issuing a HEAD request
+	_, err := remote.Head(ref, opts...)
+	if err != nil {
+		return fmt.Sprintf("failed to get descriptor for artifact %v", ref.Name()), err
+	}
+
+	// TODO: add signature verification here
+
+	if download {
 		// download image without storing it on disk
-		_, err = remote.Image(ref, opts...)
+		img, err := remote.Image(ref, opts...)
 		if err != nil {
 			return fmt.Sprintf("failed to download artifact %v", ref.Name()), err
+		}
+
+		err = validate.Image(img)
+		if err != nil {
+			return fmt.Sprintf("failed validation for artifact %v", ref.Name()), err
 		}
 	}
 
@@ -160,26 +189,13 @@ func validateRepos(ctx context.Context, host string, opts []remote.Option, vr *t
 		return details, err
 	}
 
-	// download image without storing it on disk
-	_, err = remote.Image(ref, opts...)
+	detail, err := validateReference(ref, true, opts)
 	if err != nil {
-		details = append(details, fmt.Sprintf("failed to download artifact %v", ref.Name()))
+		details = append(details, detail)
 		return details, err
 	}
 
 	return []string{}, nil
-}
-
-func generateRef(registry, artifact string, vr *types.ValidationResult) (name.Reference, error) {
-	if strings.Contains(artifact, "@sha256:") {
-		return name.NewDigest(fmt.Sprintf("%s/%s", registry, artifact))
-	}
-
-	if !strings.Contains(artifact, ":") {
-		vr.Condition.Details = append(vr.Condition.Details, fmt.Sprintf("artifact %v does not contain a tag or digest, defaulting to \"latest\" tag", artifact))
-	}
-
-	return name.NewTag(fmt.Sprintf("%s/%s", registry, artifact))
 }
 
 func getEcrLoginToken(username, password, region string) (string, error) {
@@ -194,7 +210,7 @@ func getEcrLoginToken(username, password, region string) (string, error) {
 
 	client := ecr.NewFromConfig(cfg)
 
-	output, err := client.GetAuthorizationToken(context.TODO(), &ecr.GetAuthorizationTokenInput{})
+	output, err := client.GetAuthorizationToken(context.Background(), &ecr.GetAuthorizationTokenInput{})
 	if err != nil {
 		return "", fmt.Errorf("failed to get ECR authorization token: %v", err)
 	}

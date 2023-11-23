@@ -99,12 +99,12 @@ func (r *OciValidatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.OciRegistryRule) (string, string) {
-	authSecret := &corev1.Secret{}
-	nn := ktypes.NamespacedName{Name: rule.Auth.SecretName, Namespace: req.Namespace}
-
 	if rule.Auth.SecretName == "" {
 		return "", ""
 	}
+
+	authSecret := &corev1.Secret{}
+	nn := ktypes.NamespacedName{Name: rule.Auth.SecretName, Namespace: req.Namespace}
 
 	if err := r.Get(context.Background(), nn, authSecret); err != nil {
 		if apierrs.IsNotFound(err) {

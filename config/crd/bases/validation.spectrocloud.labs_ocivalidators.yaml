@@ -55,7 +55,6 @@ spec:
                               tag \"latest\" is used."
                             type: string
                         required:
-                        - download
                         - ref
                         type: object
                       type: array
