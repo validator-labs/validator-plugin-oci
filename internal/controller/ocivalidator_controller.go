@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -31,8 +32,7 @@ import (
 
 	"github.com/spectrocloud-labs/validator-plugin-oci/api/v1alpha1"
 	"github.com/spectrocloud-labs/validator-plugin-oci/internal/constants"
-	"github.com/spectrocloud-labs/validator-plugin-oci/internal/validators/ecr"
-	"github.com/spectrocloud-labs/validator-plugin-oci/internal/validators/oci"
+	val "github.com/spectrocloud-labs/validator-plugin-oci/internal/validators"
 	vapi "github.com/spectrocloud-labs/validator/api/v1alpha1"
 	"github.com/spectrocloud-labs/validator/pkg/util/ptr"
 	vres "github.com/spectrocloud-labs/validator/pkg/validationresult"
@@ -55,9 +55,6 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	validator := &v1alpha1.OciValidator{}
 	if err := r.Get(ctx, req.NamespacedName, validator); err != nil {
-		if !apierrs.IsNotFound(err) {
-			r.Log.Error(err, "failed to fetch OciValidator", "key", req)
-		}
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
@@ -80,20 +77,12 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	// OCI Registry rules
 	for _, rule := range validator.Spec.OciRegistryRules {
-		ociRuleService := oci.NewOciRuleService(r.Log)
-		validationResult, err := ociRuleService.ReconcileOciRegistryRule(rule)
+		ociRuleService := val.NewOciRuleService(r.Log)
+		username, password := r.secretKeyAuth(req, rule)
+
+		validationResult, err := ociRuleService.ReconcileOciRegistryRule(rule, username, password)
 		if err != nil {
 			r.Log.V(0).Error(err, "failed to reconcile OCI Registry rule")
-		}
-		vres.SafeUpdateValidationResult(r.Client, nn, validationResult, err, r.Log)
-	}
-
-	// ECR Registry rules
-	for _, rule := range validator.Spec.EcrRegistryRules {
-		ecrRuleService := ecr.NewEcrRuleService(r.Log)
-		validationResult, err := ecrRuleService.ReconcileEcrRegistryRule(rule)
-		if err != nil {
-			r.Log.V(0).Error(err, "failed to reconcile ECR Registry rule")
 		}
 		vres.SafeUpdateValidationResult(r.Client, nn, validationResult, err, r.Log)
 	}
@@ -107,6 +96,39 @@ func (r *OciValidatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.OciValidator{}).
 		Complete(r)
+}
+
+func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.OciRegistryRule) (string, string) {
+	if rule.Auth.SecretName == "" {
+		return "", ""
+	}
+
+	authSecret := &corev1.Secret{}
+	nn := ktypes.NamespacedName{Name: rule.Auth.SecretName, Namespace: req.Namespace}
+
+	if err := r.Get(context.Background(), nn, authSecret); err != nil {
+		if apierrs.IsNotFound(err) {
+			// no secrets found, set creds to empty string
+			r.Log.V(0).Error(err, fmt.Sprintf("auth secret %s not found for rule %s", rule.Auth.SecretName, rule.Name()))
+			return "", ""
+		} else {
+			r.Log.V(0).Error(err, fmt.Sprintf("failed to fetch auth secret %s for rule %s", rule.Auth.SecretName, rule.Name()))
+			return "", ""
+		}
+	}
+
+	errMalformedSecret := fmt.Errorf("malformed secret %s/%s", authSecret.Namespace, authSecret.Name)
+	username, ok := authSecret.Data["username"]
+	if !ok {
+		r.Log.V(0).Error(errMalformedSecret, "Auth secret missing username, defaulting to empty username", "name", rule.Auth.SecretName, "namespace", req.Namespace)
+	}
+
+	password, ok := authSecret.Data["password"]
+	if !ok {
+		r.Log.V(0).Error(errMalformedSecret, "Auth secret missing password, defaulting to empty password", "name", rule.Auth.SecretName, "namespace", req.Namespace)
+	}
+
+	return string(username), string(password)
 }
 
 func buildValidationResult(validator *v1alpha1.OciValidator) *vapi.ValidationResult {

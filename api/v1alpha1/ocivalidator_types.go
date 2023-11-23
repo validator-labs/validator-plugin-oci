@@ -25,47 +25,46 @@ import (
 // OciValidatorSpec defines the desired state of OciValidator
 type OciValidatorSpec struct {
 	OciRegistryRules []OciRegistryRule `json:"ociRegistryRules,omitempty" yaml:"ociRegistryRules,omitempty"`
-	EcrRegistryRules []EcrRegistryRule `json:"ecrRegistryRules,omitempty" yaml:"ecrRegistryRules,omitempty"`
 }
 
 func (s OciValidatorSpec) ResultCount() int {
-	return len(s.EcrRegistryRules) + len(s.OciRegistryRules)
+	return len(s.OciRegistryRules)
 }
 
 type OciRegistryRule struct {
-	Host            string    `json:"host" yaml:"host"`
-	RepositoryPaths []string  `json:"repositoryPaths,omitempty" yaml:"repositoryPaths,omitempty"`
-	Auth            BasicAuth `json:"auth,omitempty" yaml:"auth,omitempty"`
-	Cert            string    `json:"cert,omitempty" yaml:"cert,omitempty"`
+	// Host is a reference to the host URL of an OCI compliant registry
+	Host string `json:"host" yaml:"host"`
+
+	// Artifacts is a slice of artifacts in the host registry that should be validated.
+	Artifacts []Artifact `json:"artifacts,omitempty" yaml:"artifacts,omitempty"`
+
+	// Auth provides authentication information for the registry
+	Auth Auth `json:"auth,omitempty" yaml:"auth,omitempty"`
+
+	// CaCert is the base64 encoded CA Certificate
+	CaCert string `json:"caCert,omitempty" yaml:"caCert,omitempty"`
 }
 
 func (r OciRegistryRule) Name() string {
-	return fmt.Sprintf("%s/%s", r.Host, r.RepositoryPaths)
+	return fmt.Sprintf("%s/%d", r.Host, len(r.Artifacts))
 }
 
-type BasicAuth struct {
-	Username string `json:"username" yaml:"username"`
-	Password string `json:"password" yaml:"password"`
+type Artifact struct {
+	// Ref is the path to the artifact in the host registry that should be validated.
+	// An individual artifact can take any of the following forms:
+	// <repository-path>/<artifact-name>
+	// <repository-path>/<artifact-name>:<tag>
+	// <repository-path>/<artifact-name>@<digest>
+	//
+	// When no tag or digest are specified, the default tag "latest" is used.
+	Ref string `json:"ref" yaml:"ref"`
+
+	// Download specifies whether a download attempt should be made for the artifact
+	Download bool `json:"download,omitempty" yaml:"download,omitempty"`
 }
 
-type EcrRegistryRule struct {
-	Host            string   `json:"host" yaml:"host"`
-	RepositoryPaths []string `json:"repositoryPaths,omitempty" yaml:"repositoryPaths,omitempty"`
-	Auth            EcrAuth  `json:"auth,omitempty" yaml:"auth,omitempty"`
-}
-
-func (r EcrRegistryRule) Name() string {
-	return fmt.Sprintf("%s/%s", r.Host, r.RepositoryPaths)
-}
-
-type EcrAuth struct {
-	RoleArn        string         `json:"roleArn,omitempty" yaml:"roleArn,omitempty"`
-	EcrCredentials EcrCredentials `json:"ecrCredentials,omitempty" yaml:"ecrCredentials,omitempty"`
-}
-
-type EcrCredentials struct {
-	AccessKey       string `json:"accessKey" yaml:"accessKey"`
-	SecretAccessKey string `json:"secretAccessKey" yaml:"secretAccessKey"`
+type Auth struct {
+	SecretName string `json:"secretName" yaml:"secretName"`
 }
 
 // OciValidatorStatus defines the observed state of OciValidator

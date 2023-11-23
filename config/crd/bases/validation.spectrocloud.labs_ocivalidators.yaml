@@ -34,55 +34,46 @@ spec:
           spec:
             description: OciValidatorSpec defines the desired state of OciValidator
             properties:
-              ecrRegistryRules:
-                items:
-                  properties:
-                    auth:
-                      properties:
-                        ecrCredentials:
-                          properties:
-                            accessKey:
-                              type: string
-                            secretAccessKey:
-                              type: string
-                          required:
-                          - accessKey
-                          - secretAccessKey
-                          type: object
-                        roleArn:
-                          type: string
-                      type: object
-                    host:
-                      type: string
-                    repositoryPaths:
-                      items:
-                        type: string
-                      type: array
-                  required:
-                  - host
-                  type: object
-                type: array
               ociRegistryRules:
                 items:
                   properties:
+                    artifacts:
+                      description: Artifacts is a slice of artifacts in the host registry
+                        that should be validated.
+                      items:
+                        properties:
+                          download:
+                            description: Download specifies whether a download attempt
+                              should be made for the artifact
+                            type: boolean
+                          ref:
+                            description: "Ref is the path to the artifact in the host
+                              registry that should be validated. An individual artifact
+                              can take any of the following forms: <repository-path>/<artifact-name>
+                              <repository-path>/<artifact-name>:<tag> <repository-path>/<artifact-name>@<digest>
+                              \n When no tag or digest are specified, the default
+                              tag \"latest\" is used."
+                            type: string
+                        required:
+                        - ref
+                        type: object
+                      type: array
                     auth:
+                      description: Auth provides authentication information for the
+                        registry
                       properties:
-                        password:
-                          type: string
-                        username:
+                        secretName:
                           type: string
                       required:
-                      - password
-                      - username
+                      - secretName
                       type: object
-                    cert:
+                    caCert:
+                      description: CaCert is the base64 encoded CA Certificate
                       type: string
                     host:
+                      description: Host is a reference to the host URL of an OCI compliant
+                        registry
                       type: string
-                    repositoryPaths:
-                      items:
-                        type: string
-                      type: array
                   required:
                   - host
                   type: object
