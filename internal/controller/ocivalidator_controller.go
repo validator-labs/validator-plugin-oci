@@ -109,10 +109,10 @@ func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.O
 	if err := r.Get(context.Background(), nn, authSecret); err != nil {
 		if apierrs.IsNotFound(err) {
 			// no secrets found, set creds to empty string
-			r.Log.V(0).Error(err, fmt.Sprintf("auth secret %v not found for rule %v", rule.Auth.SecretName, rule.Name()))
+			r.Log.V(0).Error(err, fmt.Sprintf("auth secret %s not found for rule %s", rule.Auth.SecretName, rule.Name()))
 			return "", ""
 		} else {
-			r.Log.V(0).Error(err, fmt.Sprintf("failed to fetch auth secret %v for rule %v", rule.Auth.SecretName, rule.Name()))
+			r.Log.V(0).Error(err, fmt.Sprintf("failed to fetch auth secret %s for rule %s", rule.Auth.SecretName, rule.Name()))
 			return "", ""
 		}
 	}

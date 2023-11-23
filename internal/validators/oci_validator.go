@@ -79,7 +79,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 	for _, artifact := range rule.Artifacts {
 		ref, err := generateRef(rule.Host, artifact.Ref, vr)
 		if err != nil {
-			details = append(details, fmt.Sprintf("failed to generate reference for artifact %v/%v", rule.Host, artifact.Ref))
+			details = append(details, fmt.Sprintf("failed to generate reference for artifact %s/%s", rule.Host, artifact.Ref))
 			errs = append(errs, err)
 			s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host, "artifact", artifact)
 			continue
@@ -104,7 +104,7 @@ func generateRef(registry, artifact string, vr *types.ValidationResult) (name.Re
 	}
 
 	if !strings.Contains(artifact, ":") {
-		vr.Condition.Details = append(vr.Condition.Details, fmt.Sprintf("artifact %v does not contain a tag or digest, defaulting to \"latest\" tag", artifact))
+		vr.Condition.Details = append(vr.Condition.Details, fmt.Sprintf("artifact %s does not contain a tag or digest, defaulting to \"latest\" tag", artifact))
 	}
 
 	return name.NewTag(fmt.Sprintf("%s/%s", registry, artifact))
@@ -115,7 +115,7 @@ func validateReference(ref name.Reference, download bool, opts []remote.Option) 
 	// validate artifact existence by issuing a HEAD request
 	_, err := remote.Head(ref, opts...)
 	if err != nil {
-		return fmt.Sprintf("failed to get descriptor for artifact %v", ref.Name()), err
+		return fmt.Sprintf("failed to get descriptor for artifact %s", ref.Name()), err
 	}
 
 	// TODO: add signature verification here
@@ -124,12 +124,12 @@ func validateReference(ref name.Reference, download bool, opts []remote.Option) 
 		// download image without storing it on disk
 		img, err := remote.Image(ref, opts...)
 		if err != nil {
-			return fmt.Sprintf("failed to download artifact %v", ref.Name()), err
+			return fmt.Sprintf("failed to download artifact %s", ref.Name()), err
 		}
 
 		err = validate.Image(img)
 		if err != nil {
-			return fmt.Sprintf("failed validation for artifact %v", ref.Name()), err
+			return fmt.Sprintf("failed validation for artifact %s", ref.Name()), err
 		}
 	}
 
@@ -142,18 +142,18 @@ func validateRepos(ctx context.Context, host string, opts []remote.Option, vr *t
 
 	reg, err := name.NewRegistry(host)
 	if err != nil {
-		details = append(details, fmt.Sprintf("failed to get registry %v", host))
+		details = append(details, fmt.Sprintf("failed to get registry %s", host))
 		return details, err
 	}
 
 	repoList, err := remote.Catalog(context.Background(), reg, opts...)
 	if err != nil {
-		details = append(details, fmt.Sprintf("failed to list repositories in registry %v", host))
+		details = append(details, fmt.Sprintf("failed to list repositories in registry %s", host))
 		return details, err
 	}
 
 	if len(repoList) == 0 {
-		details = append(details, fmt.Sprintf("no repositories found in registry %v", host))
+		details = append(details, fmt.Sprintf("no repositories found in registry %s", host))
 		return details, nil
 	}
 
@@ -162,25 +162,25 @@ func validateRepos(ctx context.Context, host string, opts []remote.Option, vr *t
 	for _, curRepo := range repoList {
 		repo, err = name.NewRepository(host + "/" + curRepo)
 		if err != nil {
-			details = append(details, fmt.Sprintf("failed to get repository %v/%v", host, curRepo))
+			details = append(details, fmt.Sprintf("failed to get repository %s/%s", host, curRepo))
 			continue
 		}
 
 		tags, err := remote.List(repo, opts...)
 		if err != nil {
-			details = append(details, fmt.Sprintf("failed to get tags for repository %v/%v", host, curRepo))
+			details = append(details, fmt.Sprintf("failed to get tags for repository %s/%s", host, curRepo))
 			continue
 		}
 
 		if len(tags) == 0 {
-			details = append(details, fmt.Sprintf("no tags found in repository %v/%v", host, curRepo))
+			details = append(details, fmt.Sprintf("no tags found in repository %s/%s", host, curRepo))
 			continue
 		}
 
 		tag := tags[0]
-		ref, err = generateRef(host, fmt.Sprintf("%v:%v", curRepo, tag), vr)
+		ref, err = generateRef(host, fmt.Sprintf("%s:%s", curRepo, tag), vr)
 		if err != nil {
-			details = append(details, fmt.Sprintf("failed to generate reference for artifact %v/%v:%v", host, curRepo, tag))
+			details = append(details, fmt.Sprintf("failed to generate reference for artifact %s/%s:%s", host, curRepo, tag))
 			continue
 		}
 		break
@@ -205,14 +205,14 @@ func getEcrLoginToken(username, password, region string) (string, error) {
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(username, password, "")),
 	)
 	if err != nil {
-		return "", fmt.Errorf("failed to load configuration, %v", err)
+		return "", fmt.Errorf("failed to load configuration, %s", err)
 	}
 
 	client := ecr.NewFromConfig(cfg)
 
 	output, err := client.GetAuthorizationToken(context.Background(), &ecr.GetAuthorizationTokenInput{})
 	if err != nil {
-		return "", fmt.Errorf("failed to get ECR authorization token: %v", err)
+		return "", fmt.Errorf("failed to get ECR authorization token: %s", err)
 	}
 
 	for _, data := range output.AuthorizationData {
@@ -225,7 +225,7 @@ func getEcrLoginToken(username, password, region string) (string, error) {
 func parseEcrRegion(url string) (string, error) {
 	parts := strings.Split(url, ".")
 	if len(parts) != 6 || parts[2] != "ecr" {
-		return "", errors.New(fmt.Sprintf("Invalid ECR URL %v", url))
+		return "", errors.New(fmt.Sprintf("Invalid ECR URL %s", url))
 	}
 
 	region := parts[3]
@@ -253,7 +253,7 @@ func setupAuthOpts(opts []remote.Option, registryName, username, password string
 
 		parts := strings.SplitN(string(decodedToken), ":", 2)
 		if len(parts) != 2 {
-			return nil, fmt.Errorf("malformed ECR login token: %v", token)
+			return nil, fmt.Errorf("malformed ECR login token: %s", token)
 		}
 
 		username = parts[0]

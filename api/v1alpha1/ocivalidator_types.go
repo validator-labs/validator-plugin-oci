@@ -46,7 +46,7 @@ type OciRegistryRule struct {
 }
 
 func (r OciRegistryRule) Name() string {
-	return fmt.Sprintf("%s/%v", r.Host, len(r.Artifacts))
+	return fmt.Sprintf("%s/%d", r.Host, len(r.Artifacts))
 }
 
 type Artifact struct {
