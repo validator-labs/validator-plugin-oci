@@ -61,8 +61,14 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 .PHONY: test
-test: manifests generate fmt vet envtest ## Run tests.
+test: manifests generate fmt vet envtest setup-validator ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./... -coverprofile cover.out
+
+.PHONY: setup-validator
+setup-validator:
+	@if [ ! -d ../validator ]; then \
+		git clone https://github.com/spectrocloud-labs/validator ../validator; \
+	fi
 
 .PHONY: dev
 dev: ## Run a controller via devspace
