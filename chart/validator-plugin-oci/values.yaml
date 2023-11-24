@@ -51,8 +51,12 @@ metricsService:
     targetPort: https
   type: ClusterIP
 auth:
-  secretName: aws-creds
-  createSecret: true
-  accessKeyId: ""
-  secretAccessKey: ""
-  sessionToken: ""
+  secrets:
+    # Specify the names of secrets in your cluster that contain a registries credentails.
+    # E.g.: https://github.com/spectrocloud-labs/validator/blob/main/chart/validator/templates/plugin-secret-oci.yaml
+    #- secretName: oci-registry-creds
+    #- secretName: ecr-registry-creds
+env:
+  # Specify any environment variables you'd like to have defined in your deployment
+  #VARIABLE1: value1
+  #VARIABLE2: value2

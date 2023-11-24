@@ -200,7 +200,6 @@ $(HELMIFY): $(LOCALBIN)
 helm-build: helm helmify manifests kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG) && cd ../../
 	$(KUSTOMIZE) build config/default | $(HELMIFY) -crd-dir
-	cat hack/extra-values.yaml >> chart/validator-plugin-oci/values.yaml
 
 .PHONY: helm-package
 helm-package: generate manifests
