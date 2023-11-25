@@ -50,15 +50,11 @@ metricsService:
     protocol: TCP
     targetPort: https
   type: ClusterIP
-auth:
-  secrets:
-    # Specify the names of secrets in your cluster that contain a registries credentails.
-    # E.g.: https://github.com/spectrocloud-labs/validator/blob/main/chart/validator/templates/plugin-secret-oci.yaml
-    # - secretName: oci-registry-creds
-    # - secretName: ecr-registry-creds
 env:
   # Specify any environment variables you'd like to have defined in your deployment
-  # - name: VARIABLE_1
-  #   value: value_1
-  # - name: VARIABLE_2
-  #   value: value_2
+  # - name: HTTP_PROXY
+  #   value: http://192.168.1.100:8080
+  # - name: HTTPS_PROXY
+  #   value: http://192.168.1.100:8080
+  # - name: NO_PROXY
+  #   value: foo.bar.com,127.0.0.1
