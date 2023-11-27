@@ -50,9 +50,13 @@ metricsService:
     protocol: TCP
     targetPort: https
   type: ClusterIP
-auth:
-  secretName: aws-creds
-  createSecret: true
-  accessKeyId: ""
-  secretAccessKey: ""
-  sessionToken: ""
+env:
+  # Specify any environment variables you'd like to have defined in your deployment
+  # - name: HTTP_PROXY
+  #   value: http://192.168.1.100:8080
+  # - name: HTTPS_PROXY
+  #   value: http://192.168.1.100:8080
+  # - name: NO_PROXY
+  #   value: foo.bar.com,127.0.0.1
+# Optionally specify the name of the secret containing the proxy ca certificate
+# proxySecretName: proxy-cert
