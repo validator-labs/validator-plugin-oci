@@ -58,3 +58,5 @@ env:
   #   value: http://192.168.1.100:8080
   # - name: NO_PROXY
   #   value: foo.bar.com,127.0.0.1
+# Optionally specify the name of the secret containing the proxy ca certificate
+# proxySecretName: proxy-cert

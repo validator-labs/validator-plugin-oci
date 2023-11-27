@@ -22,6 +22,22 @@ spec:
       annotations:
         kubectl.kubernetes.io/default-container: manager
     spec:
+      {{- if .Values.proxySecretName }}
+      initContainers:
+      - name: init-certs
+        image: ubuntu
+        command: ["/bin/bash", "-c"]
+        args: ["apt-get update && apt-get install -y ca-certificates && update-ca-certificates && cp -r /etc/ssl/certs/* /certs/"]
+        volumeMounts:
+        - name: ca-pemstore
+          mountPath: "/usr/local/share/ca-certificates/"
+          readOnly: false
+        - name: certs
+          mountPath: "/certs"
+          readOnly: false
+        securityContext:
+          runAsNonRoot: false
+      {{- end }}
       containers:
       - args: {{- toYaml .Values.controllerManager.kubeRbacProxy.args | nindent 8 }}
         env:
@@ -44,6 +60,12 @@ spec:
           {{- if .Values.env }}
           {{- toYaml .Values.env | nindent 8 }}
           {{- end }}
+        {{- if .Values.proxySecretName }}
+        volumeMounts:
+        - name: certs
+          mountPath: "/etc/ssl/certs"
+          readOnly: false
+        {{- end }}
         image: {{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag | default .Chart.AppVersion }}
         livenessProbe:
           httpGet:
@@ -64,3 +86,11 @@ spec:
         runAsNonRoot: true
       serviceAccountName: {{ include "chart.fullname" . }}-controller-manager
       terminationGracePeriodSeconds: 10
+      {{- if .Values.proxySecretName }}
+      volumes:
+      - name: ca-pemstore
+        secret:
+          secretName: {{ .Values.proxySecretName }}
+      - name: certs
+        emptyDir: {}
+      {{- end}}
