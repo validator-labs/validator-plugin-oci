@@ -46,7 +46,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 		errMsg := "failed to setup http client transport"
 		s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "caCert", rule.CaCert)
 		s.updateResult(vr, []error{err}, errMsg, rule.Name())
-		return vr, nil
+		return vr, err
 	}
 
 	opts, err = setupAuthOpts(opts, rule.Host, username, password)
@@ -54,7 +54,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 		errMsg := "failed to setup authentication"
 		s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host, "auth", rule.Auth)
 		s.updateResult(vr, []error{err}, errMsg, rule.Name())
-		return vr, nil
+		return vr, err
 	}
 
 	errs := make([]error, 0)
@@ -72,7 +72,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 		}
 
 		s.updateResult(vr, errs, errMsg, rule.Name(), details...)
-		return vr, nil
+		return vr, err
 	}
 
 	errMsg := "failed to validate artifact in registry"
@@ -95,6 +95,10 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 		}
 	}
 	s.updateResult(vr, errs, errMsg, rule.Name(), details...)
+
+	if len(errs) > 0 {
+		return vr, errs[0]
+	}
 	return vr, nil
 }
 
