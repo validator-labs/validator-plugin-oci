@@ -131,10 +131,10 @@ var _ = BeforeSuite(func() {
 
 	err = (&OciValidatorReconciler{
 		Client: k8sManager.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("AwsValidator"),
+		Log:    ctrl.Log.WithName("controllers").WithName("OciValidator"),
 		Scheme: k8sManager.GetScheme(),
 	}).SetupWithManager(k8sManager)
-	Expect(err).ToNot(HaveOccurred(), "failed to start AwsValidator controller")
+	Expect(err).ToNot(HaveOccurred(), "failed to start OciValidator controller")
 
 	go func() {
 		defer GinkgoRecover()

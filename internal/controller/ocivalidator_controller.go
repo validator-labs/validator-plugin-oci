@@ -49,7 +49,7 @@ type OciValidatorReconciler struct {
 //+kubebuilder:rbac:groups=validation.spectrocloud.labs,resources=ocivalidators/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=validation.spectrocloud.labs,resources=ocivalidators/finalizers,verbs=update
 
-// Reconcile reconciles each rule found in each AWSValidator in the cluster and creates ValidationResults accordingly
+// Reconcile reconciles each rule found in each OCIValidator in the cluster and creates ValidationResults accordingly
 func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	r.Log.V(0).Info("Reconciling OciValidator", "name", req.Name, "namespace", req.Namespace)
 
