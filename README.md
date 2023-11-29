@@ -1,4 +1,4 @@
-[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/spectrocloud-labs/validator-plugin-azure/issues)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/spectrocloud-labs/validator-plugin-oci/issues)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 ![Build](https://github.com/spectrocloud-labs/validator-plugin-oci/actions/workflows/build_container.yaml/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/spectrocloud-labs/validator-plugin-oci)](https://goreportcard.com/report/github.com/spectrocloud-labs/validator-plugin-oci)
