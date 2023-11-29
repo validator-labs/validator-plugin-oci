@@ -27,16 +27,16 @@ spec:
       - name: init-certs
         image: {{ required ".Values.proxy.image is required!" .Values.proxy.image }}
         command: ["/bin/bash", "-c"]
-        args: ["apt-get update && apt-get install -y ca-certificates && update-ca-certificates && cp -r /etc/ssl/certs/* /certs/"]
+        args: ["update-ca-certificates && cp -r /etc/ca-certificates.conf /usr/share/ca-certificates /etc/ssl/certs"]
         volumeMounts:
         - name: ca-pemstore
-          mountPath: "/usr/local/share/ca-certificates/"
+          mountPath: /usr/local/share/ca-certificates
           readOnly: false
         - name: certs
-          mountPath: "/certs"
+          mountPath: /etc/ssl/certs
           readOnly: false
         securityContext:
-          runAsNonRoot: false
+          runAsNonRoot: true
       {{- end }}
       containers:
       - args: {{- toYaml .Values.controllerManager.kubeRbacProxy.args | nindent 8 }}
@@ -63,8 +63,16 @@ spec:
         {{- if .Values.proxy.enabled }}
         volumeMounts:
         - name: certs
-          mountPath: "/etc/ssl/certs"
-          readOnly: false
+          mountPath: /etc/ca-certificates.conf
+          subPath: ca-certificates.conf
+          readOnly: true
+        - name: certs
+          mountPath: /usr/share/ca-certificates
+          subPath: ca-certificates
+          readOnly: true
+        - name: certs
+          mountPath: /etc/ssl/certs
+          readOnly: true
         {{- end }}
         image: {{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag | default .Chart.AppVersion }}
         livenessProbe:
