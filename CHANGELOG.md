@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.2](https://github.com/spectrocloud-labs/validator-plugin-oci/compare/v0.0.1...v0.0.2) (2023-11-30)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/aws/aws-sdk-go-v2/config to v1.25.10 ([#44](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/44)) ([4e221d7](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/4e221d7cd8868c4677a84daaee5e1382c20f3ba5))
+* **deps:** update module github.com/aws/aws-sdk-go-v2/config to v1.25.9 ([#37](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/37)) ([74b6eae](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/74b6eae6b16df62c9866898b76d0ceaf95edbe4f))
+* **deps:** update module github.com/aws/aws-sdk-go-v2/service/ecr to v1.24.0 ([#39](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/39)) ([d6d4314](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/d6d4314c9e21a89c22542f099117bbb7ab20a5e4))
+* **deps:** update module github.com/aws/aws-sdk-go-v2/service/ecr to v1.24.1 ([#45](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/45)) ([9ba631c](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/9ba631cc4b624cbfd8941d64b451a61b77392775))
+* **deps:** update module github.com/google/go-containerregistry to v0.17.0 ([#42](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/42)) ([a6c2c58](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/a6c2c582ffa74a0c97a87f318f2b763029725037))
+* **deps:** update module github.com/spectrocloud-labs/validator to v0.0.26 ([#36](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/36)) ([2c18421](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/2c184212663c4ac97048b50fb2399f163f519036))
+* **deps:** update module github.com/spectrocloud-labs/validator to v0.0.27 ([#43](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/43)) ([1113a9e](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/1113a9ea320a34de327970093542681998959669))
+* fix link to oci issues in readme ([#41](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/41)) ([b3c1cea](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/b3c1cea77e46bab05727be8bca15b85f2687c6e4))
+* update leader election id ([#46](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/46)) ([976487b](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/976487bfe8edaebe638d3cf067f787d5ec2385b0))
+
 ## [0.0.1](https://github.com/spectrocloud-labs/validator-plugin-oci/compare/v0.0.1...v0.0.1) (2023-11-29)
 
 
