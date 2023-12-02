@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.25.11
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.9
-	github.com/aws/aws-sdk-go-v2/service/ecr v1.24.1
+	github.com/aws/aws-sdk-go-v2/service/ecr v1.24.2
 	github.com/go-logr/logr v1.3.0
 	github.com/google/go-containerregistry v0.17.0
 	github.com/onsi/ginkgo/v2 v2.13.2
