@@ -10,7 +10,7 @@ require (
 	github.com/google/go-containerregistry v0.17.0
 	github.com/onsi/ginkgo/v2 v2.13.2
 	github.com/onsi/gomega v1.30.0
-	github.com/spectrocloud-labs/validator v0.0.27
+	github.com/spectrocloud-labs/validator v0.0.28
 	github.com/stretchr/testify v1.8.4
 	k8s.io/api v0.28.4
 	k8s.io/apimachinery v0.28.4
