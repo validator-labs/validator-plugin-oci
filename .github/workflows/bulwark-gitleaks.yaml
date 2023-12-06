@@ -1,6 +1,8 @@
 name: BulwarkGitLeaks
 
-on: [pull_request]
+on:
+  pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: gitleaks-${{ github.ref }}
