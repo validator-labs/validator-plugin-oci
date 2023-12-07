@@ -76,7 +76,11 @@ spec:
                   required:
                   - host
                   type: object
+                maxItems: 5
                 type: array
+                x-kubernetes-validations:
+                - message: OciRegistryRules must have a unique Host
+                  rule: self.all(e, size(self.filter(x, x.host == e.host)) == 1)
             type: object
           status:
             description: OciValidatorStatus defines the observed state of OciValidator

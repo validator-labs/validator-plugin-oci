@@ -17,13 +17,13 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"fmt"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // OciValidatorSpec defines the desired state of OciValidator
 type OciValidatorSpec struct {
+	// +kubebuilder:validation:MaxItems=5
+	// +kubebuilder:validation:XValidation:message="OciRegistryRules must have a unique Host",rule="self.all(e, size(self.filter(x, x.host == e.host)) == 1)"
 	OciRegistryRules []OciRegistryRule `json:"ociRegistryRules,omitempty" yaml:"ociRegistryRules,omitempty"`
 }
 
@@ -46,7 +46,7 @@ type OciRegistryRule struct {
 }
 
 func (r OciRegistryRule) Name() string {
-	return fmt.Sprintf("%s/%d", r.Host, len(r.Artifacts))
+	return r.Host
 }
 
 type Artifact struct {
