@@ -1,7 +1,7 @@
 apiVersion: validation.spectrocloud.labs/v1alpha1
 kind: OciValidator
 metadata:
-  name: ocivalidator-sample-oci-registry
+  name: ocivalidator-sample-public-oci-registries
 spec:
   ociRegistryRules:
     # public oci registry artifact with tag

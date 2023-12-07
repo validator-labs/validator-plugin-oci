@@ -1,7 +1,7 @@
 apiVersion: validation.spectrocloud.labs/v1alpha1
 kind: OciValidator
 metadata:
-  name: ocivalidator-sample-oci-registry
+  name: ocivalidator-sample-private-oci-registries
 spec:
   ociRegistryRules:
     # private oci registry artifacts requiring auth and a caCert
