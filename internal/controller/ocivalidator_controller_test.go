@@ -33,7 +33,7 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 		Spec: v1alpha1.OciValidatorSpec{
 			OciRegistryRules: []v1alpha1.OciRegistryRule{
 				{
-					Host:      "foo.registry.io",
+					Host:      "foo1.registry.io",
 					Artifacts: []v1alpha1.Artifact{},
 				},
 				{
@@ -46,7 +46,7 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					},
 				},
 				{
-					Host:   "foo.registry.io",
+					Host:   "foo2.registry.io",
 					CaCert: "dummy-ca-cert",
 					Artifacts: []v1alpha1.Artifact{
 						{
@@ -56,7 +56,7 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					},
 				},
 				{
-					Host: "foo.registry.io",
+					Host: "foo3.registry.io",
 					Auth: v1alpha1.Auth{
 						SecretName: "mySecret",
 					},
