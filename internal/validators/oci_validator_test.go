@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/go-logr/logr"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/name"
@@ -285,14 +286,14 @@ func TestValidateRepos(t *testing.T) {
 	s1 := httptest.NewServer(registry.New())
 	defer s1.Close()
 
-	hostWithArtifact, err := uploadArtifact(s1, validArtifact)
+	urlWithArtifact, err := uploadArtifact(s1, validArtifact)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	s2 := httptest.NewServer(registry.New())
 	defer s1.Close()
-	hostNoArtifact, err := url.Parse(s2.URL)
+	urlNoArtifact, err := url.Parse(s2.URL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -305,12 +306,12 @@ func TestValidateRepos(t *testing.T) {
 
 	testCases := []testCase{
 		{
-			host:           hostWithArtifact.Host,
+			host:           urlWithArtifact.Host,
 			expectedDetail: "",
 			expectErr:      false,
 		},
 		{
-			host:           hostNoArtifact.Host,
+			host:           urlNoArtifact.Host,
 			expectedDetail: "no repositories found in registry",
 			expectErr:      false,
 		},
@@ -330,6 +331,64 @@ func TestValidateRepos(t *testing.T) {
 			assert.Len(t, details, 1)
 			assert.Contains(t, details[0], tc.expectedDetail)
 		}
+
+		if tc.expectErr {
+			assert.NotNil(t, err)
+		} else {
+			assert.NoError(t, err)
+		}
+	}
+}
+
+func TestReconcileOciRegistryRule(t *testing.T) {
+	s1 := httptest.NewServer(registry.New())
+	defer s1.Close()
+
+	url, err := uploadArtifact(s1, validArtifact)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	type testCase struct {
+		rule      v1alpha1.OciRegistryRule
+		expectErr bool
+	}
+
+	testCases := []testCase{
+		{
+			rule: v1alpha1.OciRegistryRule{
+				Host: url.Host,
+			},
+			expectErr: false,
+		},
+		{
+			rule: v1alpha1.OciRegistryRule{
+				Host: url.Host,
+				Artifacts: []v1alpha1.Artifact{
+					{
+						Ref: validArtifact,
+					},
+				},
+			},
+			expectErr: false,
+		},
+		{
+			rule: v1alpha1.OciRegistryRule{
+				Host: url.Host,
+				Artifacts: []v1alpha1.Artifact{
+					{
+						Ref: invalidArtifact,
+					},
+				},
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		l := logr.New(nil)
+		s := NewOciRuleService(l)
+		_, err := s.ReconcileOciRegistryRule(tc.rule, "", "")
 
 		if tc.expectErr {
 			assert.NotNil(t, err)
