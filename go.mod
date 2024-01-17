@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.15
 	github.com/aws/aws-sdk-go-v2/service/ecr v1.24.7
 	github.com/go-logr/logr v1.4.1
-	github.com/google/go-containerregistry v0.17.0
+	github.com/google/go-containerregistry v0.18.0
 	github.com/onsi/ginkgo/v2 v2.14.0
 	github.com/onsi/gomega v1.30.0
 	github.com/spectrocloud-labs/validator v0.0.32
