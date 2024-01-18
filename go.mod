@@ -9,7 +9,7 @@ require (
 	github.com/go-logr/logr v1.4.1
 	github.com/google/go-containerregistry v0.18.0
 	github.com/onsi/ginkgo/v2 v2.15.0
-	github.com/onsi/gomega v1.30.0
+	github.com/onsi/gomega v1.31.0
 	github.com/spectrocloud-labs/validator v0.0.32
 	github.com/stretchr/testify v1.8.4
 	k8s.io/api v0.28.4
