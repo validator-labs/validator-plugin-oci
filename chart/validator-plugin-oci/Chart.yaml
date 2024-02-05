@@ -1,6 +1,8 @@
 apiVersion: v2
 name: validator-plugin-oci
-description: Perform various OCI validations (registry authentication, downloading artifacts, etc.)
+description: >-
+  Perform various OCI validations (registry authentication, downloading
+  artifacts, etc.)
 type: application
-version: 0.0.2  # x-release-please-version
-appVersion: "0.0.2"  # x-release-please-version
+version: 0.0.3
+appVersion: 0.0.2
