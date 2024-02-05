@@ -84,7 +84,6 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if err != nil {
 			r.Log.V(0).Error(err, "failed to reconcile OCI Registry rule")
 		}
-		// TODO: add the resultCount
 		vres.SafeUpdateValidationResult(r.Client, nn, validationResult, validator.Spec.ResultCount(), err, r.Log)
 	}
 
