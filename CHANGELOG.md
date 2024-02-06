@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.4](https://github.com/spectrocloud-labs/validator-plugin-oci/compare/v0.0.3...v0.0.4) (2024-02-06)
+
+
+### Other
+
+* update validator ([7717344](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/7717344f5de4406b89caf5923a05370b8e0844a3))
+
 ## [0.0.3](https://github.com/spectrocloud-labs/validator-plugin-oci/compare/v0.0.2...v0.0.3) (2024-02-05)
 
 
