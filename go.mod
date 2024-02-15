@@ -1,6 +1,6 @@
 module github.com/spectrocloud-labs/validator-plugin-oci
 
-go 1.21.6
+go 1.22.0
 
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.0
