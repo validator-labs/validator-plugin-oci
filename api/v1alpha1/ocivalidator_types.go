@@ -59,8 +59,11 @@ type Artifact struct {
 	// When no tag or digest are specified, the default tag "latest" is used.
 	Ref string `json:"ref" yaml:"ref"`
 
-	// Download specifies whether a download attempt should be made for the artifact
-	Download bool `json:"download,omitempty" yaml:"download,omitempty"`
+	// LayerValidation specifies whether deep validation of the artifact layers should be performed.
+	// The existence of layers is always validated, but this option allows for the deep validation of the layers.
+	// See more details here:
+	// https://github.com/google/go-containerregistry/blob/8dadbe76ff8c20d0e509406f04b7eade43baa6c1/pkg/v1/validate/image.go#L105
+	LayerValidation bool `json:"layerValidation,omitempty" yaml:"layerValidation,omitempty"`
 }
 
 type Auth struct {

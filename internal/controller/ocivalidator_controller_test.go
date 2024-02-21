@@ -40,8 +40,8 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					Host: "foo.registry.io",
 					Artifacts: []v1alpha1.Artifact{
 						{
-							Ref:      "foo/bar:latest",
-							Download: true,
+							Ref:             "foo/bar:latest",
+							LayerValidation: true,
 						},
 					},
 				},
@@ -50,8 +50,8 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					CaCert: "dummy-ca-cert",
 					Artifacts: []v1alpha1.Artifact{
 						{
-							Ref:      "foo/bar:latest",
-							Download: true,
+							Ref:             "foo/bar:latest",
+							LayerValidation: true,
 						},
 					},
 				},
@@ -62,8 +62,8 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					},
 					Artifacts: []v1alpha1.Artifact{
 						{
-							Ref:      "foo/bar:latest",
-							Download: true,
+							Ref:             "foo/bar:latest",
+							LayerValidation: true,
 						},
 					},
 				},
