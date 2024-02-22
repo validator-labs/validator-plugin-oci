@@ -62,8 +62,7 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					},
 					Artifacts: []v1alpha1.Artifact{
 						{
-							Ref:             "foo/bar:latest",
-							LayerValidation: true,
+							Ref: "foo/bar:latest",
 						},
 					},
 				},
