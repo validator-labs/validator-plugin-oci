@@ -5,18 +5,19 @@ metadata:
 spec:
   ociRegistryRules:
     # public oci registry artifact with tag
-    - host: "registry-1.docker.io"
+    - host: "docker.io"
       artifacts:
-        - ref: "bitnamicharts/mysql:9.14.3"
+        - ref: "library/redis:7.2.4"
+          layerValidation: true
 
     # public oci registry artifact referenced by default "latest" tag
     - host: "registry.hub.docker.com"
       artifacts:
         - ref: "ahmadibraspectrocloud/kubebuilder-cron"
-          download: true
+          layerValidation: true
 
     # public ecr registry artifact referenced by default "latest" tag
     - host: "public.ecr.aws"
       artifacts:
         - ref: "u5n5j0b4/oci-test-public"
-          download: true
+          layerValidation: true
