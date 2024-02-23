@@ -270,7 +270,7 @@ func TestValidateReference(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		detail, err := validateReference(tc.ref, tc.layerValidation, [][]byte{}, []remote.Option{remote.WithAuth(authn.Anonymous)})
+		detail, err := validateReference(tc.ref, tc.layerValidation, nil, []remote.Option{remote.WithAuth(authn.Anonymous)})
 
 		if tc.expectErr {
 			assert.NotNil(t, err)
@@ -323,7 +323,7 @@ func TestValidateRepos(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		details, err := validateRepos(context.Background(), tc.host, []remote.Option{remote.WithAuth(authn.Anonymous)}, [][]byte{}, &types.ValidationResult{})
+		details, err := validateRepos(context.Background(), tc.host, []remote.Option{remote.WithAuth(authn.Anonymous)}, nil, &types.ValidationResult{})
 
 		if tc.expectedDetail == "" {
 			assert.Empty(t, details)
@@ -388,7 +388,7 @@ func TestReconcileOciRegistryRule(t *testing.T) {
 	for _, tc := range testCases {
 		l := logr.New(nil)
 		s := NewOciRuleService(l)
-		_, err := s.ReconcileOciRegistryRule(tc.rule, "", "", [][]byte{})
+		_, err := s.ReconcileOciRegistryRule(tc.rule, "", "", nil)
 
 		if tc.expectErr {
 			assert.NotNil(t, err)

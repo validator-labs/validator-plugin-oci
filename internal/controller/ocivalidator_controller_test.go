@@ -33,30 +33,43 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 		Spec: v1alpha1.OciValidatorSpec{
 			OciRegistryRules: []v1alpha1.OciRegistryRule{
 				{
+					RuleName:  "empty artifact list",
 					Host:      "foo1.registry.io",
 					Artifacts: []v1alpha1.Artifact{},
+					SignatureVerification: v1alpha1.SignatureVerification{
+						Provider: "cosign",
+					},
 				},
 				{
-					Host: "foo.registry.io",
+					RuleName: "layer validation enabled",
+					Host:     "foo.registry.io",
 					Artifacts: []v1alpha1.Artifact{
 						{
 							Ref:             "foo/bar:latest",
 							LayerValidation: true,
 						},
 					},
+					SignatureVerification: v1alpha1.SignatureVerification{
+						Provider: "cosign",
+					},
 				},
 				{
-					Host:   "foo2.registry.io",
-					CaCert: "dummy-ca-cert",
+					RuleName: "ca cert provided",
+					Host:     "foo2.registry.io",
+					CaCert:   "dummy-ca-cert",
 					Artifacts: []v1alpha1.Artifact{
 						{
 							Ref:             "foo/bar:latest",
 							LayerValidation: true,
 						},
 					},
+					SignatureVerification: v1alpha1.SignatureVerification{
+						Provider: "cosign",
+					},
 				},
 				{
-					Host: "foo3.registry.io",
+					RuleName: "auth secret provided",
+					Host:     "foo3.registry.io",
 					Auth: v1alpha1.Auth{
 						SecretName: "mySecret",
 					},
@@ -64,6 +77,25 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 						{
 							Ref: "foo/bar:latest",
 						},
+					},
+					SignatureVerification: v1alpha1.SignatureVerification{
+						Provider: "cosign",
+					},
+				},
+				{
+					RuleName: "signature validation enabled",
+					Host:     "foo3.registry.io",
+					Auth: v1alpha1.Auth{
+						SecretName: "mySecret",
+					},
+					Artifacts: []v1alpha1.Artifact{
+						{
+							Ref: "foo/bar:latest",
+						},
+					},
+					SignatureVerification: v1alpha1.SignatureVerification{
+						Provider:   "cosign",
+						SecretName: "cosign-keys",
 					},
 				},
 			},
