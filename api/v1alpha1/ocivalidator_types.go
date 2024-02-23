@@ -46,6 +46,9 @@ type OciRegistryRule struct {
 
 	// CaCert is the base64 encoded CA Certificate
 	CaCert string `json:"caCert,omitempty" yaml:"caCert,omitempty"`
+
+	// SignatureVerification provides the option to verify the signature of the image
+	SignatureVerification SignatureVerification `json:"signatureVerification,omitempty" yaml:"signatureVerification,omitempty"`
 }
 
 func (r OciRegistryRule) Name() string {
@@ -70,6 +73,16 @@ type Artifact struct {
 }
 
 type Auth struct {
+	SecretName string `json:"secretName" yaml:"secretName"`
+}
+
+type SignatureVerification struct {
+	// Provider specifies the technology used to sign the OCI Artifact
+	// +kubebuilder:validation:Enum=cosign
+	// +kubebuilder:default:=cosign
+	Provider string `json:"provider" yaml:"provider"`
+
+	// SecretName is the name of the Kubernetes Secret that contains trusted public keys used to sign artifacts in the OciRegistryRule
 	SecretName string `json:"secretName" yaml:"secretName"`
 }
 
