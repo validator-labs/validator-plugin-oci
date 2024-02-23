@@ -9,9 +9,9 @@ spec:
       host: "oci-airgap.spectrocloud.dev"
       artifacts:
         - ref: "spectro-images/gcr.io/spectro-images-fips/kube-apiserver:v1.26.5"
-          download: true
+          layerValidation: true
         - ref: "spectro-images/gcr.io/spectro-images-fips/kube-scheduler@sha256:65ae8fd8713ede1977d26991821ba7eb3beb48ec575b31947568f30dbdd36862"
-          download: true
+          layerValidation: true
         - ref: "spectro-packs/spectro-packs/archive/vault:0.25.0"
         - ref: "spectro-packs/spectro-packs/archive/spectro-mgmt@sha256:ddbac6e7732bf90a4e674a01bf279ce27ea8691530b8d209e6fe77477e0fa406"
       auth:

@@ -75,9 +75,10 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 	}
 
+	ociRuleService := val.NewOciRuleService(r.Log)
+
 	// OCI Registry rules
 	for _, rule := range validator.Spec.OciRegistryRules {
-		ociRuleService := val.NewOciRuleService(r.Log)
 		username, password := r.secretKeyAuth(req, rule)
 
 		validationResult, err := ociRuleService.ReconcileOciRegistryRule(rule, username, password)

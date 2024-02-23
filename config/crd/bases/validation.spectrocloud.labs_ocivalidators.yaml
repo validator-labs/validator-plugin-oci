@@ -42,9 +42,12 @@ spec:
                         that should be validated.
                       items:
                         properties:
-                          download:
-                            description: Download specifies whether a download attempt
-                              should be made for the artifact
+                          layerValidation:
+                            description: 'LayerValidation specifies whether deep validation
+                              of the artifact layers should be performed. The existence
+                              of layers is always validated, but this option allows
+                              for the deep validation of the layers. See more details
+                              here: https://github.com/google/go-containerregistry/blob/8dadbe76ff8c20d0e509406f04b7eade43baa6c1/pkg/v1/validate/image.go#L105'
                             type: boolean
                           ref:
                             description: "Ref is the path to the artifact in the host

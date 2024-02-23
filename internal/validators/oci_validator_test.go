@@ -242,35 +242,35 @@ func TestValidateReference(t *testing.T) {
 	}
 
 	type testCase struct {
-		ref            name.Reference
-		download       bool
-		expectedDetail string
-		expectErr      bool
+		ref             name.Reference
+		layerValidation bool
+		expectedDetail  string
+		expectErr       bool
 	}
 
 	testCases := []testCase{
 		{
-			ref:            validRef,
-			download:       false,
-			expectedDetail: "",
-			expectErr:      false,
+			ref:             validRef,
+			layerValidation: false,
+			expectedDetail:  "",
+			expectErr:       false,
 		},
 		{
-			ref:            validRef,
-			download:       true,
-			expectedDetail: "",
-			expectErr:      false,
+			ref:             validRef,
+			layerValidation: true,
+			expectedDetail:  "",
+			expectErr:       false,
 		},
 		{
-			ref:            invalidRef,
-			download:       false,
-			expectedDetail: "failed to get descriptor for artifact",
-			expectErr:      true,
+			ref:             invalidRef,
+			layerValidation: false,
+			expectedDetail:  "failed to get descriptor for artifact",
+			expectErr:       true,
 		},
 	}
 
 	for _, tc := range testCases {
-		detail, err := validateReference(tc.ref, tc.download, []remote.Option{remote.WithAuth(authn.Anonymous)})
+		detail, err := validateReference(tc.ref, tc.layerValidation, []remote.Option{remote.WithAuth(authn.Anonymous)})
 
 		if tc.expectErr {
 			assert.NotNil(t, err)

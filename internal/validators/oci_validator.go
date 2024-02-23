@@ -85,7 +85,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 			continue
 		}
 
-		detail, err := validateReference(ref, artifact.Download, opts)
+		detail, err := validateReference(ref, artifact.LayerValidation, opts)
 		if err != nil {
 			errs = append(errs, err)
 			s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host, "artifact", artifact)
@@ -115,27 +115,30 @@ func generateRef(registry, artifact string, vr *types.ValidationResult) (name.Re
 }
 
 // validateArtifact validates a single artifact within a registry. This function is to be used when a path to a repo or an individual artifact is provided
-func validateReference(ref name.Reference, download bool, opts []remote.Option) (string, error) {
+func validateReference(ref name.Reference, fullLayerValidation bool, opts []remote.Option) (string, error) {
 	// validate artifact existence by issuing a HEAD request
 	_, err := remote.Head(ref, opts...)
 	if err != nil {
 		return fmt.Sprintf("failed to get descriptor for artifact %s", ref.Name()), err
 	}
 
-	// TODO: add signature verification here
-
-	if download {
-		// download image without storing it on disk
-		img, err := remote.Image(ref, opts...)
-		if err != nil {
-			return fmt.Sprintf("failed to download artifact %s", ref.Name()), err
-		}
-
-		err = validate.Image(img)
-		if err != nil {
-			return fmt.Sprintf("failed validation for artifact %s", ref.Name()), err
-		}
+	// download image without storing it on disk
+	img, err := remote.Image(ref, opts...)
+	if err != nil {
+		return fmt.Sprintf("failed to download artifact %s", ref.Name()), err
 	}
+
+	var validateOpts []validate.Option
+	if !fullLayerValidation {
+		validateOpts = append(validateOpts, validate.Fast)
+	}
+
+	err = validate.Image(img, validateOpts...)
+	if err != nil {
+		return fmt.Sprintf("failed validation for artifact %s", ref.Name()), err
+	}
+
+	// TODO: add signature verification here
 
 	return "", nil
 }
