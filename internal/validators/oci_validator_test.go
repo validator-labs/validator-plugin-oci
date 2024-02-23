@@ -388,7 +388,7 @@ func TestReconcileOciRegistryRule(t *testing.T) {
 	for _, tc := range testCases {
 		l := logr.New(nil)
 		s := NewOciRuleService(l)
-		_, err := s.ReconcileOciRegistryRule(tc.rule, "", "")
+		_, err := s.ReconcileOciRegistryRule(tc.rule, "", "", [][]byte{})
 
 		if tc.expectErr {
 			assert.NotNil(t, err)

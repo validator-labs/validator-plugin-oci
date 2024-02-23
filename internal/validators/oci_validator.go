@@ -38,7 +38,7 @@ func NewOciRuleService(log logr.Logger) *OciRuleService {
 }
 
 // ReconcileOciRegistryRule reconciles an OCI registry rule from the OCIValidator config
-func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule, username, password string) (*vapitypes.ValidationResult, error) {
+func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule, username, password string, pubKeys [][]byte) (*vapitypes.ValidationResult, error) {
 	vr := buildValidationResult(rule)
 
 	opts, err := setupTransportOpts([]remote.Option{}, rule.CaCert)

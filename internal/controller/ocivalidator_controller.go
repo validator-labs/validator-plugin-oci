@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -80,8 +81,9 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	// OCI Registry rules
 	for _, rule := range validator.Spec.OciRegistryRules {
 		username, password := r.secretKeyAuth(req, rule)
+		pubKeys := r.signaturePubKeys(req, rule)
 
-		validationResult, err := ociRuleService.ReconcileOciRegistryRule(rule, username, password)
+		validationResult, err := ociRuleService.ReconcileOciRegistryRule(rule, username, password, pubKeys)
 		if err != nil {
 			r.Log.V(0).Error(err, "failed to reconcile OCI Registry rule")
 		}
@@ -105,15 +107,16 @@ func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.O
 	}
 
 	authSecret := &corev1.Secret{}
-	nn := ktypes.NamespacedName{Name: rule.Auth.SecretName, Namespace: req.Namespace}
+	secretName := rule.Auth.SecretName
+	nn := ktypes.NamespacedName{Name: secretName, Namespace: req.Namespace}
 
 	if err := r.Get(context.Background(), nn, authSecret); err != nil {
 		if apierrs.IsNotFound(err) {
 			// no secrets found, set creds to empty string
-			r.Log.V(0).Error(err, fmt.Sprintf("auth secret %s not found for rule %s", rule.Auth.SecretName, rule.Name()))
+			r.Log.V(0).Error(err, fmt.Sprintf("Auth secret %s not found for rule %s", secretName, rule.Name()))
 			return "", ""
 		} else {
-			r.Log.V(0).Error(err, fmt.Sprintf("failed to fetch auth secret %s for rule %s", rule.Auth.SecretName, rule.Name()))
+			r.Log.V(0).Error(err, fmt.Sprintf("Failed to fetch auth secret %s for rule %s", secretName, rule.Name()))
 			return "", ""
 		}
 	}
@@ -121,15 +124,48 @@ func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.O
 	errMalformedSecret := fmt.Errorf("malformed secret %s/%s", authSecret.Namespace, authSecret.Name)
 	username, ok := authSecret.Data["username"]
 	if !ok {
-		r.Log.V(0).Error(errMalformedSecret, "Auth secret missing username, defaulting to empty username", "name", rule.Auth.SecretName, "namespace", req.Namespace)
+		r.Log.V(0).Error(errMalformedSecret, "Auth secret missing username, defaulting to empty username", "name", secretName, "namespace", req.Namespace)
 	}
 
 	password, ok := authSecret.Data["password"]
 	if !ok {
-		r.Log.V(0).Error(errMalformedSecret, "Auth secret missing password, defaulting to empty password", "name", rule.Auth.SecretName, "namespace", req.Namespace)
+		r.Log.V(0).Error(errMalformedSecret, "Auth secret missing password, defaulting to empty password", "name", secretName, "namespace", req.Namespace)
 	}
 
 	return string(username), string(password)
+}
+
+func (r *OciValidatorReconciler) signaturePubKeys(req ctrl.Request, rule v1alpha1.OciRegistryRule) [][]byte {
+	if rule.SignatureVerification.SecretName == "" {
+		return nil
+	}
+
+	pubKeysSecret := &corev1.Secret{}
+	secretName := rule.SignatureVerification.SecretName
+	nn := ktypes.NamespacedName{Name: secretName, Namespace: req.Namespace}
+
+	// make a slice of byte slices
+	pubKeys := make([][]byte, 0)
+
+	if err := r.Get(context.Background(), nn, pubKeysSecret); err != nil {
+		if apierrs.IsNotFound(err) {
+			// no secrets found, set creds to empty string
+			r.Log.V(0).Error(err, fmt.Sprintf("Public Keys secret %s not found for rule %s", secretName, rule.Name()))
+			return pubKeys
+		} else {
+			r.Log.V(0).Error(err, fmt.Sprintf("Failed to fetch Public Keys secret %s for rule %s", secretName, rule.Name()))
+			return pubKeys
+		}
+	}
+
+	for k, data := range pubKeysSecret.Data {
+		// search fro public keys in the secret
+		if strings.HasSuffix(k, ".pub") {
+			pubKeys = append(pubKeys, data)
+		}
+	}
+
+	return pubKeys
 }
 
 func buildValidationResult(validator *v1alpha1.OciValidator) *vapi.ValidationResult {
