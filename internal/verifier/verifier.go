@@ -7,9 +7,7 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"github.com/sigstore/cosign/v2/cmd/cosign/cli/fulcio"
 	coptions "github.com/sigstore/cosign/v2/cmd/cosign/cli/options"
-	"github.com/sigstore/cosign/v2/cmd/cosign/cli/rekor"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	ociremote "github.com/sigstore/cosign/v2/pkg/oci/remote"
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
@@ -23,9 +21,8 @@ type Verifier interface {
 
 // options is a struct that holds options for verifier.
 type options struct {
-	PublicKey  []byte
-	ROpt       []remote.Option
-	Identities []cosign.Identity
+	PublicKey []byte
+	ROpt      []remote.Option
 }
 
 // Options is a function that configures the options applied to a Verifier.
@@ -66,57 +63,29 @@ func NewCosignVerifier(ctx context.Context, opts ...Options) (*CosignVerifier, e
 		return nil, err
 	}
 
-	checkOpts.Identities = o.Identities
 	if o.ROpt != nil {
 		co = append(co, ociremote.WithRemoteOptions(o.ROpt...))
 	}
 
 	checkOpts.RegistryClientOpts = co
 
-	// If a public key is provided, it will use it to verify the signature.
-	// If there is no public key provided, it will try keyless verification.
-	// https://github.com/sigstore/cosign/blob/main/KEYLESS.md.
-	if len(o.PublicKey) > 0 {
-		checkOpts.Offline = true
-		// TODO(hidde): this is an oversight in our implementation. As it is
-		//  theoretically possible to have a custom PK, without disabling tlog.
-		checkOpts.IgnoreTlog = true
+	if len(o.PublicKey) == 0 {
+		return nil, fmt.Errorf("public key required for cosign verifier")
+	}
 
-		pubKeyRaw, err := cryptoutils.UnmarshalPEMToPublicKey(o.PublicKey)
-		if err != nil {
-			return nil, err
-		}
+	checkOpts.Offline = true
+	// TODO(hidde): this is an oversight in our implementation. As it is
+	//  theoretically possible to have a custom PK, without disabling tlog.
+	checkOpts.IgnoreTlog = true
 
-		checkOpts.SigVerifier, err = signature.LoadVerifier(pubKeyRaw, crypto.SHA256)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		checkOpts.RekorClient, err = rekor.NewClient(coptions.DefaultRekorURL)
-		if err != nil {
-			return nil, fmt.Errorf("unable to create Rekor client: %w", err)
-		}
+	pubKeyRaw, err := cryptoutils.UnmarshalPEMToPublicKey(o.PublicKey)
+	if err != nil {
+		return nil, err
+	}
 
-		// This performs an online fetch of the Rekor public keys, but this is needed
-		// for verifying tlog entries (both online and offline).
-		// TODO(hidde): above note is important to keep in mind when we implement
-		//  "offline" tlog above.
-		if checkOpts.RekorPubKeys, err = cosign.GetRekorPubs(ctx); err != nil {
-			return nil, fmt.Errorf("unable to get Rekor public keys: %w", err)
-		}
-
-		checkOpts.CTLogPubKeys, err = cosign.GetCTLogPubs(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("unable to get CTLog public keys: %w", err)
-		}
-
-		if checkOpts.RootCerts, err = fulcio.GetRoots(); err != nil {
-			return nil, fmt.Errorf("unable to get Fulcio root certs: %w", err)
-		}
-
-		if checkOpts.IntermediateCerts, err = fulcio.GetIntermediates(); err != nil {
-			return nil, fmt.Errorf("unable to get Fulcio intermediate certs: %w", err)
-		}
+	checkOpts.SigVerifier, err = signature.LoadVerifier(pubKeyRaw, crypto.SHA256)
+	if err != nil {
+		return nil, err
 	}
 
 	return &CosignVerifier{
