@@ -23,7 +23,7 @@ import (
 // OciValidatorSpec defines the desired state of OciValidator
 type OciValidatorSpec struct {
 	// +kubebuilder:validation:MaxItems=5
-	// +kubebuilder:validation:XValidation:message="OciRegistryRules must have a unique Host",rule="self.all(e, size(self.filter(x, x.host == e.host)) == 1)"
+	// +kubebuilder:validation:XValidation:message="OciRegistryRules must have a unique RuleName",rule="self.all(e, size(self.filter(x, x.name == e.name)) == 1)"
 	OciRegistryRules []OciRegistryRule `json:"ociRegistryRules,omitempty" yaml:"ociRegistryRules,omitempty"`
 }
 
@@ -32,6 +32,9 @@ func (s OciValidatorSpec) ResultCount() int {
 }
 
 type OciRegistryRule struct {
+	// Name is the name of the rule
+	RuleName string `json:"name" yaml:"name"`
+
 	// Host is a reference to the host URL of an OCI compliant registry
 	Host string `json:"host" yaml:"host"`
 
@@ -46,7 +49,7 @@ type OciRegistryRule struct {
 }
 
 func (r OciRegistryRule) Name() string {
-	return r.Host
+	return r.RuleName
 }
 
 type Artifact struct {

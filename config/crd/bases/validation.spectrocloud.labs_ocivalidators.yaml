@@ -74,14 +74,18 @@ spec:
                       description: Host is a reference to the host URL of an OCI compliant
                         registry
                       type: string
+                    name:
+                      description: Name is the name of the rule
+                      type: string
                   required:
                   - host
+                  - name
                   type: object
                 maxItems: 5
                 type: array
                 x-kubernetes-validations:
-                - message: OciRegistryRules must have a unique Host
-                  rule: self.all(e, size(self.filter(x, x.host == e.host)) == 1)
+                - message: OciRegistryRules must have a unique RuleName
+                  rule: self.all(e, size(self.filter(x, x.name == e.name)) == 1)
             type: object
           status:
             description: OciValidatorStatus defines the observed state of OciValidator
