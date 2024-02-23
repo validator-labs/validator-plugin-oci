@@ -25,7 +25,6 @@ spec:
         - ref: "ahmadibraspectrocloud/validator-plugin-oci:signed"
           layerValidation: true
       signatureVerification:
-        provider: "cosign"
         secretName: "cosign-public-keys"
 
     # public ecr registry artifact referenced by default "latest" tag
