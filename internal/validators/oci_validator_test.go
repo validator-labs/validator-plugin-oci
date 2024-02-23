@@ -270,7 +270,7 @@ func TestValidateReference(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		detail, err := validateReference(tc.ref, tc.layerValidation, []remote.Option{remote.WithAuth(authn.Anonymous)})
+		detail, err := validateReference(tc.ref, tc.layerValidation, [][]byte{}, []remote.Option{remote.WithAuth(authn.Anonymous)})
 
 		if tc.expectErr {
 			assert.NotNil(t, err)
@@ -323,7 +323,7 @@ func TestValidateRepos(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		details, err := validateRepos(context.Background(), tc.host, []remote.Option{remote.WithAuth(authn.Anonymous)}, &types.ValidationResult{})
+		details, err := validateRepos(context.Background(), tc.host, []remote.Option{remote.WithAuth(authn.Anonymous)}, [][]byte{}, &types.ValidationResult{})
 
 		if tc.expectedDetail == "" {
 			assert.Empty(t, details)
