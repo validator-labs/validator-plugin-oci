@@ -244,6 +244,7 @@ func TestValidateReference(t *testing.T) {
 	type testCase struct {
 		ref             name.Reference
 		layerValidation bool
+		pubKeys         [][]byte
 		expectedDetail  string
 		expectErr       bool
 	}
@@ -252,33 +253,54 @@ func TestValidateReference(t *testing.T) {
 		{
 			ref:             validRef,
 			layerValidation: false,
+			pubKeys:         nil,
 			expectedDetail:  "",
 			expectErr:       false,
 		},
 		{
 			ref:             validRef,
 			layerValidation: true,
+			pubKeys:         nil,
 			expectedDetail:  "",
 			expectErr:       false,
 		},
 		{
 			ref:             invalidRef,
 			layerValidation: false,
+			pubKeys:         nil,
 			expectedDetail:  "failed to get descriptor for artifact",
 			expectErr:       true,
+		},
+		{
+			ref:             validRef,
+			layerValidation: true,
+			pubKeys:         [][]byte{[]byte("invalid-pub-key-1"), []byte("invalid-pub-key-2")},
+			expectedDetail:  "failed to verify signature for artifact",
+			expectErr:       true,
+		},
+		{
+			ref:             validRef,
+			layerValidation: true,
+			pubKeys: [][]byte{
+				[]byte(`-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKPuCo9AmJCpqGWhefjbhkFcr1GA3
+iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
+-----END PUBLIC KEY-----`),
+			},
+			expectedDetail: "failed to verify signature for artifact",
+			expectErr:      true,
 		},
 	}
 
 	for _, tc := range testCases {
-		detail, err := validateReference(tc.ref, tc.layerValidation, nil, []remote.Option{remote.WithAuth(authn.Anonymous)})
+		detail, err := validateReference(tc.ref, tc.layerValidation, tc.pubKeys, []remote.Option{remote.WithAuth(authn.Anonymous)})
 
-		if tc.expectErr {
-			assert.NotNil(t, err)
-			assert.Contains(t, detail, tc.expectedDetail)
-		} else {
+		if tc.expectedDetail == "" {
 			assert.Empty(t, detail)
-			assert.NoError(t, err)
+		} else {
+			assert.Contains(t, detail, tc.expectedDetail)
 		}
+		assert.Equal(t, tc.expectErr, err != nil)
 	}
 }
 
