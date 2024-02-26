@@ -66,6 +66,10 @@ spec:
                         registry
                       properties:
                         secretName:
+                          description: SecretName is the name of the Kubernetes Secret
+                            that exists in the same namespace as the OciValidator
+                            and that contains the credentials used to authenticate
+                            to the OCI Registry
                           type: string
                       required:
                       - secretName
@@ -93,8 +97,9 @@ spec:
                           type: string
                         secretName:
                           description: SecretName is the name of the Kubernetes Secret
-                            that contains trusted public keys used to sign artifacts
-                            in the OciRegistryRule
+                            that exists in the same namespace as the OciValidator
+                            and that contains the trusted public keys used to sign
+                            artifacts in the OciRegistryRule
                           type: string
                       required:
                       - provider

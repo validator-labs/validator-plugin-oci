@@ -211,7 +211,8 @@ func TestSetupAuthOpts(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		opts, err := setupAuthOpts(tc.inputOpts, tc.registryName, tc.username, tc.password)
+		ctx := context.Background()
+		opts, err := setupAuthOpts(ctx, tc.inputOpts, tc.registryName, tc.username, tc.password)
 
 		if tc.expectErr {
 			assert.NotNil(t, err)
@@ -293,7 +294,8 @@ iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
 	}
 
 	for _, tc := range testCases {
-		detail, err := validateReference(tc.ref, tc.layerValidation, tc.pubKeys, []remote.Option{remote.WithAuth(authn.Anonymous)})
+		ctx := context.Background()
+		detail, err := validateReference(ctx, tc.ref, tc.layerValidation, tc.pubKeys, []remote.Option{remote.WithAuth(authn.Anonymous)})
 
 		if tc.expectedDetail == "" {
 			assert.Empty(t, detail)

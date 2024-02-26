@@ -73,6 +73,8 @@ type Artifact struct {
 }
 
 type Auth struct {
+	// SecretName is the name of the Kubernetes Secret that exists in the same namespace as the OciValidator
+	// and that contains the credentials used to authenticate to the OCI Registry
 	SecretName string `json:"secretName" yaml:"secretName"`
 }
 
@@ -82,7 +84,8 @@ type SignatureVerification struct {
 	// +kubebuilder:default:=cosign
 	Provider string `json:"provider" yaml:"provider"`
 
-	// SecretName is the name of the Kubernetes Secret that contains trusted public keys used to sign artifacts in the OciRegistryRule
+	// SecretName is the name of the Kubernetes Secret that exists in the same namespace as the OciValidator
+	// and that contains the trusted public keys used to sign artifacts in the OciRegistryRule
 	SecretName string `json:"secretName" yaml:"secretName"`
 }
 

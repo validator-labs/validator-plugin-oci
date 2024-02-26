@@ -159,7 +159,7 @@ func (r *OciValidatorReconciler) signaturePubKeys(req ctrl.Request, rule v1alpha
 	}
 
 	for k, data := range pubKeysSecret.Data {
-		// search fro public keys in the secret
+		// search for public keys in the secret
 		if strings.HasSuffix(k, ".pub") {
 			pubKeys = append(pubKeys, data)
 		}

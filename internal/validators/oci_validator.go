@@ -55,7 +55,8 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 		return vr, err
 	}
 
-	opts, err = setupAuthOpts(opts, rule.Host, username, password)
+	ctx := context.Background()
+	opts, err = setupAuthOpts(ctx, opts, rule.Host, username, password)
 	if err != nil {
 		errMsg := "failed to setup authentication"
 		s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host, "auth", rule.Auth)
@@ -70,7 +71,6 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 		details = append(details, "no public keys provided for signature verification")
 	}
 
-	ctx := context.Background()
 	if len(rule.Artifacts) == 0 {
 		errMsg := "failed to validate repositories in registry"
 		d, err := validateRepos(ctx, rule.Host, opts, pubKeys, vr)
@@ -96,7 +96,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 			continue
 		}
 
-		detail, err := validateReference(ref, artifact.LayerValidation, pubKeys, opts)
+		detail, err := validateReference(ctx, ref, artifact.LayerValidation, pubKeys, opts)
 		if err != nil {
 			errs = append(errs, err)
 			s.log.V(0).Info(errMsg, "error", err.Error(), "rule", rule.Name(), "host", rule.Host, "artifact", artifact)
@@ -126,7 +126,7 @@ func generateRef(registry, artifact string, vr *types.ValidationResult) (name.Re
 }
 
 // validateArtifact validates a single artifact within a registry. This function is to be used when a path to a repo or an individual artifact is provided
-func validateReference(ref name.Reference, fullLayerValidation bool, pubKeys [][]byte, opts []remote.Option) (string, error) {
+func validateReference(ctx context.Context, ref name.Reference, fullLayerValidation bool, pubKeys [][]byte, opts []remote.Option) (string, error) {
 	// validate artifact existence by issuing a HEAD request
 	_, err := remote.Head(ref, opts...)
 	if err != nil {
@@ -150,7 +150,6 @@ func validateReference(ref name.Reference, fullLayerValidation bool, pubKeys [][
 	}
 
 	if pubKeys != nil {
-		ctx := context.Background()
 		err := verifySignature(ctx, ref, pubKeys)
 		if err != nil {
 			return fmt.Sprintf("failed to verify signature for artifact %s", ref.Name()), err
@@ -170,7 +169,7 @@ func validateRepos(ctx context.Context, host string, opts []remote.Option, pubKe
 		return details, err
 	}
 
-	repoList, err := remote.Catalog(context.Background(), reg, opts...)
+	repoList, err := remote.Catalog(ctx, reg, opts...)
 	if err != nil {
 		details = append(details, fmt.Sprintf("failed to list repositories in registry %s", host))
 		return details, err
@@ -213,7 +212,7 @@ func validateRepos(ctx context.Context, host string, opts []remote.Option, pubKe
 		return details, err
 	}
 
-	detail, err := validateReference(ref, true, pubKeys, opts)
+	detail, err := validateReference(ctx, ref, true, pubKeys, opts)
 	if err != nil {
 		details = append(details, detail)
 		return details, err
@@ -222,9 +221,9 @@ func validateRepos(ctx context.Context, host string, opts []remote.Option, pubKe
 	return []string{}, nil
 }
 
-func getEcrLoginToken(username, password, region string) (string, error) {
+func getEcrLoginToken(ctx context.Context, username, password, region string) (string, error) {
 	cfg, err := config.LoadDefaultConfig(
-		context.Background(),
+		ctx,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(username, password, "")),
 	)
@@ -234,7 +233,7 @@ func getEcrLoginToken(username, password, region string) (string, error) {
 
 	client := ecr.NewFromConfig(cfg)
 
-	output, err := client.GetAuthorizationToken(context.Background(), &ecr.GetAuthorizationTokenInput{})
+	output, err := client.GetAuthorizationToken(ctx, &ecr.GetAuthorizationTokenInput{})
 	if err != nil {
 		return "", fmt.Errorf("failed to get ECR authorization token: %s", err)
 	}
@@ -256,7 +255,7 @@ func parseEcrRegion(url string) (string, error) {
 	return region, nil
 }
 
-func setupAuthOpts(opts []remote.Option, registryName, username, password string) ([]remote.Option, error) {
+func setupAuthOpts(ctx context.Context, opts []remote.Option, registryName, username, password string) ([]remote.Option, error) {
 	var auth authn.Authenticator
 
 	if strings.Contains(registryName, "amazonaws.com") {
@@ -265,7 +264,7 @@ func setupAuthOpts(opts []remote.Option, registryName, username, password string
 			return nil, err
 		}
 
-		token, err := getEcrLoginToken(username, password, region)
+		token, err := getEcrLoginToken(ctx, username, password, region)
 		if err != nil {
 			return nil, err
 		}
