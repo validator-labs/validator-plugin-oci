@@ -5,19 +5,31 @@ metadata:
 spec:
   ociRegistryRules:
     # public oci registry artifact with tag
-    - host: "docker.io"
+    - name: "public oci registry with tag"
+      host: "docker.io"
       artifacts:
         - ref: "library/redis:7.2.4"
           layerValidation: true
 
     # public oci registry artifact referenced by default "latest" tag
-    - host: "registry.hub.docker.com"
+    - name: "public oci registry with default latest tag"
+      host: "registry.hub.docker.com"
       artifacts:
         - ref: "ahmadibraspectrocloud/kubebuilder-cron"
           layerValidation: true
 
+    # public oci registry with signature verification enabled
+    - name: "public oci registry with signature verification enabled"
+      host: "registry.hub.docker.com"
+      artifacts:
+        - ref: "ahmadibraspectrocloud/validator-plugin-oci:signed"
+          layerValidation: true
+      signatureVerification:
+        secretName: "cosign-public-keys"
+
     # public ecr registry artifact referenced by default "latest" tag
-    - host: "public.ecr.aws"
+    - name: "public ecr registry"
+      host: "public.ecr.aws"
       artifacts:
         - ref: "u5n5j0b4/oci-test-public"
           layerValidation: true

@@ -211,7 +211,8 @@ func TestSetupAuthOpts(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		opts, err := setupAuthOpts(tc.inputOpts, tc.registryName, tc.username, tc.password)
+		ctx := context.Background()
+		opts, err := setupAuthOpts(ctx, tc.inputOpts, tc.registryName, tc.username, tc.password)
 
 		if tc.expectErr {
 			assert.NotNil(t, err)
@@ -244,6 +245,7 @@ func TestValidateReference(t *testing.T) {
 	type testCase struct {
 		ref             name.Reference
 		layerValidation bool
+		pubKeys         [][]byte
 		expectedDetail  string
 		expectErr       bool
 	}
@@ -252,33 +254,55 @@ func TestValidateReference(t *testing.T) {
 		{
 			ref:             validRef,
 			layerValidation: false,
+			pubKeys:         nil,
 			expectedDetail:  "",
 			expectErr:       false,
 		},
 		{
 			ref:             validRef,
 			layerValidation: true,
+			pubKeys:         nil,
 			expectedDetail:  "",
 			expectErr:       false,
 		},
 		{
 			ref:             invalidRef,
 			layerValidation: false,
+			pubKeys:         nil,
 			expectedDetail:  "failed to get descriptor for artifact",
 			expectErr:       true,
+		},
+		{
+			ref:             validRef,
+			layerValidation: true,
+			pubKeys:         [][]byte{[]byte("invalid-pub-key-1"), []byte("invalid-pub-key-2")},
+			expectedDetail:  "failed to verify signature for artifact",
+			expectErr:       true,
+		},
+		{
+			ref:             validRef,
+			layerValidation: true,
+			pubKeys: [][]byte{
+				[]byte(`-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKPuCo9AmJCpqGWhefjbhkFcr1GA3
+iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
+-----END PUBLIC KEY-----`),
+			},
+			expectedDetail: "failed to verify signature for artifact",
+			expectErr:      true,
 		},
 	}
 
 	for _, tc := range testCases {
-		detail, err := validateReference(tc.ref, tc.layerValidation, []remote.Option{remote.WithAuth(authn.Anonymous)})
+		ctx := context.Background()
+		details, errs := validateReference(ctx, tc.ref, tc.layerValidation, tc.pubKeys, []remote.Option{remote.WithAuth(authn.Anonymous)})
 
-		if tc.expectErr {
-			assert.NotNil(t, err)
-			assert.Contains(t, detail, tc.expectedDetail)
+		if tc.expectedDetail == "" {
+			assert.Empty(t, details)
 		} else {
-			assert.Empty(t, detail)
-			assert.NoError(t, err)
+			assert.Contains(t, details[len(details)-1], tc.expectedDetail)
 		}
+		assert.Equal(t, tc.expectErr, len(errs) > 0)
 	}
 }
 
@@ -323,7 +347,7 @@ func TestValidateRepos(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		details, err := validateRepos(context.Background(), tc.host, []remote.Option{remote.WithAuth(authn.Anonymous)}, &types.ValidationResult{})
+		details, errs := validateRepos(context.Background(), tc.host, []remote.Option{remote.WithAuth(authn.Anonymous)}, nil, &types.ValidationResult{})
 
 		if tc.expectedDetail == "" {
 			assert.Empty(t, details)
@@ -332,10 +356,10 @@ func TestValidateRepos(t *testing.T) {
 			assert.Contains(t, details[0], tc.expectedDetail)
 		}
 
-		if tc.expectErr {
-			assert.NotNil(t, err)
+		if !tc.expectErr {
+			assert.Empty(t, errs)
 		} else {
-			assert.NoError(t, err)
+			assert.Len(t, errs, 1)
 		}
 	}
 }
@@ -388,7 +412,7 @@ func TestReconcileOciRegistryRule(t *testing.T) {
 	for _, tc := range testCases {
 		l := logr.New(nil)
 		s := NewOciRuleService(l)
-		_, err := s.ReconcileOciRegistryRule(tc.rule, "", "")
+		_, err := s.ReconcileOciRegistryRule(tc.rule, "", "", nil)
 
 		if tc.expectErr {
 			assert.NotNil(t, err)
