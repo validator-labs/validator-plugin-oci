@@ -295,14 +295,14 @@ iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
 
 	for _, tc := range testCases {
 		ctx := context.Background()
-		detail, err := validateReference(ctx, tc.ref, tc.layerValidation, tc.pubKeys, []remote.Option{remote.WithAuth(authn.Anonymous)})
+		details, errs := validateReference(ctx, tc.ref, tc.layerValidation, tc.pubKeys, []remote.Option{remote.WithAuth(authn.Anonymous)})
 
 		if tc.expectedDetail == "" {
-			assert.Empty(t, detail)
+			assert.Empty(t, details)
 		} else {
-			assert.Contains(t, detail, tc.expectedDetail)
+			assert.Contains(t, details[len(details)-1], tc.expectedDetail)
 		}
-		assert.Equal(t, tc.expectErr, err != nil)
+		assert.Equal(t, tc.expectErr, len(errs) > 0)
 	}
 }
 
@@ -347,7 +347,7 @@ func TestValidateRepos(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		details, err := validateRepos(context.Background(), tc.host, []remote.Option{remote.WithAuth(authn.Anonymous)}, nil, &types.ValidationResult{})
+		details, errs := validateRepos(context.Background(), tc.host, []remote.Option{remote.WithAuth(authn.Anonymous)}, nil, &types.ValidationResult{})
 
 		if tc.expectedDetail == "" {
 			assert.Empty(t, details)
@@ -356,10 +356,10 @@ func TestValidateRepos(t *testing.T) {
 			assert.Contains(t, details[0], tc.expectedDetail)
 		}
 
-		if tc.expectErr {
-			assert.NotNil(t, err)
+		if !tc.expectErr {
+			assert.Empty(t, errs)
 		} else {
-			assert.NoError(t, err)
+			assert.Len(t, errs, 1)
 		}
 	}
 }
