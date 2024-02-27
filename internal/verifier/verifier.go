@@ -7,9 +7,7 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	coptions "github.com/sigstore/cosign/v2/cmd/cosign/cli/options"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
-	ociremote "github.com/sigstore/cosign/v2/pkg/oci/remote"
 	"github.com/sigstore/sigstore/pkg/cryptoutils"
 	"github.com/sigstore/sigstore/pkg/signature"
 )
@@ -55,23 +53,11 @@ func NewCosignVerifier(ctx context.Context, opts ...Options) (*CosignVerifier, e
 		opt(&o)
 	}
 
-	checkOpts := &cosign.CheckOpts{}
-
-	ro := coptions.RegistryOptions{}
-	co, err := ro.ClientOpts(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if o.ROpt != nil {
-		co = append(co, ociremote.WithRemoteOptions(o.ROpt...))
-	}
-
-	checkOpts.RegistryClientOpts = co
-
 	if len(o.PublicKey) == 0 {
 		return nil, fmt.Errorf("public key required for cosign verifier")
 	}
+
+	checkOpts := &cosign.CheckOpts{}
 
 	checkOpts.Offline = true
 	// TODO(hidde): this is an oversight in our implementation. As it is
