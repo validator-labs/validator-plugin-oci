@@ -2,7 +2,6 @@ package validators
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -54,17 +53,17 @@ func TestParseEcrRegion(t *testing.T) {
 		{
 			URL:            longURL,
 			expectedRegion: "",
-			expectedErr:    errors.New(fmt.Sprintf("Invalid ECR URL %s", longURL)),
+			expectedErr:    fmt.Errorf("invalid ECR URL %s", longURL),
 		},
 		{
 			URL:            shortURL,
 			expectedRegion: "",
-			expectedErr:    errors.New(fmt.Sprintf("Invalid ECR URL %s", shortURL)),
+			expectedErr:    fmt.Errorf("invalid ECR URL %s", shortURL),
 		},
 		{
 			URL:            notEcrURL,
 			expectedRegion: "",
-			expectedErr:    errors.New(fmt.Sprintf("Invalid ECR URL %s", notEcrURL)),
+			expectedErr:    fmt.Errorf("invalid ECR URL %s", notEcrURL),
 		},
 	}
 
