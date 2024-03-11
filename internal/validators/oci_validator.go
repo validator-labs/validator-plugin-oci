@@ -25,8 +25,7 @@ import (
 	soci "github.com/spectrocloud-labs/validator-plugin-oci/internal/verifier"
 	vapi "github.com/spectrocloud-labs/validator/api/v1alpha1"
 	"github.com/spectrocloud-labs/validator/pkg/types"
-	vapitypes "github.com/spectrocloud-labs/validator/pkg/types"
-	"github.com/spectrocloud-labs/validator/pkg/util/ptr"
+	"github.com/spectrocloud-labs/validator/pkg/util"
 )
 
 const (
@@ -44,7 +43,7 @@ func NewOciRuleService(log logr.Logger) *OciRuleService {
 }
 
 // ReconcileOciRegistryRule reconciles an OCI registry rule from the OCIValidator config
-func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule, username, password string, pubKeys [][]byte) (*vapitypes.ValidationResult, error) {
+func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule, username, password string, pubKeys [][]byte) (*types.ValidationResult, error) {
 	vr := buildValidationResult(rule)
 	errs := make([]error, 0)
 	details := make([]string, 0)
@@ -80,7 +79,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 
 		if len(e) > 0 {
 			s.log.V(0).Info(errMsg, "rule", rule.Name(), "host", rule.Host)
-			s.updateResult(vr, errs, errMsg, rule.Name(), details...)
+			s.updateResult(vr, errs, errMsg, details...)
 			return vr, errors.New(errMsg)
 		}
 
@@ -104,7 +103,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 		details = append(details, d...)
 		errs = append(errs, e...)
 	}
-	s.updateResult(vr, errs, errMsg, rule.Name(), details...)
+	s.updateResult(vr, errs, errMsg, details...)
 
 	if len(errs) > 0 {
 		return vr, errors.New(errMsg)
@@ -262,7 +261,7 @@ func getEcrLoginToken(ctx context.Context, username, password, region string) (s
 func parseEcrRegion(url string) (string, error) {
 	parts := strings.Split(url, ".")
 	if len(parts) != 6 || parts[2] != "ecr" {
-		return "", errors.New(fmt.Sprintf("Invalid ECR URL %s", url))
+		return "", fmt.Errorf("invalid ECR URL %s", url)
 	}
 
 	region := parts[3]
@@ -379,15 +378,13 @@ func buildValidationResult(rule v1alpha1.OciRegistryRule) *types.ValidationResul
 	return &types.ValidationResult{Condition: &latestCondition, State: &state}
 }
 
-func (s *OciRuleService) updateResult(vr *types.ValidationResult, errs []error, errMsg, ruleName string, details ...string) {
+func (s *OciRuleService) updateResult(vr *types.ValidationResult, errs []error, errMsg string, details ...string) {
 	if len(errs) > 0 {
-		vr.State = ptr.Ptr(vapi.ValidationFailed)
+		vr.State = util.Ptr(vapi.ValidationFailed)
 		vr.Condition.Message = errMsg
 		for _, err := range errs {
 			vr.Condition.Failures = append(vr.Condition.Failures, err.Error())
 		}
 	}
-	for _, detail := range details {
-		vr.Condition.Details = append(vr.Condition.Details, detail)
-	}
+	vr.Condition.Details = append(vr.Condition.Details, details...)
 }
