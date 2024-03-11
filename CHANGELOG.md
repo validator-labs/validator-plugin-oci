@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.0.6](https://github.com/spectrocloud-labs/validator-plugin-oci/compare/v0.0.5...v0.0.6) (2024-03-11)
+
+
+### Bug Fixes
+
+* **deps:** update aws-sdk-go-v2 monorepo ([#123](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/123)) ([aeddab7](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/aeddab7a1175f8e7d2fb872bcbd8b3d9a6cde3fd))
+* **deps:** update module github.com/onsi/ginkgo/v2 to v2.16.0 ([#122](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/122)) ([22cd704](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/22cd70405de123ef3b43010e13cd978bbe334f6d))
+* **deps:** update module github.com/stretchr/testify to v1.9.0 ([#121](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/121)) ([0cbc5bd](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/0cbc5bdb104e40e0e003b9f89a66cb1a249c7a1c))
+
+
+### Other
+
+* **deps:** update anchore/sbom-action action to v0.15.9 ([#124](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/124)) ([89ad98a](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/89ad98a123e91b1e39f0c55d0efdc8e07e423f70))
+* **deps:** update azure/setup-helm action to v4 ([#119](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/119)) ([77978fa](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/77978fa82d46696aa8cc649afacd1954816fe084))
+* **deps:** update azure/setup-helm digest to b7246b1 ([#125](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/125)) ([b5f0347](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/b5f03474419840f3d000a8fc6e04a84be1ece00e))
+* **deps:** update docker/build-push-action digest to af5a7ed ([#126](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/126)) ([d3c13a7](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/d3c13a7da4a05a7ea448e37cb9a96afaecd5709e))
+* **deps:** update softprops/action-gh-release action to v2 ([#127](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/127)) ([0494998](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/0494998490147401a9881d99a72f93e9434f1cfc))
+* **deps:** update softprops/action-gh-release digest to d99959e ([#129](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/129)) ([00f28bf](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/00f28bf4d93b7e1a569fcb145a79de5098d67e18))
+* upgrade to validator v0.0.36 ([#128](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/128)) ([50abf22](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/50abf22f49637bdd2ee20baae8b7add0c4571f2c))
+
 ## [0.0.5](https://github.com/spectrocloud-labs/validator-plugin-oci/compare/v0.0.4...v0.0.5) (2024-02-28)
 
 
