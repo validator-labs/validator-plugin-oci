@@ -83,7 +83,7 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if err := vres.HandleNewValidationResult(ctx, r.Client, p, buildValidationResult(validator), r.Log); err != nil {
 			return ctrl.Result{}, err
 		}
-		return ctrl.Result{}, err
+		return ctrl.Result{RequeueAfter: time.Millisecond}, nil
 	}
 
 	// Always update the expected result count in case the validator's rules have changed
