@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.7](https://github.com/spectrocloud-labs/validator-plugin-oci/compare/v0.0.6...v0.0.7) (2024-03-12)
+
+
+### Other
+
+* **deps:** update google-github-actions/release-please-action digest to a37ac6e ([#131](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/131)) ([fe6ad46](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/fe6ad4697ca7b5792e5b4c8a703f7ec06c68e6ff))
+* **deps:** update softprops/action-gh-release digest to 3198ee1 ([#130](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/130)) ([857cedc](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/857cedcb159b7aa66d17bc229b7adab65e8cd2c3))
+
+
+### Refactoring
+
+* use patch helpers ([#136](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/136)) ([b25d6d0](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/b25d6d06776c4f26bcdbf30c0c78158d1321c05b))
+
 ## [0.0.6](https://github.com/spectrocloud-labs/validator-plugin-oci/compare/v0.0.5...v0.0.6) (2024-03-11)
 
 
