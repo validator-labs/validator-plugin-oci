@@ -12,11 +12,12 @@ require (
 	github.com/onsi/gomega v1.31.1
 	github.com/sigstore/cosign/v2 v2.2.3
 	github.com/sigstore/sigstore v1.8.2
-	github.com/spectrocloud-labs/validator v0.0.36
+	github.com/spectrocloud-labs/validator v0.0.38-0.20240312154520-85e012cecc1c
 	github.com/stretchr/testify v1.9.0
 	k8s.io/api v0.29.2
 	k8s.io/apimachinery v0.29.2
 	k8s.io/client-go v0.29.2
+	sigs.k8s.io/cluster-api v1.6.2
 	sigs.k8s.io/controller-runtime v0.17.2
 )
 
@@ -35,6 +36,7 @@ require (
 	github.com/aws/smithy-go v1.20.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
+	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.14.3 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20231011164504-785e29786b46 // indirect
@@ -62,6 +64,7 @@ require (
 	github.com/go-openapi/swag v0.22.9 // indirect
 	github.com/go-openapi/validate v0.22.4 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
+	github.com/gobuffalo/flect v1.0.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect

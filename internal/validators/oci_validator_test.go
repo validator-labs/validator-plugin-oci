@@ -34,7 +34,7 @@ const (
 )
 
 var (
-	vr = buildValidationResult(v1alpha1.OciRegistryRule{})
+	vrr = buildValidationResult(v1alpha1.OciRegistryRule{})
 )
 
 func TestParseEcrRegion(t *testing.T) {
@@ -81,46 +81,46 @@ func TestParseEcrRegion(t *testing.T) {
 
 func TestGenerateRef(t *testing.T) {
 	type testCase struct {
-		registry         string
-		artifact         string
-		validationResult *types.ValidationResult
-		expectedRefName  string
-		expectErr        bool
+		registry             string
+		artifact             string
+		validationRuleResult *types.ValidationRuleResult
+		expectedRefName      string
+		expectErr            bool
 	}
 
 	testCases := []testCase{
 		{
-			registry:         registryName,
-			artifact:         "artifact@sha256:ddbac6e7732bf90a4e674a01bf279ce27ea8691530b8d209e6fe77477e0fa406",
-			validationResult: vr,
-			expectedRefName:  "registry/artifact@sha256:ddbac6e7732bf90a4e674a01bf279ce27ea8691530b8d209e6fe77477e0fa406",
-			expectErr:        false,
+			registry:             registryName,
+			artifact:             "artifact@sha256:ddbac6e7732bf90a4e674a01bf279ce27ea8691530b8d209e6fe77477e0fa406",
+			validationRuleResult: vrr,
+			expectedRefName:      "registry/artifact@sha256:ddbac6e7732bf90a4e674a01bf279ce27ea8691530b8d209e6fe77477e0fa406",
+			expectErr:            false,
 		},
 		{
-			registry:         registryName,
-			artifact:         "artifact:v1.0.0",
-			validationResult: vr,
-			expectedRefName:  "registry/artifact:v1.0.0",
-			expectErr:        false,
+			registry:             registryName,
+			artifact:             "artifact:v1.0.0",
+			validationRuleResult: vrr,
+			expectedRefName:      "registry/artifact:v1.0.0",
+			expectErr:            false,
 		},
 		{
-			registry:         registryName,
-			artifact:         "artifact",
-			validationResult: vr,
-			expectedRefName:  "registry/artifact:latest",
-			expectErr:        false,
+			registry:             registryName,
+			artifact:             "artifact",
+			validationRuleResult: vrr,
+			expectedRefName:      "registry/artifact:latest",
+			expectErr:            false,
 		},
 		{
-			registry:         registryName,
-			artifact:         "invalidArtifact",
-			validationResult: vr,
-			expectedRefName:  "",
-			expectErr:        true,
+			registry:             registryName,
+			artifact:             "invalidArtifact",
+			validationRuleResult: vrr,
+			expectedRefName:      "",
+			expectErr:            true,
 		},
 	}
 
 	for _, tc := range testCases {
-		ref, err := generateRef(tc.registry, tc.artifact, tc.validationResult)
+		ref, err := generateRef(tc.registry, tc.artifact, tc.validationRuleResult)
 
 		if tc.expectErr {
 			assert.NotNil(t, err)
@@ -346,7 +346,7 @@ func TestValidateRepos(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		details, errs := validateRepos(context.Background(), tc.host, []remote.Option{remote.WithAuth(authn.Anonymous)}, nil, &types.ValidationResult{})
+		details, errs := validateRepos(context.Background(), tc.host, []remote.Option{remote.WithAuth(authn.Anonymous)}, nil, &types.ValidationRuleResult{})
 
 		if tc.expectedDetail == "" {
 			assert.Empty(t, details)
