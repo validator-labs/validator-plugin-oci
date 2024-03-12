@@ -43,7 +43,7 @@ func NewOciRuleService(log logr.Logger) *OciRuleService {
 }
 
 // ReconcileOciRegistryRule reconciles an OCI registry rule from the OCIValidator config
-func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule, username, password string, pubKeys [][]byte) (*types.ValidationResult, error) {
+func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule, username, password string, pubKeys [][]byte) (*types.ValidationRuleResult, error) {
 	vr := buildValidationResult(rule)
 	errs := make([]error, 0)
 	details := make([]string, 0)
@@ -111,7 +111,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 	return vr, nil
 }
 
-func generateRef(registry, artifact string, vr *types.ValidationResult) (name.Reference, error) {
+func generateRef(registry, artifact string, vr *types.ValidationRuleResult) (name.Reference, error) {
 	if strings.Contains(artifact, "@sha256:") {
 		return name.NewDigest(fmt.Sprintf("%s/%s", registry, artifact))
 	}
@@ -168,7 +168,7 @@ func validateReference(ctx context.Context, ref name.Reference, fullLayerValidat
 }
 
 // validateRepos validates repos within a registry. This function is to be used when no particular artifact in a registry is provided
-func validateRepos(ctx context.Context, host string, opts []remote.Option, pubKeys [][]byte, vr *types.ValidationResult) (details []string, errs []error) {
+func validateRepos(ctx context.Context, host string, opts []remote.Option, pubKeys [][]byte, vr *types.ValidationRuleResult) (details []string, errs []error) {
 	details = make([]string, 0)
 	errs = make([]error, 0)
 
@@ -367,7 +367,7 @@ func verifySignature(ctx context.Context, ref name.Reference, pubKeys [][]byte, 
 }
 
 // buildValidationResult builds a default ValidationResult for a given validation type
-func buildValidationResult(rule v1alpha1.OciRegistryRule) *types.ValidationResult {
+func buildValidationResult(rule v1alpha1.OciRegistryRule) *types.ValidationRuleResult {
 	state := vapi.ValidationSucceeded
 	latestCondition := vapi.DefaultValidationCondition()
 	latestCondition.Details = make([]string, 0)
@@ -375,10 +375,10 @@ func buildValidationResult(rule v1alpha1.OciRegistryRule) *types.ValidationResul
 	latestCondition.Message = fmt.Sprintf("All %s checks passed", constants.OciRegistry)
 	latestCondition.ValidationRule = rule.Name()
 	latestCondition.ValidationType = constants.OciRegistry
-	return &types.ValidationResult{Condition: &latestCondition, State: &state}
+	return &types.ValidationRuleResult{Condition: &latestCondition, State: &state}
 }
 
-func (s *OciRuleService) updateResult(vr *types.ValidationResult, errs []error, errMsg string, details ...string) {
+func (s *OciRuleService) updateResult(vr *types.ValidationRuleResult, errs []error, errMsg string, details ...string) {
 	if len(errs) > 0 {
 		vr.State = util.Ptr(vapi.ValidationFailed)
 		vr.Condition.Message = errMsg

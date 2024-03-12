@@ -28,6 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ktypes "k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/cluster-api/util/patch"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -35,6 +36,7 @@ import (
 	"github.com/spectrocloud-labs/validator-plugin-oci/internal/constants"
 	val "github.com/spectrocloud-labs/validator-plugin-oci/internal/validators"
 	vapi "github.com/spectrocloud-labs/validator/api/v1alpha1"
+	"github.com/spectrocloud-labs/validator/pkg/types"
 	"github.com/spectrocloud-labs/validator/pkg/util"
 	vres "github.com/spectrocloud-labs/validator/pkg/validationresult"
 )
@@ -52,7 +54,9 @@ type OciValidatorReconciler struct {
 
 // Reconcile reconciles each rule found in each OCIValidator in the cluster and creates ValidationResults accordingly
 func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	r.Log.V(0).Info("Reconciling OciValidator", "name", req.Name, "namespace", req.Namespace)
+	l := r.Log.V(0).WithValues("name", req.Name, "namespace", req.Namespace)
+
+	l.Info("Reconciling OciValidator")
 
 	validator := &v1alpha1.OciValidator{}
 	if err := r.Get(ctx, req.NamespacedName, validator); err != nil {
@@ -61,19 +65,33 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	// Get the active validator's validation result
 	vr := &vapi.ValidationResult{}
+	p, err := patch.NewHelper(vr, r.Client)
+	if err != nil {
+		l.Error(err, "failed to create patch helper")
+		return ctrl.Result{}, err
+	}
 	nn := ktypes.NamespacedName{
 		Name:      validationResultName(validator),
 		Namespace: req.Namespace,
 	}
 	if err := r.Get(ctx, nn, vr); err == nil {
-		vres.HandleExistingValidationResult(nn, vr, r.Log)
+		vres.HandleExistingValidationResult(vr, r.Log)
 	} else {
 		if !apierrs.IsNotFound(err) {
-			r.Log.V(0).Error(err, "unexpected error getting ValidationResult", "name", nn.Name, "namespace", nn.Namespace)
+			l.Error(err, "unexpected error getting ValidationResult")
 		}
-		if err := vres.HandleNewValidationResult(r.Client, buildValidationResult(validator), r.Log); err != nil {
+		if err := vres.HandleNewValidationResult(ctx, r.Client, p, buildValidationResult(validator), r.Log); err != nil {
 			return ctrl.Result{}, err
 		}
+		return ctrl.Result{}, err
+	}
+
+	// Always update the expected result count in case the validator's rules have changed
+	vr.Spec.ExpectedResults = validator.Spec.ResultCount()
+
+	resp := types.ValidationResponse{
+		ValidationRuleResults: make([]*types.ValidationRuleResult, 0, vr.Spec.ExpectedResults),
+		ValidationRuleErrors:  make([]error, 0, vr.Spec.ExpectedResults),
 	}
 
 	ociRuleService := val.NewOciRuleService(r.Log)
@@ -83,14 +101,18 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		username, password := r.secretKeyAuth(req, rule)
 		pubKeys := r.signaturePubKeys(req, rule)
 
-		validationResult, err := ociRuleService.ReconcileOciRegistryRule(rule, username, password, pubKeys)
+		vrr, err := ociRuleService.ReconcileOciRegistryRule(rule, username, password, pubKeys)
 		if err != nil {
-			r.Log.V(0).Error(err, "failed to reconcile OCI Registry rule")
+			l.Error(err, "failed to reconcile OCI Registry rule")
 		}
-		vres.SafeUpdateValidationResult(r.Client, nn, validationResult, validator.Spec.ResultCount(), err, r.Log)
+		resp.AddResult(vrr, err)
 	}
 
-	r.Log.V(0).Info("Requeuing for re-validation in two minutes.", "name", req.Name, "namespace", req.Namespace)
+	if err := vres.SafeUpdateValidationResult(ctx, p, vr, resp, r.Log); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	l.Info("Requeuing for re-validation in two minutes.")
 	return ctrl.Result{RequeueAfter: time.Second * 120}, nil
 }
 
