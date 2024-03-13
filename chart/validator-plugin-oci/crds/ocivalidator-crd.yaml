@@ -41,9 +41,12 @@ spec:
                         that should be validated.
                       items:
                         properties:
-                          download:
-                            description: Download specifies whether a download attempt
-                              should be made for the artifact
+                          layerValidation:
+                            description: 'LayerValidation specifies whether deep validation
+                              of the artifact layers should be performed. The existence
+                              of layers is always validated, but this option allows
+                              for the deep validation of the layers. See more details
+                              here: https://github.com/google/go-containerregistry/blob/8dadbe76ff8c20d0e509406f04b7eade43baa6c1/pkg/v1/validate/image.go#L105'
                             type: boolean
                           ref:
                             description: "Ref is the path to the artifact in the host
@@ -62,6 +65,10 @@ spec:
                         registry
                       properties:
                         secretName:
+                          description: SecretName is the name of the Kubernetes Secret
+                            that exists in the same namespace as the OciValidator
+                            and that contains the credentials used to authenticate
+                            to the OCI Registry
                           type: string
                       required:
                       - secretName
@@ -73,14 +80,39 @@ spec:
                       description: Host is a reference to the host URL of an OCI compliant
                         registry
                       type: string
+                    name:
+                      description: Name is the name of the rule
+                      type: string
+                    signatureVerification:
+                      description: SignatureVerification provides the option to verify
+                        the signature of the image
+                      properties:
+                        provider:
+                          default: cosign
+                          description: Provider specifies the technology used to sign
+                            the OCI Artifact
+                          enum:
+                          - cosign
+                          type: string
+                        secretName:
+                          description: SecretName is the name of the Kubernetes Secret
+                            that exists in the same namespace as the OciValidator
+                            and that contains the trusted public keys used to sign
+                            artifacts in the OciRegistryRule
+                          type: string
+                      required:
+                      - provider
+                      - secretName
+                      type: object
                   required:
                   - host
+                  - name
                   type: object
                 maxItems: 5
                 type: array
                 x-kubernetes-validations:
-                - message: OciRegistryRules must have a unique Host
-                  rule: self.all(e, size(self.filter(x, x.host == e.host)) == 1)
+                - message: OciRegistryRules must have a unique RuleName
+                  rule: self.all(e, size(self.filter(x, x.name == e.name)) == 1)
             type: object
           status:
             description: OciValidatorStatus defines the observed state of OciValidator
