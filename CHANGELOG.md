@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.0.8](https://github.com/spectrocloud-labs/validator-plugin-oci/compare/v0.0.7...v0.0.8) (2024-03-13)
+
+
+### Features
+
+* update helm chart to support signature verification and full layer validation ([#142](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/142)) ([d7c9814](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/d7c9814b8ab3c4e430b8a01a79d3f554191f3ca7))
+
+
+### Bug Fixes
+
+* **deps:** update github.com/spectrocloud-labs/validator digest to fc351f3 ([#137](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/137)) ([c7c875f](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/c7c875f2231264a09e7e132f92c9b422e3707759))
+* **deps:** update module sigs.k8s.io/cluster-api to v1.6.3 ([#138](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/138)) ([4f9947c](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/4f9947cfbc99251f662513d07b3f9b8bb63b7e1c))
+* ensure error is returned when signature verification is enabled but no public keys are provided ([#141](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/141)) ([1e97bdf](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/1e97bdf826faa05b26ba87eda9c61a8c872a4eb5))
+
+
+### Other
+
+* **deps:** update docker/login-action digest to e92390c ([#140](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/140)) ([4343b61](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/4343b618689b7f9318314b03fecae3524efcecee))
+
 ## [0.0.7](https://github.com/spectrocloud-labs/validator-plugin-oci/compare/v0.0.6...v0.0.7) (2024-03-12)
 
 
