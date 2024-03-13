@@ -275,7 +275,14 @@ func TestValidateReference(t *testing.T) {
 			ref:             validRef,
 			layerValidation: true,
 			pubKeys:         [][]byte{[]byte("invalid-pub-key-1"), []byte("invalid-pub-key-2")},
-			expectedDetail:  "failed to verify signature for artifact",
+			expectedDetail:  "failed to create verifier with public key",
+			expectErr:       true,
+		},
+		{
+			ref:             validRef,
+			layerValidation: true,
+			pubKeys:         [][]byte{},
+			expectedDetail:  "no matching signatures were found",
 			expectErr:       true,
 		},
 		{
@@ -287,7 +294,7 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKPuCo9AmJCpqGWhefjbhkFcr1GA3
 iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
 -----END PUBLIC KEY-----`),
 			},
-			expectedDetail: "failed to verify signature for artifact",
+			expectedDetail: "no matching signatures were found",
 			expectErr:      true,
 		},
 	}

@@ -157,15 +157,11 @@ func validateReference(ctx context.Context, ref name.Reference, fullLayerValidat
 		return
 	}
 
-	if pubKeys != nil {
-		details, errs = verifySignature(ctx, ref, pubKeys)
-		if len(errs) > 0 {
-			details = append(details, fmt.Sprintf("failed to verify signature for artifact %s", ref.Name()))
-			return
-		}
+	if pubKeys == nil {
+		return
 	}
 
-	return
+	return verifySignature(ctx, ref, pubKeys)
 }
 
 // validateRepos validates repos within a registry. This function is to be used when no particular artifact in a registry is provided
@@ -231,8 +227,7 @@ func validateRepos(ctx context.Context, host string, opts []remote.Option, pubKe
 		return
 	}
 
-	details, errs = validateReference(ctx, ref, true, pubKeys, opts)
-	return
+	return validateReference(ctx, ref, true, pubKeys, opts)
 }
 
 func getEcrLoginToken(ctx context.Context, username, password, region string) (string, error) {
@@ -338,9 +333,6 @@ func verifySignature(ctx context.Context, ref name.Reference, pubKeys [][]byte, 
 		soci.WithRemoteOptions(opt...),
 	}
 
-	details = make([]string, 0)
-	errs = make([]error, 0)
-
 	for _, key := range pubKeys {
 		verifier, err := soci.NewCosignVerifier(ctxTimeout, append(defaultCosignOciOpts, soci.WithPublicKey(key))...)
 		if err != nil {
@@ -364,6 +356,7 @@ func verifySignature(ctx context.Context, ref name.Reference, pubKeys [][]byte, 
 	}
 
 	details = append(details, fmt.Sprintf("no matching signatures were found for '%s'", ref))
+	errs = append(errs, fmt.Errorf("failed to verify signature for '%s'", ref))
 	return
 }
 
