@@ -12,7 +12,7 @@ require (
 	github.com/onsi/gomega v1.31.1
 	github.com/sigstore/cosign/v2 v2.2.3
 	github.com/sigstore/sigstore v1.8.2
-	github.com/spectrocloud-labs/validator v0.0.38-0.20240312192727-fc351f3d3938
+	github.com/spectrocloud-labs/validator v0.0.38-0.20240314183228-2987021f4c59
 	github.com/stretchr/testify v1.9.0
 	k8s.io/api v0.29.2
 	k8s.io/apimachinery v0.29.2

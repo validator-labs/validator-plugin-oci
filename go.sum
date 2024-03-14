@@ -388,8 +388,8 @@ github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ
 github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
 github.com/sourcegraph/conc v0.3.0 h1:OQTbbt6P72L20UqAkXXuLOj79LfEanQ+YQFNpLA9ySo=
 github.com/sourcegraph/conc v0.3.0/go.mod h1:Sdozi7LEKbFPqYX2/J+iBAM6HpqSLTASQIKqDmF7Mt0=
-github.com/spectrocloud-labs/validator v0.0.38-0.20240312192727-fc351f3d3938 h1:GBzAw+ay2tPfQNbo9bHbJZTQsbKdcjuqHte61OsbBJw=
-github.com/spectrocloud-labs/validator v0.0.38-0.20240312192727-fc351f3d3938/go.mod h1:QDr5oOVbAGTtOJ+UdmLGL5nRD0mFoq7LV17clZu8Dw8=
+github.com/spectrocloud-labs/validator v0.0.38-0.20240314183228-2987021f4c59 h1:UDHTNdkLY8z7giwOdm1hCtvWEByZDZ69LMtmzkdWNbo=
+github.com/spectrocloud-labs/validator v0.0.38-0.20240314183228-2987021f4c59/go.mod h1:QDr5oOVbAGTtOJ+UdmLGL5nRD0mFoq7LV17clZu8Dw8=
 github.com/spf13/afero v1.11.0 h1:WJQKhtpdm3v2IzqG8VMqrr6Rf3UYpEF239Jy9wNepM8=
 github.com/spf13/afero v1.11.0/go.mod h1:GH9Y3pIexgf1MTIWtNGyogA5MwRIDXGUr+hbWNoBjkY=
 github.com/spf13/cast v1.6.0 h1:GEiTHELF+vaR5dhz3VqZfFSzZjYbgeKDpBxQVS4GYJ0=
