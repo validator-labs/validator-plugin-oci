@@ -23,3 +23,14 @@ spec:
       host: "745150053801.dkr.ecr.us-east-1.amazonaws.com"
       auth:
         secretName: ecr-credentials
+
+    # private oci registry with signature verification enabled
+    - name: "private oci registry with signature verification enabled"
+      host: "registry.hub.docker.com"
+      artifacts:
+        - ref: "ahmadibraspectrocloud/validator-plugin-oci:signed"
+          layerValidation: true
+      signatureVerification:
+        secretName: "cosign-public-keys"
+      auth:
+        secretName: dockerhub-credentials
