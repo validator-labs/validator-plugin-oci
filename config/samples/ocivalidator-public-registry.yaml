@@ -22,7 +22,7 @@ spec:
     - name: "public oci registry with signature verification enabled"
       host: "registry.hub.docker.com"
       artifacts:
-        - ref: "ahmadibraspectrocloud/validator-plugin-oci:signed"
+        - ref: "ahmadibraspectrocloud/kb-guestbook:signed"
           layerValidation: true
       signatureVerification:
         secretName: "cosign-public-keys"

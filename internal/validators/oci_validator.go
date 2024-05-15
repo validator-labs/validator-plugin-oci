@@ -161,7 +161,7 @@ func validateReference(ctx context.Context, ref name.Reference, fullLayerValidat
 		return
 	}
 
-	return verifySignature(ctx, ref, pubKeys)
+	return verifySignature(ctx, ref, pubKeys, opts)
 }
 
 // validateRepos validates repos within a registry. This function is to be used when no particular artifact in a registry is provided
@@ -325,12 +325,12 @@ func setupTransportOpts(opts []remote.Option, caCert string) ([]remote.Option, e
 }
 
 // verifySignature verifies the authenticity of the given image reference URL using the provided public keys.
-func verifySignature(ctx context.Context, ref name.Reference, pubKeys [][]byte, opt ...remote.Option) (details []string, errs []error) {
+func verifySignature(ctx context.Context, ref name.Reference, pubKeys [][]byte, opts []remote.Option) (details []string, errs []error) {
 	ctxTimeout, cancel := context.WithTimeout(ctx, verificationTimeout)
 	defer cancel()
 
 	defaultCosignOciOpts := []soci.Options{
-		soci.WithRemoteOptions(opt...),
+		soci.WithRemoteOptions(opts...),
 	}
 
 	for _, key := range pubKeys {
