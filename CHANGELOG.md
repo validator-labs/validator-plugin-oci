@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.0.9](https://github.com/spectrocloud-labs/validator-plugin-oci/compare/v0.0.8...v0.0.9) (2024-05-15)
+
+
+### Bug Fixes
+
+* fix Ensure auth options are passed into the Cosign Verifier ([#166](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/166)) ([26d4671](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/26d46714d09c79d9dd4b9f3796ee0d2e3d9a5ad6))
+* **deps:** update aws-sdk-go-v2 monorepo ([#151](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/151)) ([4d6bfe5](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/4d6bfe5759a340ca8380876fb3f99c1b31b20c72))
+* **deps:** update kubernetes packages to v0.29.3 ([#148](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/148)) ([cb599b9](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/cb599b92152d36704b642eae7428877956a7f1e7))
+* **deps:** update module github.com/google/go-containerregistry to v0.19.1 ([#147](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/147)) ([413aa68](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/413aa68a2822e954d4c16fe24ecd74c4da7531bf))
+* **deps:** update module github.com/onsi/ginkgo/v2 to v2.17.0 ([#149](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/149)) ([48dfcba](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/48dfcbae5043da0591e11ef3fc65d6c85b398421))
+* **deps:** update module github.com/onsi/ginkgo/v2 to v2.17.1 ([#153](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/153)) ([06805c0](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/06805c0f2445fa0a7b5006aec7da194874e5613d))
+* **deps:** update module github.com/onsi/gomega to v1.32.0 ([#150](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/150)) ([b04ef8d](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/b04ef8db786c8ad0d804852606ab16041535863c))
+* **deps:** update module github.com/sigstore/sigstore to v1.8.3 ([#157](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/157)) ([8bbac88](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/8bbac886c92f9decae14de301f78d32c35100769))
+* **deps:** update module github.com/spectrocloud-labs/validator to v0.0.38 ([#95](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/95)) ([5566f04](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/5566f044527a811e862d333b7025868d62f78ef4))
+
+
+### Other
+
+* **deps:** update actions/setup-python digest to 82c7e63 ([#154](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/154)) ([e3db8ed](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/e3db8ed0b43f6cfb36f27a6c3eb2a478a259aa50))
+* **deps:** update anchore/sbom-action action to v0.15.10 ([#156](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/156)) ([c8c30aa](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/c8c30aa74fea1c79eac1216d04385203f573ab14))
+* **deps:** update codecov/codecov-action digest to c16abc2 ([#155](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/155)) ([34c1c5c](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/34c1c5c6fbafa73b161daf6ab8b632484c11b9d5))
+* **deps:** update docker/build-push-action digest to 2cdde99 ([#143](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/143)) ([c2f01b1](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/c2f01b18d141c05907f3b4a191d3687930c388ed))
+* **deps:** update docker/setup-buildx-action digest to 2b51285 ([#144](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/144)) ([04a5e30](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/04a5e30be8a2533839c0f97d58421413e8b3e421))
+* **deps:** update gcr.io/kubebuilder/kube-rbac-proxy docker tag to v0.16.0 ([#158](https://github.com/spectrocloud-labs/validator-plugin-oci/issues/158)) ([58806a5](https://github.com/spectrocloud-labs/validator-plugin-oci/commit/58806a547be425ab3db76c5a30b08587ff570856))
+
 ## [0.0.8](https://github.com/spectrocloud-labs/validator-plugin-oci/compare/v0.0.7...v0.0.8) (2024-03-13)
 
 
