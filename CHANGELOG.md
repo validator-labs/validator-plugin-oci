@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.10](https://github.com/validator-labs/validator-plugin-oci/compare/v0.0.9...v0.0.10) (2024-05-17)
+
+
+### Other
+
+* migrate from spectrocloud-labs to validator-labs ([#167](https://github.com/validator-labs/validator-plugin-oci/issues/167)) ([4a51c11](https://github.com/validator-labs/validator-plugin-oci/commit/4a51c117b26412f4d9e1358694c360f54446e649))
+
 ## [0.0.9](https://github.com/validator-labs/validator-plugin-oci/compare/v0.0.8...v0.0.9) (2024-05-15)
 
 
