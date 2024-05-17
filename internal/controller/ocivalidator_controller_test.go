@@ -10,8 +10,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/spectrocloud-labs/validator-plugin-oci/api/v1alpha1"
-	vapi "github.com/spectrocloud-labs/validator/api/v1alpha1"
+	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
+	vapi "github.com/validator-labs/validator/api/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 

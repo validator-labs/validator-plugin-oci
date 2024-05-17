@@ -23,7 +23,7 @@ The following table lists the configurable parameters of the Validator-plugin-oc
 | `controllerManager.manager.args` |  | `["--health-probe-bind-address=:8081", "--leader-elect"]` |
 | `controllerManager.manager.containerSecurityContext.allowPrivilegeEscalation` |  | `false` |
 | `controllerManager.manager.containerSecurityContext.capabilities.drop` |  | `["ALL"]` |
-| `controllerManager.manager.image.repository` |  | `"quay.io/spectrocloud-labs/validator-plugin-oci"` |
+| `controllerManager.manager.image.repository` |  | `"quay.io/validator-labs/validator-plugin-oci"` |
 | `controllerManager.manager.image.tag` | x-release-please-version | `"v0.0.9"` |
 | `controllerManager.manager.resources.limits.cpu` |  | `"500m"` |
 | `controllerManager.manager.resources.limits.memory` |  | `"128Mi"` |
@@ -36,7 +36,7 @@ The following table lists the configurable parameters of the Validator-plugin-oc
 | `metricsService.type` |  | `"ClusterIP"` |
 | `env` |  | `[]` |
 | `proxy.enabled` |  | `false` |
-| `proxy.image` |  | `"quay.io/spectrocloud-labs/validator-certs-init:latest"` |
+| `proxy.image` |  | `"quay.io/validator-labs/validator-certs-init:latest"` |
 | `proxy.secretName` |  | `"proxy-cert"` |
 
 
