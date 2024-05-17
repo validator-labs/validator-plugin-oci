@@ -32,13 +32,13 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/spectrocloud-labs/validator-plugin-oci/api/v1alpha1"
-	"github.com/spectrocloud-labs/validator-plugin-oci/internal/constants"
-	val "github.com/spectrocloud-labs/validator-plugin-oci/internal/validators"
-	vapi "github.com/spectrocloud-labs/validator/api/v1alpha1"
-	"github.com/spectrocloud-labs/validator/pkg/types"
-	"github.com/spectrocloud-labs/validator/pkg/util"
-	vres "github.com/spectrocloud-labs/validator/pkg/validationresult"
+	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
+	"github.com/validator-labs/validator-plugin-oci/internal/constants"
+	val "github.com/validator-labs/validator-plugin-oci/internal/validators"
+	vapi "github.com/validator-labs/validator/api/v1alpha1"
+	"github.com/validator-labs/validator/pkg/types"
+	"github.com/validator-labs/validator/pkg/util"
+	vres "github.com/validator-labs/validator/pkg/validationresult"
 )
 
 // OciValidatorReconciler reconciles a OciValidator object

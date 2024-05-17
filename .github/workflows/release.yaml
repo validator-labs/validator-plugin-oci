@@ -18,8 +18,8 @@ defaults:
 jobs:
   release-please:
     permissions:
-      contents: write  # for google-github-actions/release-please-action to create release commit
-      pull-requests: write  # for google-github-actions/release-please-action to create release PR
+      contents: write  # for googleapis/release-please-action to create release commit
+      pull-requests: write  # for googleapis/release-please-action to create release PR
     runs-on: [self-hosted, Linux, X64, validator]
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
@@ -29,12 +29,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
-      - uses: google-github-actions/release-please-action@a37ac6e4f6449ce8b3f7607e4d97d0146028dc0b # v4
+      - uses: googleapis/release-please-action@v4
         id: release
         with:
-          command: manifest
           token: ${{secrets.PAT}}
-          default-branch: main
 
   release-charts:
     needs: release-please
@@ -49,10 +47,10 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
           charts_dir: chart
-          owner: spectrocloud-labs
+          owner: validator-labs
           branch: ${{ env.GITHUB_PAGES_BRANCH }}
-          commit_username: spectrocloud-labs-bot
-          commit_email: bot@noreply.spectrocloud-labs.io
+          commit_username: validator-labs-bot
+          commit_email: bot@noreply.validator-labs.io
           
   build-container:
     if: needs.release-please.outputs.releases_created == 'true'
@@ -64,7 +62,7 @@ jobs:
       packages: write
       id-token: write
     env:
-      IMAGE_TAG: quay.io/spectrocloud-labs/validator-plugin-oci:${{ needs.release-please.outputs.tag_name }}
+      IMAGE_TAG: quay.io/validator-labs/validator-plugin-oci:${{ needs.release-please.outputs.tag_name }}
       IMAGE_NAME: validator-plugin-oci
     steps:
       - name: Checkout
@@ -80,7 +78,7 @@ jobs:
         uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3
         with:
           registry: "quay.io"
-          username: tgillson
+          username: ${{ secrets.QUAY_USER }}
           password: ${{ secrets.QUAY_TOKEN }}
 
       - name: Build Docker Image

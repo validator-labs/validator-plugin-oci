@@ -1,4 +1,4 @@
-module github.com/spectrocloud-labs/validator-plugin-oci
+module github.com/validator-labs/validator-plugin-oci
 
 go 1.21.6
 
@@ -12,8 +12,8 @@ require (
 	github.com/onsi/gomega v1.32.0
 	github.com/sigstore/cosign/v2 v2.2.3
 	github.com/sigstore/sigstore v1.8.3
-	github.com/spectrocloud-labs/validator v0.0.38
 	github.com/stretchr/testify v1.9.0
+	github.com/validator-labs/validator v0.0.39
 	k8s.io/api v0.29.3
 	k8s.io/apimachinery v0.29.3
 	k8s.io/client-go v0.29.3
