@@ -24,7 +24,7 @@ jobs:
           go-version-file: go.mod
 
       - name: install-golicenses
-        run: go install github.com/google/go-licenses@v1.6.0
+        run: go install github.com/google/go-licenses@latest
 
       - name: golicense-scan
         run: |
