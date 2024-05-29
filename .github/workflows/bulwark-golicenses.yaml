@@ -11,21 +11,15 @@ concurrency:
 jobs:
   golicense-pr-scan:
     runs-on: [self-hosted, Linux, X64, validator]
+    container:
+      image: gcr.io/spectro-images-public/golang:1.22.3-alpine3.18
     steps:
-      - name: install-git
-        run: sudo apt-get install -y git
-
       - name: checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
-      - name: Set up Go
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5
-        with:
-          go-version-file: go.mod
-
       - name: install-golicenses
-        run: go install github.com/google/go-licenses@v1.6.0
+        run: GOBIN=/usr/local/bin go install github.com/google/go-licenses@latest
 
       - name: golicense-scan
         run: |
-          go-licenses check ./... --ignore github.com/alibabacloud-go/cr-20160607
+          go-licenses check --ignore github.com/alibabacloud-go/cr-20160607 ./...
