@@ -42,9 +42,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
-	v1alpha1 "github.com/spectrocloud-labs/validator-plugin-oci/api/v1alpha1"
-	vapi "github.com/spectrocloud-labs/validator/api/v1alpha1"
-	"github.com/spectrocloud-labs/validator/pkg/util"
+	v1alpha1 "github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
+	vapi "github.com/validator-labs/validator/api/v1alpha1"
+	"github.com/validator-labs/validator/pkg/util"
 	//+kubebuilder:scaffold:imports
 )
 
