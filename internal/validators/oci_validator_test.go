@@ -2,7 +2,6 @@ package validators
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -16,9 +15,9 @@ import (
 	"github.com/google/go-containerregistry/pkg/registry"
 	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"github.com/spectrocloud-labs/validator-plugin-oci/api/v1alpha1"
-	"github.com/spectrocloud-labs/validator/pkg/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
+	"github.com/validator-labs/validator/pkg/types"
 )
 
 const (
@@ -35,7 +34,7 @@ const (
 )
 
 var (
-	vr = buildValidationResult(v1alpha1.OciRegistryRule{})
+	vrr = buildValidationResult(v1alpha1.OciRegistryRule{})
 )
 
 func TestParseEcrRegion(t *testing.T) {
@@ -54,17 +53,17 @@ func TestParseEcrRegion(t *testing.T) {
 		{
 			URL:            longURL,
 			expectedRegion: "",
-			expectedErr:    errors.New(fmt.Sprintf("Invalid ECR URL %s", longURL)),
+			expectedErr:    fmt.Errorf("invalid ECR URL %s", longURL),
 		},
 		{
 			URL:            shortURL,
 			expectedRegion: "",
-			expectedErr:    errors.New(fmt.Sprintf("Invalid ECR URL %s", shortURL)),
+			expectedErr:    fmt.Errorf("invalid ECR URL %s", shortURL),
 		},
 		{
 			URL:            notEcrURL,
 			expectedRegion: "",
-			expectedErr:    errors.New(fmt.Sprintf("Invalid ECR URL %s", notEcrURL)),
+			expectedErr:    fmt.Errorf("invalid ECR URL %s", notEcrURL),
 		},
 	}
 
@@ -82,46 +81,46 @@ func TestParseEcrRegion(t *testing.T) {
 
 func TestGenerateRef(t *testing.T) {
 	type testCase struct {
-		registry         string
-		artifact         string
-		validationResult *types.ValidationResult
-		expectedRefName  string
-		expectErr        bool
+		registry             string
+		artifact             string
+		validationRuleResult *types.ValidationRuleResult
+		expectedRefName      string
+		expectErr            bool
 	}
 
 	testCases := []testCase{
 		{
-			registry:         registryName,
-			artifact:         "artifact@sha256:ddbac6e7732bf90a4e674a01bf279ce27ea8691530b8d209e6fe77477e0fa406",
-			validationResult: vr,
-			expectedRefName:  "registry/artifact@sha256:ddbac6e7732bf90a4e674a01bf279ce27ea8691530b8d209e6fe77477e0fa406",
-			expectErr:        false,
+			registry:             registryName,
+			artifact:             "artifact@sha256:ddbac6e7732bf90a4e674a01bf279ce27ea8691530b8d209e6fe77477e0fa406",
+			validationRuleResult: vrr,
+			expectedRefName:      "registry/artifact@sha256:ddbac6e7732bf90a4e674a01bf279ce27ea8691530b8d209e6fe77477e0fa406",
+			expectErr:            false,
 		},
 		{
-			registry:         registryName,
-			artifact:         "artifact:v1.0.0",
-			validationResult: vr,
-			expectedRefName:  "registry/artifact:v1.0.0",
-			expectErr:        false,
+			registry:             registryName,
+			artifact:             "artifact:v1.0.0",
+			validationRuleResult: vrr,
+			expectedRefName:      "registry/artifact:v1.0.0",
+			expectErr:            false,
 		},
 		{
-			registry:         registryName,
-			artifact:         "artifact",
-			validationResult: vr,
-			expectedRefName:  "registry/artifact:latest",
-			expectErr:        false,
+			registry:             registryName,
+			artifact:             "artifact",
+			validationRuleResult: vrr,
+			expectedRefName:      "registry/artifact:latest",
+			expectErr:            false,
 		},
 		{
-			registry:         registryName,
-			artifact:         "invalidArtifact",
-			validationResult: vr,
-			expectedRefName:  "",
-			expectErr:        true,
+			registry:             registryName,
+			artifact:             "invalidArtifact",
+			validationRuleResult: vrr,
+			expectedRefName:      "",
+			expectErr:            true,
 		},
 	}
 
 	for _, tc := range testCases {
-		ref, err := generateRef(tc.registry, tc.artifact, tc.validationResult)
+		ref, err := generateRef(tc.registry, tc.artifact, tc.validationRuleResult)
 
 		if tc.expectErr {
 			assert.NotNil(t, err)
@@ -211,7 +210,8 @@ func TestSetupAuthOpts(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		opts, err := setupAuthOpts(tc.inputOpts, tc.registryName, tc.username, tc.password)
+		ctx := context.Background()
+		opts, err := setupAuthOpts(ctx, tc.inputOpts, tc.registryName, tc.username, tc.password)
 
 		if tc.expectErr {
 			assert.NotNil(t, err)
@@ -242,43 +242,73 @@ func TestValidateReference(t *testing.T) {
 	}
 
 	type testCase struct {
-		ref            name.Reference
-		download       bool
-		expectedDetail string
-		expectErr      bool
+		ref             name.Reference
+		layerValidation bool
+		pubKeys         [][]byte
+		expectedDetail  string
+		expectErr       bool
 	}
 
 	testCases := []testCase{
 		{
-			ref:            validRef,
-			download:       false,
-			expectedDetail: "",
-			expectErr:      false,
+			ref:             validRef,
+			layerValidation: false,
+			pubKeys:         nil,
+			expectedDetail:  "",
+			expectErr:       false,
 		},
 		{
-			ref:            validRef,
-			download:       true,
-			expectedDetail: "",
-			expectErr:      false,
+			ref:             validRef,
+			layerValidation: true,
+			pubKeys:         nil,
+			expectedDetail:  "",
+			expectErr:       false,
 		},
 		{
-			ref:            invalidRef,
-			download:       false,
-			expectedDetail: "failed to get descriptor for artifact",
+			ref:             invalidRef,
+			layerValidation: false,
+			pubKeys:         nil,
+			expectedDetail:  "failed to get descriptor for artifact",
+			expectErr:       true,
+		},
+		{
+			ref:             validRef,
+			layerValidation: true,
+			pubKeys:         [][]byte{[]byte("invalid-pub-key-1"), []byte("invalid-pub-key-2")},
+			expectedDetail:  "failed to create verifier with public key",
+			expectErr:       true,
+		},
+		{
+			ref:             validRef,
+			layerValidation: true,
+			pubKeys:         [][]byte{},
+			expectedDetail:  "no matching signatures were found",
+			expectErr:       true,
+		},
+		{
+			ref:             validRef,
+			layerValidation: true,
+			pubKeys: [][]byte{
+				[]byte(`-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKPuCo9AmJCpqGWhefjbhkFcr1GA3
+iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
+-----END PUBLIC KEY-----`),
+			},
+			expectedDetail: "no matching signatures were found",
 			expectErr:      true,
 		},
 	}
 
 	for _, tc := range testCases {
-		detail, err := validateReference(tc.ref, tc.download, []remote.Option{remote.WithAuth(authn.Anonymous)})
+		ctx := context.Background()
+		details, errs := validateReference(ctx, tc.ref, tc.layerValidation, tc.pubKeys, []remote.Option{remote.WithAuth(authn.Anonymous)})
 
-		if tc.expectErr {
-			assert.NotNil(t, err)
-			assert.Contains(t, detail, tc.expectedDetail)
+		if tc.expectedDetail == "" {
+			assert.Empty(t, details)
 		} else {
-			assert.Empty(t, detail)
-			assert.NoError(t, err)
+			assert.Contains(t, details[len(details)-1], tc.expectedDetail)
 		}
+		assert.Equal(t, tc.expectErr, len(errs) > 0)
 	}
 }
 
@@ -323,7 +353,7 @@ func TestValidateRepos(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		details, err := validateRepos(context.Background(), tc.host, []remote.Option{remote.WithAuth(authn.Anonymous)}, &types.ValidationResult{})
+		details, errs := validateRepos(context.Background(), tc.host, []remote.Option{remote.WithAuth(authn.Anonymous)}, nil, &types.ValidationRuleResult{})
 
 		if tc.expectedDetail == "" {
 			assert.Empty(t, details)
@@ -332,10 +362,10 @@ func TestValidateRepos(t *testing.T) {
 			assert.Contains(t, details[0], tc.expectedDetail)
 		}
 
-		if tc.expectErr {
-			assert.NotNil(t, err)
+		if !tc.expectErr {
+			assert.Empty(t, errs)
 		} else {
-			assert.NoError(t, err)
+			assert.Len(t, errs, 1)
 		}
 	}
 }
@@ -388,7 +418,7 @@ func TestReconcileOciRegistryRule(t *testing.T) {
 	for _, tc := range testCases {
 		l := logr.New(nil)
 		s := NewOciRuleService(l)
-		_, err := s.ReconcileOciRegistryRule(tc.rule, "", "")
+		_, err := s.ReconcileOciRegistryRule(tc.rule, "", "", nil)
 
 		if tc.expectErr {
 			assert.NotNil(t, err)

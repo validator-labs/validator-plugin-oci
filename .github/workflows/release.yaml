@@ -18,8 +18,8 @@ defaults:
 jobs:
   release-please:
     permissions:
-      contents: write  # for google-github-actions/release-please-action to create release commit
-      pull-requests: write  # for google-github-actions/release-please-action to create release PR
+      contents: write  # for googleapis/release-please-action to create release commit
+      pull-requests: write  # for googleapis/release-please-action to create release PR
     runs-on: [self-hosted, Linux, X64, validator]
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
@@ -29,12 +29,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
-      - uses: google-github-actions/release-please-action@cc61a07e2da466bebbc19b3a7dd01d6aecb20d1e # v4
+      - uses: googleapis/release-please-action@v4
         id: release
         with:
-          command: manifest
           token: ${{secrets.PAT}}
-          default-branch: main
 
   release-charts:
     needs: release-please
@@ -49,10 +47,10 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
           charts_dir: chart
-          owner: spectrocloud-labs
+          owner: validator-labs
           branch: ${{ env.GITHUB_PAGES_BRANCH }}
-          commit_username: spectrocloud-labs-bot
-          commit_email: bot@noreply.spectrocloud-labs.io
+          commit_username: validator-labs-bot
+          commit_email: bot@noreply.validator-labs.io
           
   build-container:
     if: needs.release-please.outputs.releases_created == 'true'
@@ -64,7 +62,7 @@ jobs:
       packages: write
       id-token: write
     env:
-      IMAGE_TAG: quay.io/spectrocloud-labs/validator-plugin-oci:${{ needs.release-please.outputs.tag_name }}
+      IMAGE_TAG: quay.io/validator-labs/validator-plugin-oci:${{ needs.release-please.outputs.tag_name }}
       IMAGE_NAME: validator-plugin-oci
     steps:
       - name: Checkout
@@ -74,17 +72,17 @@ jobs:
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3
+        uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # v3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
+        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3
         with:
           registry: "quay.io"
-          username: tgillson
+          username: ${{ secrets.QUAY_USER }}
           password: ${{ secrets.QUAY_TOKEN }}
 
       - name: Build Docker Image
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5
+        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5
         with:
           context: .
           file: ./Dockerfile
@@ -98,14 +96,14 @@ jobs:
           cache-to: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_TAG }}
 
       - name: Generate SBOM
-        uses: anchore/sbom-action@b6a39da80722a2cb0ef5d197531764a89b5d48c3 # v0.15.8
+        uses: anchore/sbom-action@ab5d7b5f48981941c4c5d6bf33aeb98fe3bae38c # v0.15.10
         with:
           image: ${{ env.IMAGE_TAG }}
           artifact-name: sbom-${{ env.IMAGE_NAME }}
           output-file: ./sbom-${{ env.IMAGE_NAME }}.spdx.json
 
       - name: Attach SBOM to release
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
+        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
           files: ./sbom-${{ env.IMAGE_NAME }}.spdx.json

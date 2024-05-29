@@ -27,3 +27,5 @@ Dockerfile.cross
 
 # misc
 .DS_Store
+.env
+tmp/*

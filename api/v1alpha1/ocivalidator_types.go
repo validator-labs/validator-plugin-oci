@@ -23,7 +23,7 @@ import (
 // OciValidatorSpec defines the desired state of OciValidator
 type OciValidatorSpec struct {
 	// +kubebuilder:validation:MaxItems=5
-	// +kubebuilder:validation:XValidation:message="OciRegistryRules must have a unique Host",rule="self.all(e, size(self.filter(x, x.host == e.host)) == 1)"
+	// +kubebuilder:validation:XValidation:message="OciRegistryRules must have a unique RuleName",rule="self.all(e, size(self.filter(x, x.name == e.name)) == 1)"
 	OciRegistryRules []OciRegistryRule `json:"ociRegistryRules,omitempty" yaml:"ociRegistryRules,omitempty"`
 }
 
@@ -32,6 +32,9 @@ func (s OciValidatorSpec) ResultCount() int {
 }
 
 type OciRegistryRule struct {
+	// Name is the name of the rule
+	RuleName string `json:"name" yaml:"name"`
+
 	// Host is a reference to the host URL of an OCI compliant registry
 	Host string `json:"host" yaml:"host"`
 
@@ -43,10 +46,13 @@ type OciRegistryRule struct {
 
 	// CaCert is the base64 encoded CA Certificate
 	CaCert string `json:"caCert,omitempty" yaml:"caCert,omitempty"`
+
+	// SignatureVerification provides the option to verify the signature of the image
+	SignatureVerification SignatureVerification `json:"signatureVerification,omitempty" yaml:"signatureVerification,omitempty"`
 }
 
 func (r OciRegistryRule) Name() string {
-	return r.Host
+	return r.RuleName
 }
 
 type Artifact struct {
@@ -59,11 +65,27 @@ type Artifact struct {
 	// When no tag or digest are specified, the default tag "latest" is used.
 	Ref string `json:"ref" yaml:"ref"`
 
-	// Download specifies whether a download attempt should be made for the artifact
-	Download bool `json:"download,omitempty" yaml:"download,omitempty"`
+	// LayerValidation specifies whether deep validation of the artifact layers should be performed.
+	// The existence of layers is always validated, but this option allows for the deep validation of the layers.
+	// See more details here:
+	// https://github.com/google/go-containerregistry/blob/8dadbe76ff8c20d0e509406f04b7eade43baa6c1/pkg/v1/validate/image.go#L105
+	LayerValidation bool `json:"layerValidation,omitempty" yaml:"layerValidation,omitempty"`
 }
 
 type Auth struct {
+	// SecretName is the name of the Kubernetes Secret that exists in the same namespace as the OciValidator
+	// and that contains the credentials used to authenticate to the OCI Registry
+	SecretName string `json:"secretName" yaml:"secretName"`
+}
+
+type SignatureVerification struct {
+	// Provider specifies the technology used to sign the OCI Artifact
+	// +kubebuilder:validation:Enum=cosign
+	// +kubebuilder:default:=cosign
+	Provider string `json:"provider" yaml:"provider"`
+
+	// SecretName is the name of the Kubernetes Secret that exists in the same namespace as the OciValidator
+	// and that contains the trusted public keys used to sign artifacts in the OciRegistryRule
 	SecretName string `json:"secretName" yaml:"secretName"`
 }
 

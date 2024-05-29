@@ -1,12 +1,12 @@
-[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/spectrocloud-labs/validator-plugin-oci/issues)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/validator-labs/validator-plugin-oci/issues)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-![Build](https://github.com/spectrocloud-labs/validator-plugin-oci/actions/workflows/build_container.yaml/badge.svg)
-[![Go Report Card](https://goreportcard.com/badge/github.com/spectrocloud-labs/validator-plugin-oci)](https://goreportcard.com/report/github.com/spectrocloud-labs/validator-plugin-oci)
-[![codecov](https://codecov.io/github/spectrocloud-labs/validator-plugin-oci/graph/badge.svg?token=Q15XUCRNCN)](https://codecov.io/github/spectrocloud-labs/validator-plugin-oci)
-[![Go Reference](https://pkg.go.dev/badge/github.com/spectrocloud-labs/validator-plugin-oci.svg)](https://pkg.go.dev/github.com/spectrocloud-labs/validator-plugin-oci)
+![Test](https://github.com/validator-labs/validator-plugin-oci/actions/workflows/test.yaml/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/validator-labs/validator-plugin-oci)](https://goreportcard.com/report/github.com/validator-labs/validator-plugin-oci)
+[![codecov](https://codecov.io/github/validator-labs/validator-plugin-oci/graph/badge.svg?token=Q15XUCRNCN)](https://codecov.io/github/validator-labs/validator-plugin-oci)
+[![Go Reference](https://pkg.go.dev/badge/github.com/validator-labs/validator-plugin-oci.svg)](https://pkg.go.dev/github.com/validator-labs/validator-plugin-oci)
 
 # validator-plugin-oci
-The OCI [validator](https://github.com/spectrocloud-labs/validator) plugin ensures that your OCI configuration matches a user-configurable expected state.
+The OCI [validator](https://github.com/validator-labs/validator) plugin ensures that your OCI configuration matches a user-configurable expected state.
 
 ## Description
 The OCI validator plugin reconciles `OciValidator` custom resources to perform the following validations against your OCI registry:
@@ -17,13 +17,13 @@ The OCI validator plugin reconciles `OciValidator` custom resources to perform t
 
 Each `OciValidator` CR is (re)-processed every two minutes to continuously ensure that your OCI registry matches the expected state.
 
-See the [samples](https://github.com/spectrocloud-labs/validator-plugin-oci/tree/main/config/samples) directory for example `OciValidator` configurations.
+See the [samples](https://github.com/validator-labs/validator-plugin-oci/tree/main/config/samples) directory for example `OciValidator` configurations.
 
 ## Installation
-The OCI validator plugin is meant to be [installed by validator](https://github.com/spectrocloud-labs/validator/tree/gh_pages#installation) (via a ValidatorConfig), but it can also be installed directly as follows:
+The OCI validator plugin is meant to be [installed by validator](https://github.com/validator-labs/validator/tree/gh_pages#installation) (via a ValidatorConfig), but it can also be installed directly as follows:
 
 ```bash
-helm repo add validator-plugin-oci https://spectrocloud-labs.github.io/validator-plugin-oci
+helm repo add validator-plugin-oci https://validator-labs.github.io/validator-plugin-oci
 helm repo update
 helm install validator-plugin-oci validator-plugin-oci/validator-plugin-oci -n validator-plugin-oci --create-namespace
 ```

@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -27,15 +28,17 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ktypes "k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/cluster-api/util/patch"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/spectrocloud-labs/validator-plugin-oci/api/v1alpha1"
-	"github.com/spectrocloud-labs/validator-plugin-oci/internal/constants"
-	val "github.com/spectrocloud-labs/validator-plugin-oci/internal/validators"
-	vapi "github.com/spectrocloud-labs/validator/api/v1alpha1"
-	"github.com/spectrocloud-labs/validator/pkg/util/ptr"
-	vres "github.com/spectrocloud-labs/validator/pkg/validationresult"
+	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
+	"github.com/validator-labs/validator-plugin-oci/internal/constants"
+	val "github.com/validator-labs/validator-plugin-oci/internal/validators"
+	vapi "github.com/validator-labs/validator/api/v1alpha1"
+	"github.com/validator-labs/validator/pkg/types"
+	"github.com/validator-labs/validator/pkg/util"
+	vres "github.com/validator-labs/validator/pkg/validationresult"
 )
 
 // OciValidatorReconciler reconciles a OciValidator object
@@ -51,7 +54,9 @@ type OciValidatorReconciler struct {
 
 // Reconcile reconciles each rule found in each OCIValidator in the cluster and creates ValidationResults accordingly
 func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	r.Log.V(0).Info("Reconciling OciValidator", "name", req.Name, "namespace", req.Namespace)
+	l := r.Log.V(0).WithValues("name", req.Name, "namespace", req.Namespace)
+
+	l.Info("Reconciling OciValidator")
 
 	validator := &v1alpha1.OciValidator{}
 	if err := r.Get(ctx, req.NamespacedName, validator); err != nil {
@@ -60,34 +65,54 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	// Get the active validator's validation result
 	vr := &vapi.ValidationResult{}
+	p, err := patch.NewHelper(vr, r.Client)
+	if err != nil {
+		l.Error(err, "failed to create patch helper")
+		return ctrl.Result{}, err
+	}
 	nn := ktypes.NamespacedName{
 		Name:      validationResultName(validator),
 		Namespace: req.Namespace,
 	}
 	if err := r.Get(ctx, nn, vr); err == nil {
-		vres.HandleExistingValidationResult(nn, vr, r.Log)
+		vres.HandleExistingValidationResult(vr, r.Log)
 	} else {
 		if !apierrs.IsNotFound(err) {
-			r.Log.V(0).Error(err, "unexpected error getting ValidationResult", "name", nn.Name, "namespace", nn.Namespace)
+			l.Error(err, "unexpected error getting ValidationResult")
 		}
-		if err := vres.HandleNewValidationResult(r.Client, buildValidationResult(validator), r.Log); err != nil {
+		if err := vres.HandleNewValidationResult(ctx, r.Client, p, buildValidationResult(validator), r.Log); err != nil {
 			return ctrl.Result{}, err
 		}
+		return ctrl.Result{RequeueAfter: time.Millisecond}, nil
 	}
+
+	// Always update the expected result count in case the validator's rules have changed
+	vr.Spec.ExpectedResults = validator.Spec.ResultCount()
+
+	resp := types.ValidationResponse{
+		ValidationRuleResults: make([]*types.ValidationRuleResult, 0, vr.Spec.ExpectedResults),
+		ValidationRuleErrors:  make([]error, 0, vr.Spec.ExpectedResults),
+	}
+
+	ociRuleService := val.NewOciRuleService(r.Log)
 
 	// OCI Registry rules
 	for _, rule := range validator.Spec.OciRegistryRules {
-		ociRuleService := val.NewOciRuleService(r.Log)
 		username, password := r.secretKeyAuth(req, rule)
+		pubKeys := r.signaturePubKeys(req, rule)
 
-		validationResult, err := ociRuleService.ReconcileOciRegistryRule(rule, username, password)
+		vrr, err := ociRuleService.ReconcileOciRegistryRule(rule, username, password, pubKeys)
 		if err != nil {
-			r.Log.V(0).Error(err, "failed to reconcile OCI Registry rule")
+			l.Error(err, "failed to reconcile OCI Registry rule")
 		}
-		vres.SafeUpdateValidationResult(r.Client, nn, validationResult, validator.Spec.ResultCount(), err, r.Log)
+		resp.AddResult(vrr, err)
 	}
 
-	r.Log.V(0).Info("Requeuing for re-validation in two minutes.", "name", req.Name, "namespace", req.Namespace)
+	if err := vres.SafeUpdateValidationResult(ctx, p, vr, resp, r.Log); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	l.Info("Requeuing for re-validation in two minutes.")
 	return ctrl.Result{RequeueAfter: time.Second * 120}, nil
 }
 
@@ -104,15 +129,16 @@ func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.O
 	}
 
 	authSecret := &corev1.Secret{}
-	nn := ktypes.NamespacedName{Name: rule.Auth.SecretName, Namespace: req.Namespace}
+	secretName := rule.Auth.SecretName
+	nn := ktypes.NamespacedName{Name: secretName, Namespace: req.Namespace}
 
 	if err := r.Get(context.Background(), nn, authSecret); err != nil {
 		if apierrs.IsNotFound(err) {
 			// no secrets found, set creds to empty string
-			r.Log.V(0).Error(err, fmt.Sprintf("auth secret %s not found for rule %s", rule.Auth.SecretName, rule.Name()))
+			r.Log.V(0).Error(err, fmt.Sprintf("Auth secret %s not found for rule %s", secretName, rule.Name()))
 			return "", ""
 		} else {
-			r.Log.V(0).Error(err, fmt.Sprintf("failed to fetch auth secret %s for rule %s", rule.Auth.SecretName, rule.Name()))
+			r.Log.V(0).Error(err, fmt.Sprintf("Failed to fetch auth secret %s for rule %s", secretName, rule.Name()))
 			return "", ""
 		}
 	}
@@ -120,15 +146,48 @@ func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.O
 	errMalformedSecret := fmt.Errorf("malformed secret %s/%s", authSecret.Namespace, authSecret.Name)
 	username, ok := authSecret.Data["username"]
 	if !ok {
-		r.Log.V(0).Error(errMalformedSecret, "Auth secret missing username, defaulting to empty username", "name", rule.Auth.SecretName, "namespace", req.Namespace)
+		r.Log.V(0).Error(errMalformedSecret, "Auth secret missing username, defaulting to empty username", "name", secretName, "namespace", req.Namespace)
 	}
 
 	password, ok := authSecret.Data["password"]
 	if !ok {
-		r.Log.V(0).Error(errMalformedSecret, "Auth secret missing password, defaulting to empty password", "name", rule.Auth.SecretName, "namespace", req.Namespace)
+		r.Log.V(0).Error(errMalformedSecret, "Auth secret missing password, defaulting to empty password", "name", secretName, "namespace", req.Namespace)
 	}
 
 	return string(username), string(password)
+}
+
+func (r *OciValidatorReconciler) signaturePubKeys(req ctrl.Request, rule v1alpha1.OciRegistryRule) [][]byte {
+	if rule.SignatureVerification.SecretName == "" {
+		return nil
+	}
+
+	pubKeysSecret := &corev1.Secret{}
+	secretName := rule.SignatureVerification.SecretName
+	nn := ktypes.NamespacedName{Name: secretName, Namespace: req.Namespace}
+
+	// make a slice of byte slices
+	pubKeys := make([][]byte, 0)
+
+	if err := r.Get(context.Background(), nn, pubKeysSecret); err != nil {
+		if apierrs.IsNotFound(err) {
+			// no secrets found, set creds to empty string
+			r.Log.V(0).Error(err, fmt.Sprintf("Public Keys secret %s not found for rule %s", secretName, rule.Name()))
+			return pubKeys
+		} else {
+			r.Log.V(0).Error(err, fmt.Sprintf("Failed to fetch Public Keys secret %s for rule %s", secretName, rule.Name()))
+			return pubKeys
+		}
+	}
+
+	for k, data := range pubKeysSecret.Data {
+		// search for public keys in the secret
+		if strings.HasSuffix(k, ".pub") {
+			pubKeys = append(pubKeys, data)
+		}
+	}
+
+	return pubKeys
 }
 
 func buildValidationResult(validator *v1alpha1.OciValidator) *vapi.ValidationResult {
@@ -142,7 +201,7 @@ func buildValidationResult(validator *v1alpha1.OciValidator) *vapi.ValidationRes
 					Kind:       validator.Kind,
 					Name:       validator.Name,
 					UID:        validator.UID,
-					Controller: ptr.Ptr(true),
+					Controller: util.Ptr(true),
 				},
 			},
 		},

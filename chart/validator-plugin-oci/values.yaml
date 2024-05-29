@@ -12,7 +12,7 @@ controllerManager:
         - ALL
     image:
       repository: gcr.io/kubebuilder/kube-rbac-proxy
-      tag: v0.15.0
+      tag: v0.16.0
     resources:
       limits:
         cpu: 500m
@@ -30,8 +30,8 @@ controllerManager:
         drop:
         - ALL
     image:
-      repository: quay.io/spectrocloud-labs/validator-plugin-oci
-      tag: v0.0.4  # x-release-please-version
+      repository: quay.io/validator-labs/validator-plugin-oci
+      tag: v0.0.10  # x-release-please-version
     resources:
       limits:
         cpu: 500m
@@ -65,7 +65,7 @@ env: []
 proxy:
   enabled: false
   # The image used by the init container. Must include the update-ca-certificates command.
-  image: quay.io/spectrocloud-labs/validator-certs-init:latest
+  image: quay.io/validator-labs/validator-certs-init:latest
   # The name of a secret containing a proxy CA certificate.
   # WARNING: the key whose value is the CA certificate must end with '.crt'.
   secretName: proxy-cert
