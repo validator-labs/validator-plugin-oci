@@ -28,4 +28,4 @@ jobs:
 
       - name: golicense-scan
         run: |
-          go-licenses check ./... --ignore github.com/alibabacloud-go/cr-20160607
+          go-licenses check --ignore github.com/alibabacloud-go/cr-20160607 ./...
