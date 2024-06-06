@@ -12,6 +12,11 @@
   ],
   "packageRules": [
     {
+      "matchUpdateTypes": ["pin", "pinDigest", "digest"],
+      "addLabels": ["pin"],
+      "automerge": true
+    },
+    {
       "matchUpdateTypes": ["minor", "patch"],
       "matchCurrentVersion": "!/^0/",
       "automerge": true
@@ -27,8 +32,23 @@
       "automerge": true
     },
     {
+      "matchManagers": ["crossplane"],
+      "addLabels": ["crossplane"],
+      "automerge": true
+    },
+    {
       "matchManagers": ["dockerfile"],
       "addLabels": ["docker"],
+      "automerge": true
+    },
+    {
+      "matchManagers": ["kustomize"],
+      "addLabels": ["kustomize"],
+      "automerge": true
+    },
+    {
+      "matchManagers": ["helm-values"],
+      "addLabels": ["helm_values"],
       "automerge": true
     }
   ],
