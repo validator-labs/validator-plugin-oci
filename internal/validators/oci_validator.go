@@ -125,16 +125,16 @@ func generateRef(registry, artifact string, vr *types.ValidationRuleResult) (nam
 }
 
 // validateArtifact validates a single artifact within a registry. This function is to be used when a path to a repo or an individual artifact is provided
-func validateReference(ctx context.Context, ref name.Reference, fullLayerValidation bool, pubKeys [][]byte, opts []remote.Option) (details []string, errs []error) {
-	details = make([]string, 0)
-	errs = make([]error, 0)
+func validateReference(ctx context.Context, ref name.Reference, fullLayerValidation bool, pubKeys [][]byte, opts []remote.Option) ([]string, []error) {
+	details := make([]string, 0)
+	errs := make([]error, 0)
 
 	// validate artifact existence by issuing a HEAD request
 	_, err := remote.Head(ref, opts...)
 	if err != nil {
 		details = append(details, fmt.Sprintf("failed to get descriptor for artifact %s", ref.Name()))
 		errs = append(errs, err)
-		return
+		return details, errs
 	}
 
 	// download image without storing it on disk
@@ -142,7 +142,7 @@ func validateReference(ctx context.Context, ref name.Reference, fullLayerValidat
 	if err != nil {
 		details = append(details, fmt.Sprintf("failed to download artifact %s", ref.Name()))
 		errs = append(errs, err)
-		return
+		return details, errs
 	}
 
 	var validateOpts []validate.Option
@@ -154,38 +154,38 @@ func validateReference(ctx context.Context, ref name.Reference, fullLayerValidat
 	if err != nil {
 		details = append(details, fmt.Sprintf("failed validation for artifact %s", ref.Name()))
 		errs = append(errs, err)
-		return
+		return details, errs
 	}
 
 	if pubKeys == nil {
-		return
+		return details, errs
 	}
 
 	return verifySignature(ctx, ref, pubKeys, opts)
 }
 
 // validateRepos validates repos within a registry. This function is to be used when no particular artifact in a registry is provided
-func validateRepos(ctx context.Context, host string, opts []remote.Option, pubKeys [][]byte, vr *types.ValidationRuleResult) (details []string, errs []error) {
-	details = make([]string, 0)
-	errs = make([]error, 0)
+func validateRepos(ctx context.Context, host string, opts []remote.Option, pubKeys [][]byte, vr *types.ValidationRuleResult) ([]string, []error) {
+	details := make([]string, 0)
+	errs := make([]error, 0)
 
 	reg, err := name.NewRegistry(host)
 	if err != nil {
 		details = append(details, fmt.Sprintf("failed to get registry %s", host))
 		errs = append(errs, err)
-		return
+		return details, errs
 	}
 
 	repoList, err := remote.Catalog(ctx, reg, opts...)
 	if err != nil {
 		details = append(details, fmt.Sprintf("failed to list repositories in registry %s", host))
 		errs = append(errs, err)
-		return
+		return details, errs
 	}
 
 	if len(repoList) == 0 {
 		details = append(details, fmt.Sprintf("no repositories found in registry %s", host))
-		return
+		return details, errs
 	}
 
 	var repo name.Repository
@@ -224,7 +224,7 @@ func validateRepos(ctx context.Context, host string, opts []remote.Option, pubKe
 		break
 	}
 	if !foundArtifact {
-		return
+		return details, errs
 	}
 
 	return validateReference(ctx, ref, true, pubKeys, opts)
@@ -325,7 +325,7 @@ func setupTransportOpts(opts []remote.Option, caCert string) ([]remote.Option, e
 }
 
 // verifySignature verifies the authenticity of the given image reference URL using the provided public keys.
-func verifySignature(ctx context.Context, ref name.Reference, pubKeys [][]byte, opts []remote.Option) (details []string, errs []error) {
+func verifySignature(ctx context.Context, ref name.Reference, pubKeys [][]byte, opts []remote.Option) ([]string, []error) {
 	ctxTimeout, cancel := context.WithTimeout(ctx, verificationTimeout)
 	defer cancel()
 
@@ -333,12 +333,15 @@ func verifySignature(ctx context.Context, ref name.Reference, pubKeys [][]byte, 
 		soci.WithRemoteOptions(opts...),
 	}
 
+	details := make([]string, 0)
+	errs := make([]error, 0)
+
 	for _, key := range pubKeys {
 		verifier, err := soci.NewCosignVerifier(ctxTimeout, append(defaultCosignOciOpts, soci.WithPublicKey(key))...)
 		if err != nil {
 			details = append(details, fmt.Sprintf("failed to create verifier with public key %s", key))
 			errs = append(errs, err)
-			return
+			return details, errs
 		}
 
 		hasValidSignature, err := verifier.Verify(ctxTimeout, ref)
@@ -351,13 +354,13 @@ func verifySignature(ctx context.Context, ref name.Reference, pubKeys [][]byte, 
 		if hasValidSignature {
 			details = nil
 			errs = nil
-			return
+			return details, errs
 		}
 	}
 
 	details = append(details, fmt.Sprintf("no matching signatures were found for '%s'", ref))
 	errs = append(errs, fmt.Errorf("failed to verify signature for '%s'", ref))
-	return
+	return details, errs
 }
 
 // buildValidationResult builds a default ValidationResult for a given validation type
