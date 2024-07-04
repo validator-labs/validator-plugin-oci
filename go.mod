@@ -2,7 +2,7 @@ module github.com/validator-labs/validator-plugin-oci
 
 go 1.22.0
 
-toolchain go1.22.4
+toolchain go1.22.5
 
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.23
