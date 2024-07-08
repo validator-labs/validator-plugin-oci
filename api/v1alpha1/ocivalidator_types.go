@@ -27,10 +27,12 @@ type OciValidatorSpec struct {
 	OciRegistryRules []OciRegistryRule `json:"ociRegistryRules,omitempty" yaml:"ociRegistryRules,omitempty"`
 }
 
+// ResultCount returns the number of validation results expected for an OciValidatorSpec
 func (s OciValidatorSpec) ResultCount() int {
 	return len(s.OciRegistryRules)
 }
 
+// OciRegistryRule defines the validation rule for an OCI registry
 type OciRegistryRule struct {
 	// Name is the name of the rule
 	RuleName string `json:"name" yaml:"name"`
@@ -51,10 +53,12 @@ type OciRegistryRule struct {
 	SignatureVerification SignatureVerification `json:"signatureVerification,omitempty" yaml:"signatureVerification,omitempty"`
 }
 
+// Name returns the name of the OciRegistryRule
 func (r OciRegistryRule) Name() string {
 	return r.RuleName
 }
 
+// Artifact defines the artifact to be validated
 type Artifact struct {
 	// Ref is the path to the artifact in the host registry that should be validated.
 	// An individual artifact can take any of the following forms:
@@ -72,12 +76,14 @@ type Artifact struct {
 	LayerValidation bool `json:"layerValidation,omitempty" yaml:"layerValidation,omitempty"`
 }
 
+// Auth defines the authentication information for the registry
 type Auth struct {
 	// SecretName is the name of the Kubernetes Secret that exists in the same namespace as the OciValidator
 	// and that contains the credentials used to authenticate to the OCI Registry
 	SecretName string `json:"secretName" yaml:"secretName"`
 }
 
+// SignatureVerification defines the provider and secret name to verify the signatures of artifacts in an OCI registry
 type SignatureVerification struct {
 	// Provider specifies the technology used to sign the OCI Artifact
 	// +kubebuilder:validation:Enum=cosign

@@ -1,3 +1,4 @@
+// Package verifier contains the verifier interface and the cosign verifier implementation.
 package verifier
 
 import (

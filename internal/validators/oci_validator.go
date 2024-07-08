@@ -1,3 +1,4 @@
+// Package validators defines the OCI registry rule service and implements the reconcile function for the OCI registry rule.
 package validators
 
 import (
@@ -32,10 +33,12 @@ const (
 	verificationTimeout = 60 * time.Second
 )
 
+// OciRuleService defines the service for OCI registry rules
 type OciRuleService struct {
 	log logr.Logger
 }
 
+// NewOciRuleService creates a new OCI registry rule service
 func NewOciRuleService(log logr.Logger) *OciRuleService {
 	return &OciRuleService{
 		log: log,
