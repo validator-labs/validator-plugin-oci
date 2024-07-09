@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package controller defines a controller for reconciling OciValidator objects.
 package controller
 
 import (
@@ -137,10 +138,9 @@ func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.O
 			// no secrets found, set creds to empty string
 			r.Log.V(0).Error(err, fmt.Sprintf("Auth secret %s not found for rule %s", secretName, rule.Name()))
 			return "", ""
-		} else {
-			r.Log.V(0).Error(err, fmt.Sprintf("Failed to fetch auth secret %s for rule %s", secretName, rule.Name()))
-			return "", ""
 		}
+		r.Log.V(0).Error(err, fmt.Sprintf("Failed to fetch auth secret %s for rule %s", secretName, rule.Name()))
+		return "", ""
 	}
 
 	errMalformedSecret := fmt.Errorf("malformed secret %s/%s", authSecret.Namespace, authSecret.Name)
@@ -174,10 +174,9 @@ func (r *OciValidatorReconciler) signaturePubKeys(req ctrl.Request, rule v1alpha
 			// no secrets found, set creds to empty string
 			r.Log.V(0).Error(err, fmt.Sprintf("Public Keys secret %s not found for rule %s", secretName, rule.Name()))
 			return pubKeys
-		} else {
-			r.Log.V(0).Error(err, fmt.Sprintf("Failed to fetch Public Keys secret %s for rule %s", secretName, rule.Name()))
-			return pubKeys
 		}
+		r.Log.V(0).Error(err, fmt.Sprintf("Failed to fetch Public Keys secret %s for rule %s", secretName, rule.Name()))
+		return pubKeys
 	}
 
 	for k, data := range pubKeysSecret.Data {

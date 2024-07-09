@@ -15,7 +15,7 @@ The following table lists the configurable parameters of the Validator-plugin-oc
 | `controllerManager.kubeRbacProxy.containerSecurityContext.allowPrivilegeEscalation` |  | `false` |
 | `controllerManager.kubeRbacProxy.containerSecurityContext.capabilities.drop` |  | `["ALL"]` |
 | `controllerManager.kubeRbacProxy.image.repository` |  | `"gcr.io/kubebuilder/kube-rbac-proxy"` |
-| `controllerManager.kubeRbacProxy.image.tag` |  | `"v0.15.0"` |
+| `controllerManager.kubeRbacProxy.image.tag` |  | `"v0.16.0"` |
 | `controllerManager.kubeRbacProxy.resources.limits.cpu` |  | `"500m"` |
 | `controllerManager.kubeRbacProxy.resources.limits.memory` |  | `"128Mi"` |
 | `controllerManager.kubeRbacProxy.resources.requests.cpu` |  | `"5m"` |

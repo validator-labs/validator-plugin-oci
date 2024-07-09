@@ -41,11 +41,14 @@ spec:
             properties:
               ociRegistryRules:
                 items:
+                  description: OciRegistryRule defines the validation rule for an
+                    OCI registry
                   properties:
                     artifacts:
                       description: Artifacts is a slice of artifacts in the host registry
                         that should be validated.
                       items:
+                        description: Artifact defines the artifact to be validated
                         properties:
                           layerValidation:
                             description: |-
