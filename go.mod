@@ -13,7 +13,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1
 	github.com/sigstore/cosign/v2 v2.2.4
-	github.com/sigstore/sigstore v1.8.6
+	github.com/sigstore/sigstore v1.8.7
 	github.com/stretchr/testify v1.9.0
 	github.com/validator-labs/validator v0.0.46
 	k8s.io/api v0.30.2
@@ -85,7 +85,7 @@ require (
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-chi/chi v4.1.2+incompatible // indirect
-	github.com/go-jose/go-jose/v4 v4.0.1 // indirect
+	github.com/go-jose/go-jose/v4 v4.0.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-logr/zapr v1.3.0 // indirect
 	github.com/go-openapi/analysis v0.23.0 // indirect
