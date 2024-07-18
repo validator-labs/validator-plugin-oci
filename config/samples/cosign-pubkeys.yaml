@@ -2,5 +2,9 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: cosign-public-keys
-data:
-  key1.pub: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFS1B1Q285QW1KQ3BxR1doZWZqYmhrRmNyMUdBMwppTmE3NjVzZUUzallDM01HVWU1aDUyMzkzRGh5N0I1YlhHc2c2RWZQcE5ZYW1sQUVXanhDcEhGM0xnPT0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
+stringData:
+  key1.pub: |-
+    -----BEGIN PUBLIC KEY-----
+    MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKPuCo9AmJCpqGWhefjbhkFcr1GA3
+    iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
+    -----END PUBLIC KEY-----
