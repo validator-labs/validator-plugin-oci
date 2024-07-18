@@ -171,26 +171,26 @@ iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
 	}
 
 	for _, tc := range testCases {
-		fmt.Println(tc.name)
+		t.Run(tc.name, func(t *testing.T) {
+			ociClient, err := oci.NewOCIClient(
+				oci.WithAnonymousAuth(),
+				oci.WithVerificationPublicKeys(tc.pubKeys),
+			)
+			if err != nil {
+				t.Error(err)
+			}
+			ociService := NewOciRuleService(logr.Logger{}, WithOCIClient(ociClient))
 
-		ociClient, err := oci.NewOCIClient(
-			oci.WithAnonymousAuth(),
-			oci.WithVerificationPublicKeys(tc.pubKeys),
-		)
-		if err != nil {
-			t.Error(err)
-		}
-		ociService := NewOciRuleService(logr.Logger{}, WithOCIClient(ociClient))
+			ctx := context.Background()
+			details, errs := ociService.validateReference(ctx, tc.ref, tc.layerValidation, tc.sv)
 
-		ctx := context.Background()
-		details, errs := ociService.validateReference(ctx, tc.ref, tc.layerValidation, tc.sv)
-
-		if tc.expectedDetail == "" {
-			assert.Empty(t, details)
-		} else {
-			assert.Contains(t, details[len(details)-1], tc.expectedDetail)
-		}
-		assert.Equal(t, tc.expectErr, len(errs) > 0)
+			if tc.expectedDetail == "" {
+				assert.Empty(t, details)
+			} else {
+				assert.Contains(t, details[len(details)-1], tc.expectedDetail)
+			}
+			assert.Equal(t, tc.expectErr, len(errs) > 0)
+		})
 	}
 }
 
@@ -308,21 +308,21 @@ func TestReconcileOciRegistryRule(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		fmt.Println(tc.name)
+		t.Run(tc.name, func(t *testing.T) {
+			ociClient, err := oci.NewOCIClient(oci.WithAnonymousAuth())
+			if err != nil {
+				t.Error(err)
+			}
+			ociService := NewOciRuleService(logr.Logger{}, WithOCIClient(ociClient))
 
-		ociClient, err := oci.NewOCIClient(oci.WithAnonymousAuth())
-		if err != nil {
-			t.Error(err)
-		}
-		ociService := NewOciRuleService(logr.Logger{}, WithOCIClient(ociClient))
+			_, err = ociService.ReconcileOciRegistryRule(tc.rule)
 
-		_, err = ociService.ReconcileOciRegistryRule(tc.rule)
-
-		if tc.expectErr {
-			assert.NotNil(t, err)
-		} else {
-			assert.NoError(t, err)
-		}
+			if tc.expectErr {
+				assert.NotNil(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
 	}
 }
 
