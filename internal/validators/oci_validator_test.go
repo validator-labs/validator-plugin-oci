@@ -14,8 +14,9 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/stretchr/testify/assert"
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
-	"github.com/validator-labs/validator/pkg/oci"
 	"github.com/validator-labs/validator/pkg/types"
+
+	"github.com/validator-labs/validator-plugin-oci/pkg/oci"
 )
 
 const (
@@ -29,15 +30,13 @@ var (
 )
 
 func TestGenerateRef(t *testing.T) {
-	type testCase struct {
+	testCases := []struct {
 		registry             string
 		artifact             string
 		validationRuleResult *types.ValidationRuleResult
 		expectedRefName      string
 		expectErr            bool
-	}
-
-	testCases := []testCase{
+	}{
 		{
 			registry:             registryName,
 			artifact:             "artifact@sha256:ddbac6e7732bf90a4e674a01bf279ce27ea8691530b8d209e6fe77477e0fa406",
@@ -99,16 +98,17 @@ func TestValidateReference(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	type testCase struct {
+	testCases := []struct {
+		name            string
 		ref             name.Reference
 		layerValidation bool
 		pubKeys         [][]byte
+		sv              v1alpha1.SignatureVerification
 		expectedDetail  string
 		expectErr       bool
-	}
-
-	testCases := []testCase{
+	}{
 		{
+			name:            "Pass: valid ref, no layer validation",
 			ref:             validRef,
 			layerValidation: false,
 			pubKeys:         nil,
@@ -116,6 +116,7 @@ func TestValidateReference(t *testing.T) {
 			expectErr:       false,
 		},
 		{
+			name:            "Pass: valid ref, layer validation",
 			ref:             validRef,
 			layerValidation: true,
 			pubKeys:         nil,
@@ -123,6 +124,7 @@ func TestValidateReference(t *testing.T) {
 			expectErr:       false,
 		},
 		{
+			name:            "Fail: invalid ref",
 			ref:             invalidRef,
 			layerValidation: false,
 			pubKeys:         nil,
@@ -130,20 +132,28 @@ func TestValidateReference(t *testing.T) {
 			expectErr:       true,
 		},
 		{
+			name:            "Fail: valid ref, signature verification enabled with invalid keys",
 			ref:             validRef,
 			layerValidation: true,
 			pubKeys:         [][]byte{[]byte("invalid-pub-key-1"), []byte("invalid-pub-key-2")},
-			expectedDetail:  "failed to create verifier with public key",
-			expectErr:       true,
+			sv: v1alpha1.SignatureVerification{
+				SecretName: "secret",
+			},
+			expectedDetail: "failed to create verifier with public key",
+			expectErr:      true,
 		},
 		{
+			name:            "Fail: valid ref, signature verification enabled with no keys",
 			ref:             validRef,
 			layerValidation: true,
 			pubKeys:         [][]byte{},
-			expectedDetail:  "no matching signatures were found",
-			expectErr:       true,
+			sv: v1alpha1.SignatureVerification{
+				SecretName: "secret",
+			},
+			expectErr: true,
 		},
 		{
+			name:            "Pass: valid ref with layer and signature verification",
 			ref:             validRef,
 			layerValidation: true,
 			pubKeys: [][]byte{
@@ -152,12 +162,17 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKPuCo9AmJCpqGWhefjbhkFcr1GA3
 iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
 -----END PUBLIC KEY-----`),
 			},
+			sv: v1alpha1.SignatureVerification{
+				SecretName: "secret",
+			},
 			expectedDetail: "no matching signatures were found",
 			expectErr:      true,
 		},
 	}
 
 	for _, tc := range testCases {
+		fmt.Println(tc.name)
+
 		ociClient, err := oci.NewOCIClient(
 			oci.WithAnonymousAuth(),
 			oci.WithVerificationPublicKeys(tc.pubKeys),
@@ -168,9 +183,7 @@ iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
 		ociService := NewOciRuleService(logr.Logger{}, WithOCIClient(ociClient))
 
 		ctx := context.Background()
-		details, errs := ociService.validateReference(ctx, tc.ref, tc.layerValidation, v1alpha1.SignatureVerification{
-			SecretName: "secret",
-		})
+		details, errs := ociService.validateReference(ctx, tc.ref, tc.layerValidation, tc.sv)
 
 		if tc.expectedDetail == "" {
 			assert.Empty(t, details)
@@ -197,13 +210,11 @@ func TestValidateRepos(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	type testCase struct {
+	testCases := []struct {
 		host           string
 		expectedDetail string
 		expectErr      bool
-	}
-
-	testCases := []testCase{
+	}{
 		{
 			host:           urlWithArtifact.Host,
 			expectedDetail: "",
@@ -258,19 +269,20 @@ func TestReconcileOciRegistryRule(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	type testCase struct {
+	testCases := []struct {
+		name      string
 		rule      v1alpha1.OciRegistryRule
 		expectErr bool
-	}
-
-	testCases := []testCase{
+	}{
 		{
+			name: "Pass: valid host, no artifacts",
 			rule: v1alpha1.OciRegistryRule{
 				Host: url.Host,
 			},
 			expectErr: false,
 		},
 		{
+			name: "Pass: valid host with artifacts",
 			rule: v1alpha1.OciRegistryRule{
 				Host: url.Host,
 				Artifacts: []v1alpha1.Artifact{
@@ -282,6 +294,7 @@ func TestReconcileOciRegistryRule(t *testing.T) {
 			expectErr: false,
 		},
 		{
+			name: "Fail: valid host, invalid artifact",
 			rule: v1alpha1.OciRegistryRule{
 				Host: url.Host,
 				Artifacts: []v1alpha1.Artifact{
@@ -295,9 +308,15 @@ func TestReconcileOciRegistryRule(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		l := logr.New(nil)
-		s := NewOciRuleService(l)
-		_, err := s.ReconcileOciRegistryRule(tc.rule)
+		fmt.Println(tc.name)
+
+		ociClient, err := oci.NewOCIClient(oci.WithAnonymousAuth())
+		if err != nil {
+			t.Error(err)
+		}
+		ociService := NewOciRuleService(logr.Logger{}, WithOCIClient(ociClient))
+
+		_, err = ociService.ReconcileOciRegistryRule(tc.rule)
 
 		if tc.expectErr {
 			assert.NotNil(t, err)

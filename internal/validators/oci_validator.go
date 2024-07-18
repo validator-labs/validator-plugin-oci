@@ -11,12 +11,12 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 
 	vapi "github.com/validator-labs/validator/api/v1alpha1"
-	"github.com/validator-labs/validator/pkg/oci"
 	"github.com/validator-labs/validator/pkg/types"
 	"github.com/validator-labs/validator/pkg/util"
 
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
 	"github.com/validator-labs/validator-plugin-oci/internal/constants"
+	"github.com/validator-labs/validator-plugin-oci/pkg/oci"
 )
 
 // OciRuleService defines the service for OCI registry rules.
