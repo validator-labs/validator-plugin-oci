@@ -20,6 +20,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -149,6 +150,8 @@ func (r *OciValidatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+// secretKeyAuth retrieves the username and password from the secret referenced in the rule's auth field.
+// Any additional key-value pairs in the secret are set as environment variables, to be picked up by auth keychains (e.g. ECR, Azure).
 func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.OciRegistryRule) (string, string, error) {
 	if rule.Auth.SecretName == "" {
 		return "", "", nil
@@ -161,16 +164,27 @@ func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.O
 		return "", "", fmt.Errorf("failed to fetch auth secret %s/%s for rule %s: %w", nn.Name, nn.Namespace, rule.Name(), err)
 	}
 
-	username, ok := authSecret.Data["username"]
-	if !ok {
-		return "", "", fmt.Errorf("secret %s/%s missing 'username' key", nn.Name, nn.Namespace)
-	}
-	password, ok := authSecret.Data["password"]
-	if !ok {
-		return "", "", fmt.Errorf("secret %s/%s missing 'password' key", nn.Name, nn.Namespace)
+	if len(authSecret.Data) == 0 {
+		return "", "", fmt.Errorf("secret %s/%s has no data", nn.Name, nn.Namespace)
 	}
 
-	return string(username), string(password), nil
+	var username, password string
+	for k, v := range authSecret.Data {
+		if k == "username" {
+			username = string(v)
+			continue
+		}
+		if k == "password" {
+			password = string(v)
+			continue
+		}
+		if err := os.Setenv(k, string(v)); err != nil {
+			return username, password, err
+		}
+		r.Log.Info("Set environment variable", "key", k)
+	}
+
+	return username, password, nil
 }
 
 func (r *OciValidatorReconciler) signaturePubKeys(req ctrl.Request, rule v1alpha1.OciRegistryRule) ([][]byte, error) {
