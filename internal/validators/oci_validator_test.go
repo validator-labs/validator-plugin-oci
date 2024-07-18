@@ -3,20 +3,18 @@ package validators
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
 	"github.com/go-logr/logr"
-	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/registry"
 	"github.com/google/go-containerregistry/pkg/v1/random"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/stretchr/testify/assert"
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
+	"github.com/validator-labs/validator/pkg/oci"
 	"github.com/validator-labs/validator/pkg/types"
 )
 
@@ -36,48 +34,6 @@ const (
 var (
 	vrr = buildValidationResult(v1alpha1.OciRegistryRule{})
 )
-
-func TestParseEcrRegion(t *testing.T) {
-	type testCase struct {
-		URL            string
-		expectedRegion string
-		expectedErr    error
-	}
-
-	testCases := []testCase{
-		{
-			URL:            ecrRegistry,
-			expectedRegion: "us-east-1",
-			expectedErr:    nil,
-		},
-		{
-			URL:            longURL,
-			expectedRegion: "",
-			expectedErr:    fmt.Errorf("invalid ECR URL %s", longURL),
-		},
-		{
-			URL:            shortURL,
-			expectedRegion: "",
-			expectedErr:    fmt.Errorf("invalid ECR URL %s", shortURL),
-		},
-		{
-			URL:            notEcrURL,
-			expectedRegion: "",
-			expectedErr:    fmt.Errorf("invalid ECR URL %s", notEcrURL),
-		},
-	}
-
-	for _, tc := range testCases {
-		region, err := parseEcrRegion(tc.URL)
-
-		assert.Equal(t, tc.expectedRegion, region)
-		if tc.expectedErr != nil {
-			assert.EqualError(t, err, tc.expectedErr.Error())
-		} else {
-			assert.NoError(t, err)
-		}
-	}
-}
 
 func TestGenerateRef(t *testing.T) {
 	type testCase struct {
@@ -126,97 +82,6 @@ func TestGenerateRef(t *testing.T) {
 			assert.NotNil(t, err)
 		} else {
 			assert.Contains(t, ref.Name(), tc.expectedRefName)
-			assert.NoError(t, err)
-		}
-	}
-}
-
-func TestSetupTransportOpts(t *testing.T) {
-	type testCase struct {
-		inputOpts    []remote.Option
-		caCert       string
-		expectedOpts []remote.Option
-		expectErr    bool
-	}
-
-	testCases := []testCase{
-		{
-			inputOpts:    []remote.Option{},
-			caCert:       "",
-			expectedOpts: []remote.Option{},
-			expectErr:    false,
-		},
-		{
-			inputOpts:    []remote.Option{},
-			caCert:       caCert,
-			expectedOpts: []remote.Option{remote.WithTransport(&http.Transport{})},
-			expectErr:    false,
-		},
-		{
-			inputOpts:    []remote.Option{},
-			caCert:       "invalid cert",
-			expectedOpts: nil,
-			expectErr:    true,
-		},
-	}
-
-	for _, tc := range testCases {
-		opts, err := setupTransportOpts(tc.inputOpts, tc.caCert)
-
-		if tc.expectErr {
-			assert.NotNil(t, err)
-		} else {
-			assert.Equal(t, len(tc.expectedOpts), len(opts))
-			assert.NoError(t, err)
-		}
-	}
-}
-
-func TestSetupAuthOpts(t *testing.T) {
-	type testCase struct {
-		inputOpts    []remote.Option
-		registryName string
-		username     string
-		password     string
-		expectedOpts []remote.Option
-		expectErr    bool
-	}
-
-	testCases := []testCase{
-		{
-			inputOpts:    []remote.Option{},
-			registryName: registryName,
-			username:     "",
-			password:     "",
-			expectedOpts: []remote.Option{remote.WithAuth(authn.Anonymous)},
-			expectErr:    false,
-		},
-		{
-			inputOpts:    []remote.Option{},
-			registryName: registryName,
-			username:     username,
-			password:     password,
-			expectedOpts: []remote.Option{remote.WithAuth(&authn.Basic{Username: username, Password: password})},
-			expectErr:    false,
-		},
-		{
-			inputOpts:    []remote.Option{},
-			registryName: ecrRegistry,
-			username:     "",
-			password:     "",
-			expectedOpts: nil,
-			expectErr:    true,
-		},
-	}
-
-	for _, tc := range testCases {
-		ctx := context.Background()
-		opts, err := setupAuthOpts(ctx, tc.inputOpts, tc.registryName, tc.username, tc.password)
-
-		if tc.expectErr {
-			assert.NotNil(t, err)
-		} else {
-			assert.Equal(t, len(tc.expectedOpts), len(opts))
 			assert.NoError(t, err)
 		}
 	}
@@ -300,8 +165,19 @@ iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
 	}
 
 	for _, tc := range testCases {
+		ociClient, err := oci.NewOCIClient(
+			oci.WithAnonymousAuth(),
+			oci.WithVerificationPublicKeys(tc.pubKeys),
+		)
+		if err != nil {
+			t.Error(err)
+		}
+		ociService := NewOciRuleService(logr.Logger{}, WithOCIClient(ociClient))
+
 		ctx := context.Background()
-		details, errs := validateReference(ctx, tc.ref, tc.layerValidation, tc.pubKeys, []remote.Option{remote.WithAuth(authn.Anonymous)})
+		details, errs := ociService.validateReference(ctx, tc.ref, tc.layerValidation, v1alpha1.SignatureVerification{
+			SecretName: "secret",
+		})
 
 		if tc.expectedDetail == "" {
 			assert.Empty(t, details)
@@ -353,7 +229,17 @@ func TestValidateRepos(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		details, errs := validateRepos(context.Background(), tc.host, []remote.Option{remote.WithAuth(authn.Anonymous)}, nil, &types.ValidationRuleResult{})
+		ociClient, err := oci.NewOCIClient(oci.WithAnonymousAuth())
+		if err != nil {
+			t.Error(err)
+		}
+		ociService := NewOciRuleService(logr.Logger{}, WithOCIClient(ociClient))
+
+		rule := v1alpha1.OciRegistryRule{
+			Host:                  tc.host,
+			SignatureVerification: v1alpha1.SignatureVerification{},
+		}
+		details, errs := ociService.validateRepos(context.Background(), rule, &types.ValidationRuleResult{})
 
 		if tc.expectedDetail == "" {
 			assert.Empty(t, details)
@@ -418,7 +304,7 @@ func TestReconcileOciRegistryRule(t *testing.T) {
 	for _, tc := range testCases {
 		l := logr.New(nil)
 		s := NewOciRuleService(l)
-		_, err := s.ReconcileOciRegistryRule(tc.rule, "", "", nil)
+		_, err := s.ReconcileOciRegistryRule(tc.rule)
 
 		if tc.expectErr {
 			assert.NotNil(t, err)
