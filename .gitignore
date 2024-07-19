@@ -21,6 +21,7 @@ Dockerfile.cross
 .devspace
 .idea
 .vscode
+!.vscode/launch.json
 *.swp
 *.swo
 *~
@@ -29,3 +30,4 @@ Dockerfile.cross
 .DS_Store
 .env
 tmp/*
+*__debug_bin*

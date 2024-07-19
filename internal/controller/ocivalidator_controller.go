@@ -102,14 +102,14 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	for _, rule := range validator.Spec.OciRegistryRules {
 		username, password, err := r.secretKeyAuth(req, rule)
 		if err != nil {
-			l.Error(err, "failed to get auth for rule: %s", rule.Name)
+			l.Error(err, "failed to get secret auth", "ruleName", rule.Name)
 			resp.AddResult(nil, err)
 			continue
 		}
 
 		pubKeys, err := r.signaturePubKeys(req, rule)
 		if err != nil {
-			l.Error(err, "failed to get signature verification public keys for rule: %s", rule.Name)
+			l.Error(err, "failed to get signature verification public keys", "ruleName", rule.Name)
 			resp.AddResult(nil, err)
 			continue
 		}
@@ -121,7 +121,7 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			oci.WithVerificationPublicKeys(pubKeys),
 		)
 		if err != nil {
-			l.Error(err, "failed to create OCI client for rule: %s", rule.Name)
+			l.Error(err, "failed to create OCI client", "ruleName", rule.Name)
 			resp.AddResult(nil, err)
 			continue
 		}
@@ -130,7 +130,7 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 		vrr, err := ociRuleService.ReconcileOciRegistryRule(rule)
 		if err != nil {
-			l.Error(err, "failed to reconcile OCI Registry rule")
+			l.Error(err, "failed to reconcile OCI Registry rule", "ruleName", rule.Name)
 		}
 		resp.AddResult(vrr, err)
 	}
