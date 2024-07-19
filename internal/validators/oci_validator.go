@@ -3,81 +3,61 @@ package validators
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
-	"encoding/base64"
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
-	"time"
 
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/go-logr/logr"
-	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
-	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"github.com/google/go-containerregistry/pkg/v1/validate"
 
-	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
-	"github.com/validator-labs/validator-plugin-oci/internal/constants"
-	soci "github.com/validator-labs/validator-plugin-oci/internal/verifier"
 	vapi "github.com/validator-labs/validator/api/v1alpha1"
 	"github.com/validator-labs/validator/pkg/types"
 	"github.com/validator-labs/validator/pkg/util"
+
+	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
+	"github.com/validator-labs/validator-plugin-oci/internal/constants"
+	"github.com/validator-labs/validator-plugin-oci/pkg/oci"
 )
 
-const (
-	verificationTimeout = 60 * time.Second
-)
-
-// OciRuleService defines the service for OCI registry rules
+// OciRuleService defines the service for OCI registry rules.
 type OciRuleService struct {
-	log logr.Logger
+	log       logr.Logger
+	ociClient *oci.Client
 }
 
-// NewOciRuleService creates a new OCI registry rule service
-func NewOciRuleService(log logr.Logger) *OciRuleService {
-	return &OciRuleService{
+// Option is a functional option for configuring an OciRuleService.
+type Option func(*OciRuleService)
+
+// NewOciRuleService creates a new OCI registry rule service.
+func NewOciRuleService(log logr.Logger, opts ...Option) *OciRuleService {
+	s := &OciRuleService{
 		log: log,
+	}
+	for _, o := range opts {
+		o(s)
+	}
+	return s
+}
+
+// WithOCIClient sets the OCI client for the OCI registry rule service.
+func WithOCIClient(client *oci.Client) Option {
+	return func(s *OciRuleService) {
+		s.ociClient = client
 	}
 }
 
-// ReconcileOciRegistryRule reconciles an OCI registry rule from the OCIValidator config
-func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule, username, password string, pubKeys [][]byte) (*types.ValidationRuleResult, error) {
+// ReconcileOciRegistryRule reconciles an OCI registry rule from the OCIValidator config.
+func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule) (*types.ValidationRuleResult, error) {
 	l := s.log.V(0).WithValues("rule", rule.Name(), "host", rule.Host)
 	vr := buildValidationResult(rule)
 	errs := make([]error, 0)
 	details := make([]string, 0)
 
-	opts, err := setupTransportOpts([]remote.Option{}, rule.CaCert)
-	if err != nil {
-		errs = append(errs, err)
-		errMsg := "failed to setup http client transport"
-		l.Error(err, errMsg, "caCert", rule.CaCert)
-		s.updateResult(vr, errs, errMsg, rule.Name())
-		return vr, err
-	}
-
 	ctx := context.Background()
-	opts, err = setupAuthOpts(ctx, opts, rule.Host, username, password)
-	if err != nil {
-		errs = append(errs, err)
-		errMsg := "failed to setup authentication"
-		l.Error(err, errMsg, "auth", rule.Auth)
-		s.updateResult(vr, errs, errMsg, rule.Name())
-		return vr, err
-	}
-
-	if rule.SignatureVerification.SecretName != "" && len(pubKeys) == 0 {
-		details = append(details, "no public keys provided for signature verification")
-	}
 
 	if len(rule.Artifacts) == 0 {
 		errMsg := "failed to validate repositories in registry"
-		d, e := validateRepos(ctx, rule.Host, opts, pubKeys, vr)
+		d, e := s.validateRepos(ctx, rule, vr)
 		details = append(details, d...)
 		errs = append(errs, e...)
 
@@ -100,7 +80,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 			continue
 		}
 
-		d, e := validateReference(ctx, ref, artifact.LayerValidation, pubKeys, opts)
+		d, e := s.validateReference(ctx, ref, artifact.LayerValidation, rule.SignatureVerification)
 		if len(e) > 0 {
 			l.Error(e[len(e)-1], errMsg, "artifact", artifact)
 		}
@@ -115,79 +95,68 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule,
 	return vr, nil
 }
 
-func generateRef(registry, artifact string, vr *types.ValidationRuleResult) (name.Reference, error) {
-	if strings.Contains(artifact, "@sha256:") {
-		return name.NewDigest(fmt.Sprintf("%s/%s", registry, artifact))
-	}
-
-	if !strings.Contains(artifact, ":") {
-		vr.Condition.Details = append(vr.Condition.Details, fmt.Sprintf("artifact %s does not contain a tag or digest, defaulting to \"latest\" tag", artifact))
-	}
-
-	return name.NewTag(fmt.Sprintf("%s/%s", registry, artifact))
-}
-
-// validateArtifact validates a single artifact within a registry. This function is to be used when a path to a repo or an individual artifact is provided
-func validateReference(ctx context.Context, ref name.Reference, fullLayerValidation bool, pubKeys [][]byte, opts []remote.Option) ([]string, []error) {
+// validateArtifact validates a single artifact within an OCI registry. Used when either a path to a repo or artifact(s) are specified in an OciRegistryRule.
+func (s *OciRuleService) validateReference(ctx context.Context, ref name.Reference, fullLayerValidation bool, sv v1alpha1.SignatureVerification) ([]string, []error) {
 	details := make([]string, 0)
 	errs := make([]error, 0)
 
 	// validate artifact existence by issuing a HEAD request
-	_, err := remote.Head(ref, opts...)
-	if err != nil {
+	if _, err := s.ociClient.Head(ref); err != nil {
 		details = append(details, fmt.Sprintf("failed to get descriptor for artifact %s", ref.Name()))
 		errs = append(errs, err)
 		return details, errs
 	}
 
 	// download image without storing it on disk
-	img, err := remote.Image(ref, opts...)
+	img, err := s.ociClient.PullImage(ref)
 	if err != nil {
 		details = append(details, fmt.Sprintf("failed to download artifact %s", ref.Name()))
 		errs = append(errs, err)
 		return details, errs
 	}
 
-	var validateOpts []validate.Option
-	if !fullLayerValidation {
-		validateOpts = append(validateOpts, validate.Fast)
-	}
-
-	err = validate.Image(img, validateOpts...)
-	if err != nil {
+	// validate image
+	if err := s.ociClient.ValidateImage(img, fullLayerValidation); err != nil {
 		details = append(details, fmt.Sprintf("failed validation for artifact %s", ref.Name()))
 		errs = append(errs, err)
 		return details, errs
 	}
 
-	if pubKeys == nil {
-		return details, errs
+	// verify image signature (optional)
+	if sv.SecretName != "" {
+		verifyDetails, verifyErrs := s.ociClient.VerifySignature(ctx, ref)
+		if len(verifyDetails) > 0 {
+			details = append(details, verifyDetails...)
+		}
+		if len(verifyErrs) > 0 {
+			errs = append(errs, verifyErrs...)
+		}
 	}
 
-	return verifySignature(ctx, ref, pubKeys, opts)
+	return details, errs
 }
 
-// validateRepos validates repos within a registry. This function is to be used when no particular artifact in a registry is provided
-func validateRepos(ctx context.Context, host string, opts []remote.Option, pubKeys [][]byte, vr *types.ValidationRuleResult) ([]string, []error) {
+// validateRepos validates repos within an OCI registry. Used when no specific artifacts are provided in an OciRegistryRule.
+func (s *OciRuleService) validateRepos(ctx context.Context, rule v1alpha1.OciRegistryRule, vr *types.ValidationRuleResult) ([]string, []error) {
 	details := make([]string, 0)
 	errs := make([]error, 0)
 
-	reg, err := name.NewRegistry(host)
+	reg, err := name.NewRegistry(rule.Host)
 	if err != nil {
-		details = append(details, fmt.Sprintf("failed to get registry %s", host))
+		details = append(details, fmt.Sprintf("failed to get registry %s", rule.Host))
 		errs = append(errs, err)
 		return details, errs
 	}
 
-	repoList, err := remote.Catalog(ctx, reg, opts...)
+	repoList, err := s.ociClient.Catalog(ctx, reg)
 	if err != nil {
-		details = append(details, fmt.Sprintf("failed to list repositories in registry %s", host))
+		details = append(details, fmt.Sprintf("failed to list repositories in registry %s", rule.Host))
 		errs = append(errs, err)
 		return details, errs
 	}
 
 	if len(repoList) == 0 {
-		details = append(details, fmt.Sprintf("no repositories found in registry %s", host))
+		details = append(details, fmt.Sprintf("no repositories found in registry %s", rule.Host))
 		return details, errs
 	}
 
@@ -196,30 +165,29 @@ func validateRepos(ctx context.Context, host string, opts []remote.Option, pubKe
 	foundArtifact := false
 
 	for _, curRepo := range repoList {
-		repo, err = name.NewRepository(host + "/" + curRepo)
+		repo, err = name.NewRepository(rule.Host + "/" + curRepo)
 		if err != nil {
 			errs = append(errs, err)
-			details = append(details, fmt.Sprintf("failed to get repository %s/%s", host, curRepo))
+			details = append(details, fmt.Sprintf("failed to get repository %s/%s", rule.Host, curRepo))
 			continue
 		}
 
-		tags, err := remote.List(repo, opts...)
+		tags, err := s.ociClient.List(repo)
 		if err != nil {
 			errs = append(errs, err)
-			details = append(details, fmt.Sprintf("failed to get tags for repository %s/%s", host, curRepo))
+			details = append(details, fmt.Sprintf("failed to get tags for repository %s/%s", rule.Host, curRepo))
 			continue
 		}
-
 		if len(tags) == 0 {
-			details = append(details, fmt.Sprintf("no tags found in repository %s/%s", host, curRepo))
+			details = append(details, fmt.Sprintf("no tags found in repository %s/%s", rule.Host, curRepo))
 			continue
 		}
 
 		tag := tags[0]
-		ref, err = generateRef(host, fmt.Sprintf("%s:%s", curRepo, tag), vr)
+		ref, err = generateRef(rule.Host, fmt.Sprintf("%s:%s", curRepo, tag), vr)
 		if err != nil {
 			errs = append(errs, err)
-			details = append(details, fmt.Sprintf("failed to generate reference for artifact %s/%s:%s", host, curRepo, tag))
+			details = append(details, fmt.Sprintf("failed to generate reference for artifact %s/%s:%s", rule.Host, curRepo, tag))
 			continue
 		}
 
@@ -230,152 +198,7 @@ func validateRepos(ctx context.Context, host string, opts []remote.Option, pubKe
 		return details, errs
 	}
 
-	return validateReference(ctx, ref, true, pubKeys, opts)
-}
-
-func getEcrLoginToken(ctx context.Context, username, password, region string) (string, error) {
-	cfg, err := config.LoadDefaultConfig(
-		ctx,
-		config.WithRegion(region),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(username, password, "")),
-	)
-	if err != nil {
-		return "", fmt.Errorf("failed to load configuration, %s", err)
-	}
-
-	client := ecr.NewFromConfig(cfg)
-
-	output, err := client.GetAuthorizationToken(ctx, &ecr.GetAuthorizationTokenInput{})
-	if err != nil {
-		return "", fmt.Errorf("failed to get ECR authorization token: %s", err)
-	}
-
-	for _, data := range output.AuthorizationData {
-		return *data.AuthorizationToken, nil
-	}
-
-	return "", fmt.Errorf("no authorization data available")
-}
-
-func parseEcrRegion(url string) (string, error) {
-	parts := strings.Split(url, ".")
-	if len(parts) != 6 || parts[2] != "ecr" {
-		return "", fmt.Errorf("invalid ECR URL %s", url)
-	}
-
-	region := parts[3]
-	return region, nil
-}
-
-func setupAuthOpts(ctx context.Context, opts []remote.Option, registryName, username, password string) ([]remote.Option, error) {
-	var auth authn.Authenticator
-
-	if strings.Contains(registryName, "amazonaws.com") {
-		region, err := parseEcrRegion(registryName)
-		if err != nil {
-			return nil, err
-		}
-
-		token, err := getEcrLoginToken(ctx, username, password, region)
-		if err != nil {
-			return nil, err
-		}
-
-		decodedToken, err := base64.StdEncoding.DecodeString(token)
-		if err != nil {
-			return nil, err
-		}
-
-		parts := strings.SplitN(string(decodedToken), ":", 2)
-		if len(parts) != 2 {
-			return nil, fmt.Errorf("malformed ECR login token: %s", token)
-		}
-
-		username = parts[0]
-		password = parts[1]
-	}
-
-	if username != "" && password != "" {
-		auth = &authn.Basic{Username: username, Password: password}
-	} else {
-		auth = authn.Anonymous
-	}
-
-	opts = append(opts, remote.WithAuth(auth))
-	return opts, nil
-}
-
-func setupTransportOpts(opts []remote.Option, caCert string) ([]remote.Option, error) {
-	if caCert != "" {
-		cert, err := base64.StdEncoding.DecodeString(caCert)
-		if err != nil {
-			return nil, err
-		}
-
-		caCertPool, err := x509.SystemCertPool()
-		if err != nil {
-			return nil, err
-		}
-		caCertPool.AppendCertsFromPEM(cert)
-
-		tlsConfig := &tls.Config{
-			MinVersion: tls.VersionTLS12,
-			RootCAs:    caCertPool,
-		}
-		opts = append(opts, remote.WithTransport(&http.Transport{TLSClientConfig: tlsConfig}))
-	}
-	return opts, nil
-}
-
-// verifySignature verifies the authenticity of the given image reference URL using the provided public keys.
-func verifySignature(ctx context.Context, ref name.Reference, pubKeys [][]byte, opts []remote.Option) ([]string, []error) {
-	ctxTimeout, cancel := context.WithTimeout(ctx, verificationTimeout)
-	defer cancel()
-
-	defaultCosignOciOpts := []soci.Options{
-		soci.WithRemoteOptions(opts...),
-	}
-
-	details := make([]string, 0)
-	errs := make([]error, 0)
-
-	for _, key := range pubKeys {
-		verifier, err := soci.NewCosignVerifier(ctxTimeout, append(defaultCosignOciOpts, soci.WithPublicKey(key))...)
-		if err != nil {
-			details = append(details, fmt.Sprintf("failed to create verifier with public key %s", key))
-			errs = append(errs, err)
-			return details, errs
-		}
-
-		hasValidSignature, err := verifier.Verify(ctxTimeout, ref)
-		if err != nil {
-			details = append(details, fmt.Sprintf("failed to verify signature of %s with public key %s", ref, key))
-			errs = append(errs, err)
-			continue
-		}
-
-		if hasValidSignature {
-			details = nil
-			errs = nil
-			return details, errs
-		}
-	}
-
-	details = append(details, fmt.Sprintf("no matching signatures were found for '%s'", ref))
-	errs = append(errs, fmt.Errorf("failed to verify signature for '%s'", ref))
-	return details, errs
-}
-
-// buildValidationResult builds a default ValidationResult for a given validation type
-func buildValidationResult(rule v1alpha1.OciRegistryRule) *types.ValidationRuleResult {
-	state := vapi.ValidationSucceeded
-	latestCondition := vapi.DefaultValidationCondition()
-	latestCondition.Details = make([]string, 0)
-	latestCondition.Failures = make([]string, 0)
-	latestCondition.Message = fmt.Sprintf("All %s checks passed", constants.OciRegistry)
-	latestCondition.ValidationRule = rule.Name()
-	latestCondition.ValidationType = constants.OciRegistry
-	return &types.ValidationRuleResult{Condition: &latestCondition, State: &state}
+	return s.validateReference(ctx, ref, false, rule.SignatureVerification)
 }
 
 func (s *OciRuleService) updateResult(vr *types.ValidationRuleResult, errs []error, errMsg string, details ...string) {
@@ -387,4 +210,29 @@ func (s *OciRuleService) updateResult(vr *types.ValidationRuleResult, errs []err
 		}
 	}
 	vr.Condition.Details = append(vr.Condition.Details, details...)
+}
+
+// buildValidationResult builds a default ValidationResult for a given validation type.
+func buildValidationResult(rule v1alpha1.OciRegistryRule) *types.ValidationRuleResult {
+	state := vapi.ValidationSucceeded
+	latestCondition := vapi.DefaultValidationCondition()
+	latestCondition.Details = make([]string, 0)
+	latestCondition.Failures = make([]string, 0)
+	latestCondition.Message = fmt.Sprintf("All %s checks passed", constants.OciRegistry)
+	latestCondition.ValidationRule = rule.Name()
+	latestCondition.ValidationType = constants.OciRegistry
+	return &types.ValidationRuleResult{Condition: &latestCondition, State: &state}
+}
+
+// generateRef generates a name.Reference for a given OCI registry and artifact.
+func generateRef(registry, artifact string, vr *types.ValidationRuleResult) (name.Reference, error) {
+	if strings.Contains(artifact, "@sha256:") {
+		return name.NewDigest(fmt.Sprintf("%s/%s", registry, artifact))
+	}
+
+	if !strings.Contains(artifact, ":") {
+		vr.Condition.Details = append(vr.Condition.Details, fmt.Sprintf("artifact %s does not contain a tag or digest, defaulting to \"latest\" tag", artifact))
+	}
+
+	return name.NewTag(fmt.Sprintf("%s/%s", registry, artifact))
 }

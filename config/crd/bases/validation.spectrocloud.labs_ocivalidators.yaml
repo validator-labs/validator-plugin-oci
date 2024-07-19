@@ -17,7 +17,7 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: OciValidator is the Schema for the ocivalidators API
+        description: OciValidator is the Schema for the ocivalidators API.
         properties:
           apiVersion:
             description: |-
@@ -37,18 +37,18 @@ spec:
           metadata:
             type: object
           spec:
-            description: OciValidatorSpec defines the desired state of OciValidator
+            description: OciValidatorSpec defines the desired state of OciValidator.
             properties:
               ociRegistryRules:
                 items:
                   description: OciRegistryRule defines the validation rule for an
-                    OCI registry
+                    OCI registry.
                   properties:
                     artifacts:
-                      description: Artifacts is a slice of artifacts in the host registry
+                      description: Artifacts is a slice of artifacts in the OCI registry
                         that should be validated.
                       items:
-                        description: Artifact defines the artifact to be validated
+                        description: Artifact defines an OCI artifact to be validated.
                         properties:
                           layerValidation:
                             description: |-
@@ -74,41 +74,44 @@ spec:
                       type: array
                     auth:
                       description: Auth provides authentication information for the
-                        registry
+                        registry.
                       properties:
                         secretName:
                           description: |-
                             SecretName is the name of the Kubernetes Secret that exists in the same namespace as the OciValidator
-                            and that contains the credentials used to authenticate to the OCI Registry
+                            and that contains the credentials used to authenticate to the OCI Registry.
                           type: string
                       required:
                       - secretName
                       type: object
                     caCert:
-                      description: CaCert is the base64 encoded CA Certificate
+                      description: CaCert is the CA certificate of the OCI registry.
                       type: string
                     host:
-                      description: Host is a reference to the host URL of an OCI compliant
-                        registry
+                      description: Host is the URI of an OCI registry.
                       type: string
+                    insecureSkipTLSVerify:
+                      description: InsecureSkipTLSVerify specifies whether to skip
+                        verification of the OCI registry's TLS certificate.
+                      type: boolean
                     name:
-                      description: Name is the name of the rule
+                      description: Name is a unique name for the OciRegistryRule.
                       type: string
                     signatureVerification:
-                      description: SignatureVerification provides the option to verify
-                        the signature of the image
+                      description: SignatureVerification provides signature verification
+                        options for the artifacts.
                       properties:
                         provider:
                           default: cosign
                           description: Provider specifies the technology used to sign
-                            the OCI Artifact
+                            the OCI Artifact.
                           enum:
                           - cosign
                           type: string
                         secretName:
                           description: |-
                             SecretName is the name of the Kubernetes Secret that exists in the same namespace as the OciValidator
-                            and that contains the trusted public keys used to sign artifacts in the OciRegistryRule
+                            and that contains the trusted public keys used to sign artifacts in the OciRegistryRule.
                           type: string
                       required:
                       - provider
@@ -125,7 +128,7 @@ spec:
                   rule: self.all(e, size(self.filter(x, x.name == e.name)) == 1)
             type: object
           status:
-            description: OciValidatorStatus defines the observed state of OciValidator
+            description: OciValidatorStatus defines the observed state of OciValidator.
             type: object
         type: object
     served: true
