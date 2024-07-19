@@ -3,6 +3,7 @@ package validators
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -31,6 +32,7 @@ var (
 
 func TestGenerateRef(t *testing.T) {
 	testCases := []struct {
+		name                 string
 		registry             string
 		artifact             string
 		validationRuleResult *types.ValidationRuleResult
@@ -38,6 +40,7 @@ func TestGenerateRef(t *testing.T) {
 		expectErr            bool
 	}{
 		{
+			name:                 "Pass: valid artifact with SHA",
 			registry:             registryName,
 			artifact:             "artifact@sha256:ddbac6e7732bf90a4e674a01bf279ce27ea8691530b8d209e6fe77477e0fa406",
 			validationRuleResult: vrr,
@@ -45,6 +48,7 @@ func TestGenerateRef(t *testing.T) {
 			expectErr:            false,
 		},
 		{
+			name:                 "Pass: valid artifact with semver tag",
 			registry:             registryName,
 			artifact:             "artifact:v1.0.0",
 			validationRuleResult: vrr,
@@ -52,6 +56,7 @@ func TestGenerateRef(t *testing.T) {
 			expectErr:            false,
 		},
 		{
+			name:                 "Pass: valid artifact with latest tag",
 			registry:             registryName,
 			artifact:             "artifact",
 			validationRuleResult: vrr,
@@ -59,6 +64,7 @@ func TestGenerateRef(t *testing.T) {
 			expectErr:            false,
 		},
 		{
+			name:                 "Fail: invalid artifact",
 			registry:             registryName,
 			artifact:             "invalidArtifact",
 			validationRuleResult: vrr,
@@ -68,20 +74,23 @@ func TestGenerateRef(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		ref, err := generateRef(tc.registry, tc.artifact, tc.validationRuleResult)
+		t.Run(tc.name, func(t *testing.T) {
+			ref, err := generateRef(tc.registry, tc.artifact, tc.validationRuleResult)
 
-		if tc.expectErr {
-			assert.NotNil(t, err)
-		} else {
-			assert.Contains(t, ref.Name(), tc.expectedRefName)
-			assert.NoError(t, err)
-		}
+			if tc.expectErr {
+				assert.NotNil(t, err)
+			} else {
+				assert.Contains(t, ref.Name(), tc.expectedRefName)
+				assert.NoError(t, err)
+			}
+		})
 	}
 }
 
 func TestValidateReference(t *testing.T) {
 	s := httptest.NewServer(registry.New())
 	defer s.Close()
+	port := s.Listener.Addr().(*net.TCPAddr).Port
 
 	url, err := uploadArtifact(s, validArtifact)
 	if err != nil {
@@ -112,7 +121,7 @@ func TestValidateReference(t *testing.T) {
 			ref:             validRef,
 			layerValidation: false,
 			pubKeys:         nil,
-			expectedDetail:  "",
+			expectedDetail:  fmt.Sprintf("pulled and validated artifact 127.0.0.1:%d/test/oci-image:latest", port),
 			expectErr:       false,
 		},
 		{
@@ -120,7 +129,7 @@ func TestValidateReference(t *testing.T) {
 			ref:             validRef,
 			layerValidation: true,
 			pubKeys:         nil,
-			expectedDetail:  "",
+			expectedDetail:  fmt.Sprintf("pulled and validated artifact 127.0.0.1:%d/test/oci-image:latest", port),
 			expectErr:       false,
 		},
 		{
@@ -150,10 +159,11 @@ func TestValidateReference(t *testing.T) {
 			sv: v1alpha1.SignatureVerification{
 				SecretName: "secret",
 			},
-			expectErr: true,
+			expectedDetail: fmt.Sprintf("pulled and validated artifact 127.0.0.1:%d/test/oci-image:latest", port),
+			expectErr:      true,
 		},
 		{
-			name:            "Pass: valid ref with layer and signature verification",
+			name:            "Fail: valid ref, signature verification enabled with invalid public key",
 			ref:             validRef,
 			layerValidation: true,
 			pubKeys: [][]byte{
@@ -197,6 +207,7 @@ iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
 func TestValidateRepos(t *testing.T) {
 	s1 := httptest.NewServer(registry.New())
 	defer s1.Close()
+	port := s1.Listener.Addr().(*net.TCPAddr).Port
 
 	urlWithArtifact, err := uploadArtifact(s1, validArtifact)
 	if err != nil {
@@ -211,21 +222,25 @@ func TestValidateRepos(t *testing.T) {
 	}
 
 	testCases := []struct {
+		name           string
 		host           string
 		expectedDetail string
 		expectErr      bool
 	}{
 		{
+			name:           "Pass: valid registry",
 			host:           urlWithArtifact.Host,
-			expectedDetail: "",
+			expectedDetail: fmt.Sprintf("pulled and validated artifact 127.0.0.1:%d/test/oci-image:latest", port),
 			expectErr:      false,
 		},
 		{
+			name:           "Fail: invalid registry: no repositories",
 			host:           urlNoArtifact.Host,
 			expectedDetail: "no repositories found in registry",
 			expectErr:      false,
 		},
 		{
+			name:           "Fail: invalid registry",
 			host:           "invalidHost",
 			expectedDetail: "failed to list repositories in registry",
 			expectErr:      true,
@@ -233,30 +248,32 @@ func TestValidateRepos(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		ociClient, err := oci.NewOCIClient(oci.WithAnonymousAuth())
-		if err != nil {
-			t.Error(err)
-		}
-		ociService := NewOciRuleService(logr.Logger{}, WithOCIClient(ociClient))
+		t.Run(tc.name, func(t *testing.T) {
+			ociClient, err := oci.NewOCIClient(oci.WithAnonymousAuth())
+			if err != nil {
+				t.Error(err)
+			}
+			ociService := NewOciRuleService(logr.Logger{}, WithOCIClient(ociClient))
 
-		rule := v1alpha1.OciRegistryRule{
-			Host:                  tc.host,
-			SignatureVerification: v1alpha1.SignatureVerification{},
-		}
-		details, errs := ociService.validateRepos(context.Background(), rule, &types.ValidationRuleResult{})
+			rule := v1alpha1.OciRegistryRule{
+				Host:                  tc.host,
+				SignatureVerification: v1alpha1.SignatureVerification{},
+			}
+			details, errs := ociService.validateRepos(context.Background(), rule, &types.ValidationRuleResult{})
 
-		if tc.expectedDetail == "" {
-			assert.Empty(t, details)
-		} else {
-			assert.Len(t, details, 1)
-			assert.Contains(t, details[0], tc.expectedDetail)
-		}
+			if tc.expectedDetail == "" {
+				assert.Empty(t, details)
+			} else {
+				assert.Len(t, details, 1)
+				assert.Contains(t, details[0], tc.expectedDetail)
+			}
 
-		if !tc.expectErr {
-			assert.Empty(t, errs)
-		} else {
-			assert.Len(t, errs, 1)
-		}
+			if !tc.expectErr {
+				assert.Empty(t, errs)
+			} else {
+				assert.Len(t, errs, 1)
+			}
+		})
 	}
 }
 
