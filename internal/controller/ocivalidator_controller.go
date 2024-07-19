@@ -100,17 +100,19 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	// OCI Registry rules
 	for _, rule := range validator.Spec.OciRegistryRules {
+		vrr := val.BuildValidationResult(rule)
+
 		username, password, err := r.secretKeyAuth(req, rule)
 		if err != nil {
 			l.Error(err, "failed to get secret auth", "ruleName", rule.Name)
-			resp.AddResult(nil, err)
+			resp.AddResult(vrr, err)
 			continue
 		}
 
 		pubKeys, err := r.signaturePubKeys(req, rule)
 		if err != nil {
 			l.Error(err, "failed to get signature verification public keys", "ruleName", rule.Name)
-			resp.AddResult(nil, err)
+			resp.AddResult(vrr, err)
 			continue
 		}
 
@@ -122,13 +124,13 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		)
 		if err != nil {
 			l.Error(err, "failed to create OCI client", "ruleName", rule.Name)
-			resp.AddResult(nil, err)
+			resp.AddResult(vrr, err)
 			continue
 		}
 
 		ociRuleService := val.NewOciRuleService(r.Log, val.WithOCIClient(ociClient))
 
-		vrr, err := ociRuleService.ReconcileOciRegistryRule(rule)
+		vrr, err = ociRuleService.ReconcileOciRegistryRule(rule)
 		if err != nil {
 			l.Error(err, "failed to reconcile OCI Registry rule", "ruleName", rule.Name)
 		}
@@ -161,11 +163,11 @@ func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.O
 	nn := ktypes.NamespacedName{Name: rule.Auth.SecretName, Namespace: req.Namespace}
 
 	if err := r.Get(context.Background(), nn, authSecret); err != nil {
-		return "", "", fmt.Errorf("failed to fetch auth secret %s/%s for rule %s: %w", nn.Name, nn.Namespace, rule.Name(), err)
+		return "", "", fmt.Errorf("failed to fetch auth secret %s/%s for rule %s: %w", nn.Namespace, nn.Name, rule.Name(), err)
 	}
 
 	if len(authSecret.Data) == 0 {
-		return "", "", fmt.Errorf("secret %s/%s has no data", nn.Name, nn.Namespace)
+		return "", "", fmt.Errorf("secret %s/%s has no data", nn.Namespace, nn.Name)
 	}
 
 	var username, password string
@@ -197,7 +199,7 @@ func (r *OciValidatorReconciler) signaturePubKeys(req ctrl.Request, rule v1alpha
 
 	if err := r.Get(context.Background(), nn, pubKeysSecret); err != nil {
 		return nil, fmt.Errorf("failed to fetch public keys secret %s/%s for rule %s: %w",
-			nn.Name, nn.Namespace, rule.Name(), err,
+			nn.Namespace, nn.Name, rule.Name(), err,
 		)
 	}
 
@@ -208,7 +210,7 @@ func (r *OciValidatorReconciler) signaturePubKeys(req ctrl.Request, rule v1alpha
 		}
 	}
 	if len(pubKeys) == 0 {
-		return nil, fmt.Errorf("no public keys found in secret %s/%s for rule: %s", nn.Name, nn.Namespace, rule.Name())
+		return nil, fmt.Errorf("no public keys found in secret %s/%s for rule: %s", nn.Namespace, nn.Name, rule.Name())
 	}
 
 	return pubKeys, nil

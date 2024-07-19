@@ -49,28 +49,28 @@ func WithOCIClient(client *oci.Client) Option {
 // ReconcileOciRegistryRule reconciles an OCI registry rule from the OCIValidator config.
 func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule) (*types.ValidationRuleResult, error) {
 	l := s.log.V(0).WithValues("rule", rule.Name(), "host", rule.Host)
-	vr := buildValidationResult(rule)
-	errs := make([]error, 0)
-	details := make([]string, 0)
+	vr := BuildValidationResult(rule)
 
+	var err error
 	ctx := context.Background()
 
+	errMsg := "failed to validate repositories in registry"
 	if len(rule.Artifacts) == 0 {
-		errMsg := "failed to validate repositories in registry"
-		d, e := s.validateRepos(ctx, rule, vr)
-		details = append(details, d...)
-		errs = append(errs, e...)
+		details, errs := s.validateRepos(ctx, rule, vr)
 
-		if len(e) > 0 {
-			l.Error(e[len(e)-1], errMsg)
-			s.updateResult(vr, errs, errMsg, details...)
-			return vr, errors.New(errMsg)
+		if len(errs) > 0 {
+			l.Error(errs[len(errs)-1], errMsg)
+			err = errors.New(errMsg)
 		}
+		s.updateResult(vr, errs, errMsg, details...)
 
-		return vr, nil
+		return vr, err
 	}
 
-	errMsg := "failed to validate artifact in registry"
+	details := make([]string, 0)
+	errs := make([]error, 0)
+	errMsg = "failed to validate artifact in registry"
+
 	for _, artifact := range rule.Artifacts {
 		ref, err := generateRef(rule.Host, artifact.Ref, vr)
 		if err != nil {
@@ -87,12 +87,13 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 		details = append(details, d...)
 		errs = append(errs, e...)
 	}
-	s.updateResult(vr, errs, errMsg, details...)
 
 	if len(errs) > 0 {
-		return vr, errors.New(errMsg)
+		err = errors.New(errMsg)
 	}
-	return vr, nil
+	s.updateResult(vr, errs, errMsg, details...)
+
+	return vr, err
 }
 
 // validateArtifact validates a single artifact within an OCI registry. Used when either a path to a repo or artifact(s) are specified in an OciRegistryRule.
@@ -121,6 +122,7 @@ func (s *OciRuleService) validateReference(ctx context.Context, ref name.Referen
 		errs = append(errs, err)
 		return details, errs
 	}
+	details = append(details, fmt.Sprintf("pulled and validated artifact %s", ref.Name()))
 
 	// verify image signature (optional)
 	if sv.SecretName != "" {
@@ -212,8 +214,8 @@ func (s *OciRuleService) updateResult(vr *types.ValidationRuleResult, errs []err
 	vr.Condition.Details = append(vr.Condition.Details, details...)
 }
 
-// buildValidationResult builds a default ValidationResult for a given validation type.
-func buildValidationResult(rule v1alpha1.OciRegistryRule) *types.ValidationRuleResult {
+// BuildValidationResult builds a default ValidationResult for a given validation type.
+func BuildValidationResult(rule v1alpha1.OciRegistryRule) *types.ValidationRuleResult {
 	state := vapi.ValidationSucceeded
 	latestCondition := vapi.DefaultValidationCondition()
 	latestCondition.Details = make([]string, 0)

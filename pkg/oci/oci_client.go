@@ -246,10 +246,8 @@ func (c *Client) VerifySignature(ctx context.Context, ref name.Reference) ([]str
 			errs = append(errs, err)
 			continue
 		}
-
 		if hasValidSignature {
-			details = nil
-			errs = nil
+			details = append(details, fmt.Sprintf("verified signature for %s", ref))
 			return details, errs
 		}
 	}
