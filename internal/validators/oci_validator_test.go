@@ -26,7 +26,7 @@ const (
 )
 
 var (
-	vrr = buildValidationResult(v1alpha1.OciRegistryRule{})
+	vrr = BuildValidationResult(v1alpha1.OciRegistryRule{})
 )
 
 func TestGenerateRef(t *testing.T) {
