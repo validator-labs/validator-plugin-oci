@@ -1,5 +1,79 @@
 # Changelog
 
+## [0.0.11](https://github.com/validator-labs/validator-plugin-oci/compare/v0.0.10...v0.0.11) (2024-07-19)
+
+
+### Features
+
+* public OCI client with proxy from env support ([#216](https://github.com/validator-labs/validator-plugin-oci/issues/216)) ([a0ab6d6](https://github.com/validator-labs/validator-plugin-oci/commit/a0ab6d6003fdc93962d6f57d4e85fa439b977d11))
+
+
+### Bug Fixes
+
+* associate unexected errs w/ rules; always include validation result details ([#219](https://github.com/validator-labs/validator-plugin-oci/issues/219)) ([891a318](https://github.com/validator-labs/validator-plugin-oci/commit/891a318738ac5f552b2bf9325754add5e811a69a))
+* **deps:** update aws-sdk-go-v2 monorepo ([#152](https://github.com/validator-labs/validator-plugin-oci/issues/152)) ([14d7e95](https://github.com/validator-labs/validator-plugin-oci/commit/14d7e959d24d1d98cc2f0feb0a202427f81d7ea6))
+* **deps:** update aws-sdk-go-v2 monorepo ([#174](https://github.com/validator-labs/validator-plugin-oci/issues/174)) ([e166fff](https://github.com/validator-labs/validator-plugin-oci/commit/e166fffbe2ea5d0e6e3bd9a11a95108b916b75fa))
+* **deps:** update aws-sdk-go-v2 monorepo ([#184](https://github.com/validator-labs/validator-plugin-oci/issues/184)) ([d4d6f31](https://github.com/validator-labs/validator-plugin-oci/commit/d4d6f319eb2f096bdd53b9e554ae2e1004c6c8ca))
+* **deps:** update aws-sdk-go-v2 monorepo ([#191](https://github.com/validator-labs/validator-plugin-oci/issues/191)) ([b4941e9](https://github.com/validator-labs/validator-plugin-oci/commit/b4941e95d4fe9f69aa58a2879e5df2a8a54ef361))
+* **deps:** update aws-sdk-go-v2 monorepo ([#195](https://github.com/validator-labs/validator-plugin-oci/issues/195)) ([b5e6e37](https://github.com/validator-labs/validator-plugin-oci/commit/b5e6e370249bb54edd5b2a88477e3882518fd119))
+* **deps:** update aws-sdk-go-v2 monorepo ([#196](https://github.com/validator-labs/validator-plugin-oci/issues/196)) ([010cc4f](https://github.com/validator-labs/validator-plugin-oci/commit/010cc4f2283ae7477e60500cf8f02c8ebc711c7f))
+* **deps:** update aws-sdk-go-v2 monorepo ([#197](https://github.com/validator-labs/validator-plugin-oci/issues/197)) ([5ce52c6](https://github.com/validator-labs/validator-plugin-oci/commit/5ce52c6c1436e13fa7019ea54cf42af5e3a1b833))
+* **deps:** update aws-sdk-go-v2 monorepo ([#200](https://github.com/validator-labs/validator-plugin-oci/issues/200)) ([c482420](https://github.com/validator-labs/validator-plugin-oci/commit/c48242089d6c4d3cc8ac5d1b8696d7f055433049))
+* **deps:** update kubernetes packages to v0.30.1 ([#165](https://github.com/validator-labs/validator-plugin-oci/issues/165)) ([d75bd41](https://github.com/validator-labs/validator-plugin-oci/commit/d75bd41663d70cfdf5a4709ff915dcf753eb75c4))
+* **deps:** update kubernetes packages to v0.30.2 ([#193](https://github.com/validator-labs/validator-plugin-oci/issues/193)) ([9b10260](https://github.com/validator-labs/validator-plugin-oci/commit/9b10260e9dad9748ea18d4c845a60c938529ac23))
+* **deps:** update module github.com/go-logr/logr to v1.4.2 ([#177](https://github.com/validator-labs/validator-plugin-oci/issues/177)) ([2ed9dba](https://github.com/validator-labs/validator-plugin-oci/commit/2ed9dba3ba66dd42a3ebdfa6b35e3b4aafd445ef))
+* **deps:** update module github.com/google/go-containerregistry to v0.19.2 ([#194](https://github.com/validator-labs/validator-plugin-oci/issues/194)) ([65ecea1](https://github.com/validator-labs/validator-plugin-oci/commit/65ecea1c9998d62d18012e8997c9a734bd5ddc0c))
+* **deps:** update module github.com/onsi/ginkgo/v2 to v2.19.0 ([#182](https://github.com/validator-labs/validator-plugin-oci/issues/182)) ([c0b10fc](https://github.com/validator-labs/validator-plugin-oci/commit/c0b10fce1e4557b1778fe4e68684e1aa0e3c3a06))
+* **deps:** update module github.com/sigstore/cosign/v2 to v2.2.4 ([#162](https://github.com/validator-labs/validator-plugin-oci/issues/162)) ([2bf715f](https://github.com/validator-labs/validator-plugin-oci/commit/2bf715f0a0d70c2e6f46970dda3585124ac630d4))
+* **deps:** update module github.com/sigstore/sigstore to v1.8.4 ([#178](https://github.com/validator-labs/validator-plugin-oci/issues/178)) ([67e2c8b](https://github.com/validator-labs/validator-plugin-oci/commit/67e2c8bef519c678f66f7f87a1456671b198ce69))
+* **deps:** update module github.com/sigstore/sigstore to v1.8.5 ([#199](https://github.com/validator-labs/validator-plugin-oci/issues/199)) ([a454b94](https://github.com/validator-labs/validator-plugin-oci/commit/a454b94c5fffb71b7493f32aabfb333112409fa9))
+* **deps:** update module github.com/validator-labs/validator to v0.0.41 ([#179](https://github.com/validator-labs/validator-plugin-oci/issues/179)) ([85f388f](https://github.com/validator-labs/validator-plugin-oci/commit/85f388f5c687e80e31d9e1c43ea0d933337e76a2))
+* **deps:** update module github.com/validator-labs/validator to v0.0.42 ([#190](https://github.com/validator-labs/validator-plugin-oci/issues/190)) ([63f3dfd](https://github.com/validator-labs/validator-plugin-oci/commit/63f3dfd194b44c6bdd70632fd2aa1fb33b50ecac))
+* **deps:** update module github.com/validator-labs/validator to v0.0.43 ([#198](https://github.com/validator-labs/validator-plugin-oci/issues/198)) ([3dc7de0](https://github.com/validator-labs/validator-plugin-oci/commit/3dc7de0decfdf2990dcdd2d18aff8c7b4301d671))
+* **deps:** update module sigs.k8s.io/cluster-api to v1.7.2 ([#164](https://github.com/validator-labs/validator-plugin-oci/issues/164)) ([27a150c](https://github.com/validator-labs/validator-plugin-oci/commit/27a150c8e9d3fb9fe615531bb2e88590e846fbd6))
+* **deps:** update module sigs.k8s.io/cluster-api to v1.7.3 ([#192](https://github.com/validator-labs/validator-plugin-oci/issues/192)) ([f9c2d5d](https://github.com/validator-labs/validator-plugin-oci/commit/f9c2d5dde679e42a2fbb2401c9b6f44ea2b391cc))
+* **deps:** update module sigs.k8s.io/controller-runtime to v0.18.4 ([#188](https://github.com/validator-labs/validator-plugin-oci/issues/188)) ([8133d34](https://github.com/validator-labs/validator-plugin-oci/commit/8133d34578ffc841fc579db44e96f78746abeedd))
+
+
+### Other
+
+* **deps:** pin googleapis/release-please-action action to f3969c0 ([#171](https://github.com/validator-labs/validator-plugin-oci/issues/171)) ([8374a6f](https://github.com/validator-labs/validator-plugin-oci/commit/8374a6f7fb5201105646f72ab6c96b9ba929589c))
+* **deps:** update actions/checkout digest to a5ac7e5 ([#172](https://github.com/validator-labs/validator-plugin-oci/issues/172)) ([c85b724](https://github.com/validator-labs/validator-plugin-oci/commit/c85b724e9ea5767191e6af656252b21190146bea))
+* **deps:** update actions/setup-go digest to cdcb360 ([#175](https://github.com/validator-labs/validator-plugin-oci/issues/175)) ([133b586](https://github.com/validator-labs/validator-plugin-oci/commit/133b586e0cdb013fb887ebc412f8017af2f203b4))
+* **deps:** update anchore/sbom-action action to v0.16.0 ([#180](https://github.com/validator-labs/validator-plugin-oci/issues/180)) ([7743e32](https://github.com/validator-labs/validator-plugin-oci/commit/7743e32713a6b4db09133f81e5624367bf56e823))
+* **deps:** update azure/setup-helm digest to fe7b79c ([#163](https://github.com/validator-labs/validator-plugin-oci/issues/163)) ([5d50ba4](https://github.com/validator-labs/validator-plugin-oci/commit/5d50ba4391f58d354f9d895ad77a775034e0fa66))
+* **deps:** update codecov/codecov-action digest to 125fc84 ([#173](https://github.com/validator-labs/validator-plugin-oci/issues/173)) ([0d023a6](https://github.com/validator-labs/validator-plugin-oci/commit/0d023a6fd103a1072124f2723bfc53616f6b50e5))
+* **deps:** update codecov/codecov-action digest to 6d79887 ([#159](https://github.com/validator-labs/validator-plugin-oci/issues/159)) ([93abd02](https://github.com/validator-labs/validator-plugin-oci/commit/93abd02666d1e128e7a4af3cf7e2673b7af8a3c3))
+* **deps:** update dependency go to v1.22.4 ([#185](https://github.com/validator-labs/validator-plugin-oci/issues/185)) ([e4288a5](https://github.com/validator-labs/validator-plugin-oci/commit/e4288a50f6216f8244f7a4636e025c9f80fc9ace))
+* **deps:** update docker/login-action digest to 0d4c9c5 ([#176](https://github.com/validator-labs/validator-plugin-oci/issues/176)) ([2742f60](https://github.com/validator-labs/validator-plugin-oci/commit/2742f604cd1d6dc496419b9deb9c97a30b26b95f))
+* **deps:** update docker/setup-buildx-action digest to d70bba7 ([#160](https://github.com/validator-labs/validator-plugin-oci/issues/160)) ([23e54a5](https://github.com/validator-labs/validator-plugin-oci/commit/23e54a50748ceb6acc7c07c689d67be7c58617fc))
+* **deps:** update gcr.io/spectro-images-public/golang docker tag to v1.22 ([#105](https://github.com/validator-labs/validator-plugin-oci/issues/105)) ([c5edf12](https://github.com/validator-labs/validator-plugin-oci/commit/c5edf127bbd9d4ab44188b866250a36b795c4ffe))
+* **deps:** update gcr.io/spectro-images-public/golang docker tag to v1.22.4 ([#186](https://github.com/validator-labs/validator-plugin-oci/issues/186)) ([3fe407d](https://github.com/validator-labs/validator-plugin-oci/commit/3fe407da4387ff4dbb57d37456ccd374d2e90ae4))
+* **deps:** update helm/kind-action action to v1.10.0 ([#181](https://github.com/validator-labs/validator-plugin-oci/issues/181)) ([03458fd](https://github.com/validator-labs/validator-plugin-oci/commit/03458fd0f08cf58411831f81117b4330e17923d5))
+* **deps:** update softprops/action-gh-release digest to 69320db ([#135](https://github.com/validator-labs/validator-plugin-oci/issues/135)) ([9989631](https://github.com/validator-labs/validator-plugin-oci/commit/9989631461b716ae9faa149b685a41530af129f3))
+
+
+### Dependency Updates
+
+* **deps:** update aws-sdk-go-v2 monorepo ([#204](https://github.com/validator-labs/validator-plugin-oci/issues/204)) ([0503bee](https://github.com/validator-labs/validator-plugin-oci/commit/0503bee4a591c982abf78f6568fd491fa2895b80))
+* **deps:** update aws-sdk-go-v2 monorepo ([#205](https://github.com/validator-labs/validator-plugin-oci/issues/205)) ([196ef81](https://github.com/validator-labs/validator-plugin-oci/commit/196ef81516ce943c00cb758f3bb071383be7234f))
+* **deps:** update aws-sdk-go-v2 monorepo ([#211](https://github.com/validator-labs/validator-plugin-oci/issues/211)) ([40350f0](https://github.com/validator-labs/validator-plugin-oci/commit/40350f029b7fb8d04890ed6c677b84744b42cd6f))
+* **deps:** update dependency go to v1.22.5 ([#206](https://github.com/validator-labs/validator-plugin-oci/issues/206)) ([45ad3a8](https://github.com/validator-labs/validator-plugin-oci/commit/45ad3a8a48d543fdc51758a2447e3616fa1eefac))
+* **deps:** update github.com/validator-labs/validator digest to de015d9 ([#218](https://github.com/validator-labs/validator-plugin-oci/issues/218)) ([a725d7f](https://github.com/validator-labs/validator-plugin-oci/commit/a725d7f1ee65a0e2146be3675bf840f59b8fbfe2))
+* **deps:** update kubernetes packages to v0.30.3 ([#215](https://github.com/validator-labs/validator-plugin-oci/issues/215)) ([290ae5f](https://github.com/validator-labs/validator-plugin-oci/commit/290ae5f718ba6b0a5d46d643647b6b277101e2db))
+* **deps:** update module github.com/google/go-containerregistry to v0.20.0 ([#207](https://github.com/validator-labs/validator-plugin-oci/issues/207)) ([aeeb24c](https://github.com/validator-labs/validator-plugin-oci/commit/aeeb24c276bdcc417e7313fcee5a61a96bd34090))
+* **deps:** update module github.com/google/go-containerregistry to v0.20.1 ([#214](https://github.com/validator-labs/validator-plugin-oci/issues/214)) ([73525b1](https://github.com/validator-labs/validator-plugin-oci/commit/73525b1b6f31f4c51a3264461f3d4b72f2a4c8e5))
+* **deps:** update module github.com/sigstore/sigstore to v1.8.6 ([#202](https://github.com/validator-labs/validator-plugin-oci/issues/202)) ([34d6274](https://github.com/validator-labs/validator-plugin-oci/commit/34d6274baaf41d45bb954fc5204d58db3b49a49f))
+* **deps:** update module github.com/sigstore/sigstore to v1.8.7 ([#212](https://github.com/validator-labs/validator-plugin-oci/issues/212)) ([21a320a](https://github.com/validator-labs/validator-plugin-oci/commit/21a320a267a37cc540e1ca1404e8e2ecb597bb84))
+* **deps:** update module github.com/validator-labs/validator to v0.0.44 ([#210](https://github.com/validator-labs/validator-plugin-oci/issues/210)) ([b7d8d5b](https://github.com/validator-labs/validator-plugin-oci/commit/b7d8d5b6022cad510e185976330e1331eb9ccc15))
+* **deps:** update module github.com/validator-labs/validator to v0.0.46 ([#213](https://github.com/validator-labs/validator-plugin-oci/issues/213)) ([be1a840](https://github.com/validator-labs/validator-plugin-oci/commit/be1a84015077a2a23c775d6f888064da529bd872))
+* **deps:** update module sigs.k8s.io/cluster-api to v1.7.4 ([#209](https://github.com/validator-labs/validator-plugin-oci/issues/209)) ([1e4bef0](https://github.com/validator-labs/validator-plugin-oci/commit/1e4bef0f3a58600d2a680c312dd537c13f77a204))
+
+
+### Refactoring
+
+* enable revive and address all lints ([#208](https://github.com/validator-labs/validator-plugin-oci/issues/208)) ([be2689d](https://github.com/validator-labs/validator-plugin-oci/commit/be2689d988d23ecf2e0b7a0ec61866ce9c80ab50))
+
 ## [0.0.10](https://github.com/validator-labs/validator-plugin-oci/compare/v0.0.9...v0.0.10) (2024-05-17)
 
 
