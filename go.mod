@@ -14,7 +14,7 @@ require (
 	github.com/sigstore/cosign/v2 v2.2.4
 	github.com/sigstore/sigstore v1.8.7
 	github.com/stretchr/testify v1.9.0
-	github.com/validator-labs/validator v0.0.47-0.20240716224743-de015d9112ba
+	github.com/validator-labs/validator v0.0.47-0.20240719200500-81fd1cf17a04
 	k8s.io/api v0.30.3
 	k8s.io/apimachinery v0.30.3
 	k8s.io/client-go v0.30.3
