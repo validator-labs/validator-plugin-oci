@@ -15,9 +15,9 @@ require (
 	github.com/sigstore/sigstore v1.8.7
 	github.com/stretchr/testify v1.9.0
 	github.com/validator-labs/validator v0.0.47-0.20240716224743-de015d9112ba
-	k8s.io/api v0.30.2
-	k8s.io/apimachinery v0.30.2
-	k8s.io/client-go v0.30.2
+	k8s.io/api v0.30.3
+	k8s.io/apimachinery v0.30.3
+	k8s.io/client-go v0.30.3
 	k8s.io/klog/v2 v2.130.1
 	sigs.k8s.io/cluster-api v1.7.4
 	sigs.k8s.io/controller-runtime v0.18.4
