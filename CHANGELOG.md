@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.12](https://github.com/validator-labs/validator-plugin-oci/compare/v0.0.11...v0.0.12) (2024-07-26)
+
+
+### Dependency Updates
+
+* **deps:** update github.com/validator-labs/validator digest to 81fd1cf ([#220](https://github.com/validator-labs/validator-plugin-oci/issues/220)) ([ab21a0c](https://github.com/validator-labs/validator-plugin-oci/commit/ab21a0cc9c0851321e8aaeed8b9730581c706c8e))
+* **deps:** update module github.com/onsi/ginkgo/v2 to v2.19.1 ([#228](https://github.com/validator-labs/validator-plugin-oci/issues/228)) ([ee3e28b](https://github.com/validator-labs/validator-plugin-oci/commit/ee3e28b2e50e939480058101aed2590ecd5794e3))
+* **deps:** update module github.com/onsi/gomega to v1.34.0 ([#227](https://github.com/validator-labs/validator-plugin-oci/issues/227)) ([90bb855](https://github.com/validator-labs/validator-plugin-oci/commit/90bb855ac2610db28544e90f4072e00d0051cb02))
+* **deps:** update module github.com/sigstore/cosign/v2 to v2.3.0 ([#224](https://github.com/validator-labs/validator-plugin-oci/issues/224)) ([92ba260](https://github.com/validator-labs/validator-plugin-oci/commit/92ba260603b0f657e57460e83dc55783e4dc8c06))
+* **deps:** update module github.com/validator-labs/validator to v0.0.47 ([#223](https://github.com/validator-labs/validator-plugin-oci/issues/223)) ([4e12c85](https://github.com/validator-labs/validator-plugin-oci/commit/4e12c85dfabada2c82649b651caf8d6ed2cf2628))
+* **deps:** update module github.com/validator-labs/validator to v0.0.48 ([#225](https://github.com/validator-labs/validator-plugin-oci/issues/225)) ([0685ce0](https://github.com/validator-labs/validator-plugin-oci/commit/0685ce0bdc97cede2d4fc0ad5c7b72087c555639))
+* **deps:** update module github.com/validator-labs/validator to v0.0.49 ([#226](https://github.com/validator-labs/validator-plugin-oci/issues/226)) ([d895c58](https://github.com/validator-labs/validator-plugin-oci/commit/d895c58c0fa7172cec2cc52894b81132b5e6a342))
+
 ## [0.0.11](https://github.com/validator-labs/validator-plugin-oci/compare/v0.0.10...v0.0.11) (2024-07-19)
 
 
