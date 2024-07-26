@@ -1,0 +1,137 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.15.0
+  name: ocivalidators.validation.spectrocloud.labs
+spec:
+  group: validation.spectrocloud.labs
+  names:
+    kind: OciValidator
+    listKind: OciValidatorList
+    plural: ocivalidators
+    singular: ocivalidator
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: OciValidator is the Schema for the ocivalidators API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: OciValidatorSpec defines the desired state of OciValidator.
+            properties:
+              ociRegistryRules:
+                items:
+                  description: OciRegistryRule defines the validation rule for an
+                    OCI registry.
+                  properties:
+                    artifacts:
+                      description: Artifacts is a slice of artifacts in the OCI registry
+                        that should be validated.
+                      items:
+                        description: Artifact defines an OCI artifact to be validated.
+                        properties:
+                          layerValidation:
+                            description: |-
+                              LayerValidation specifies whether deep validation of the artifact layers should be performed.
+                              The existence of layers is always validated, but this option allows for the deep validation of the layers.
+                              See more details here:
+                              https://github.com/google/go-containerregistry/blob/8dadbe76ff8c20d0e509406f04b7eade43baa6c1/pkg/v1/validate/image.go#L105
+                            type: boolean
+                          ref:
+                            description: |-
+                              Ref is the path to the artifact in the host registry that should be validated.
+                              An individual artifact can take any of the following forms:
+                              <repository-path>/<artifact-name>
+                              <repository-path>/<artifact-name>:<tag>
+                              <repository-path>/<artifact-name>@<digest>
+
+
+                              When no tag or digest are specified, the default tag "latest" is used.
+                            type: string
+                        required:
+                        - ref
+                        type: object
+                      type: array
+                    auth:
+                      description: Auth provides authentication information for the
+                        registry.
+                      properties:
+                        secretName:
+                          description: |-
+                            SecretName is the name of the Kubernetes Secret that exists in the same namespace as the OciValidator
+                            and that contains the credentials used to authenticate to the OCI Registry.
+                          type: string
+                      required:
+                      - secretName
+                      type: object
+                    caCert:
+                      description: CaCert is the CA certificate of the OCI registry.
+                      type: string
+                    host:
+                      description: Host is the URI of an OCI registry.
+                      type: string
+                    insecureSkipTLSVerify:
+                      description: InsecureSkipTLSVerify specifies whether to skip
+                        verification of the OCI registry's TLS certificate.
+                      type: boolean
+                    name:
+                      description: Name is a unique name for the OciRegistryRule.
+                      type: string
+                    signatureVerification:
+                      description: SignatureVerification provides signature verification
+                        options for the artifacts.
+                      properties:
+                        provider:
+                          default: cosign
+                          description: Provider specifies the technology used to sign
+                            the OCI Artifact.
+                          enum:
+                          - cosign
+                          type: string
+                        secretName:
+                          description: |-
+                            SecretName is the name of the Kubernetes Secret that exists in the same namespace as the OciValidator
+                            and that contains the trusted public keys used to sign artifacts in the OciRegistryRule.
+                          type: string
+                      required:
+                      - provider
+                      - secretName
+                      type: object
+                  required:
+                  - host
+                  - name
+                  type: object
+                maxItems: 5
+                type: array
+                x-kubernetes-validations:
+                - message: OciRegistryRules must have a unique RuleName
+                  rule: self.all(e, size(self.filter(x, x.name == e.name)) == 1)
+            type: object
+          status:
+            description: OciValidatorStatus defines the observed state of OciValidator.
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
