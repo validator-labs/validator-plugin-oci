@@ -8,7 +8,7 @@ require (
 	github.com/go-logr/logr v1.4.2
 	github.com/google/go-containerregistry v0.20.1
 	github.com/onsi/ginkgo/v2 v2.19.1
-	github.com/onsi/gomega v1.34.0
+	github.com/onsi/gomega v1.34.1
 	github.com/sigstore/cosign/v2 v2.3.0
 	github.com/sigstore/sigstore v1.8.7
 	github.com/stretchr/testify v1.9.0
