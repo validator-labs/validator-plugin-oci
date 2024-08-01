@@ -27,6 +27,13 @@ deployments:
       manifests:
       - config/devspace
 
+hooks:
+- name: validator-crds
+  command: |
+    kubectl apply -f https://raw.githubusercontent.com/validator-labs/validator/main/chart/validator/crds/validation.spectrocloud.labs_validatorconfigs.yaml
+    kubectl apply -f https://raw.githubusercontent.com/validator-labs/validator/main/chart/validator/crds/validation.spectrocloud.labs_validationresults.yaml
+  events: ["before:deploy"]
+
 dev:
   validator-plugin-oci:
     imageSelector: ${IMAGE}
