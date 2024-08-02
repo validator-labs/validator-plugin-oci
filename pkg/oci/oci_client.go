@@ -13,13 +13,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/awslabs/amazon-ecr-credential-helper/ecr-login"
-	"github.com/awslabs/amazon-ecr-credential-helper/ecr-login/api"
-	acr "github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/google/go-containerregistry/pkg/v1/google"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/validate"
 	"github.com/validator-labs/validator/pkg/util"
@@ -102,14 +98,9 @@ func WithBasicAuth(username, password string) Option {
 }
 
 // WithMultiAuth configures the OCI client with multiple authentication keychains.
-func WithMultiAuth() Option {
+func WithMultiAuth(keychain []authn.Keychain) Option {
 	return func(c *Client) {
-		c.keychain = authn.NewMultiKeychain(
-			authn.DefaultKeychain,
-			google.Keychain,
-			authn.NewKeychainFromHelper(ecr.NewECRHelper(ecr.WithClientFactory(api.DefaultClientFactory{}))),
-			authn.NewKeychainFromHelper(acr.ACRCredHelper{}),
-		)
+		c.keychain = authn.NewMultiKeychain(keychain...)
 	}
 }
 
