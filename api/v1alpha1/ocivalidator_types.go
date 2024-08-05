@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/validator-labs/validator-plugin-oci/pkg/constants"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -25,6 +26,11 @@ type OciValidatorSpec struct {
 	// +kubebuilder:validation:MaxItems=5
 	// +kubebuilder:validation:XValidation:message="OciRegistryRules must have a unique RuleName",rule="self.all(e, size(self.filter(x, x.name == e.name)) == 1)"
 	OciRegistryRules []OciRegistryRule `json:"ociRegistryRules,omitempty" yaml:"ociRegistryRules,omitempty"`
+}
+
+// PluginCode returns the OCI validator's plugin code.
+func (s OciValidatorSpec) PluginCode() string {
+	return constants.PluginCode
 }
 
 // ResultCount returns the number of validation results expected for an OciValidatorSpec.
@@ -111,6 +117,16 @@ type OciValidator struct {
 
 	Spec   OciValidatorSpec   `json:"spec,omitempty"`
 	Status OciValidatorStatus `json:"status,omitempty"`
+}
+
+// PluginCode returns the OCI validator's plugin code.
+func (v OciValidator) PluginCode() string {
+	return v.Spec.PluginCode()
+}
+
+// ResultCount returns the number of validation results expected for an OciValidator.
+func (v OciValidator) ResultCount() int {
+	return v.Spec.ResultCount()
 }
 
 //+kubebuilder:object:root=true

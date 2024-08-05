@@ -27,7 +27,6 @@ import (
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ktypes "k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/cluster-api/util/patch"
@@ -36,12 +35,10 @@ import (
 
 	vapi "github.com/validator-labs/validator/api/v1alpha1"
 	"github.com/validator-labs/validator/pkg/types"
-	"github.com/validator-labs/validator/pkg/util"
 	vres "github.com/validator-labs/validator/pkg/validationresult"
 
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
 	"github.com/validator-labs/validator-plugin-oci/pkg/auth"
-	"github.com/validator-labs/validator-plugin-oci/pkg/constants"
 	"github.com/validator-labs/validator-plugin-oci/pkg/oci"
 	ocic "github.com/validator-labs/validator-plugin-oci/pkg/ociclient"
 )
@@ -76,16 +73,16 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, err
 	}
 	nn := ktypes.NamespacedName{
-		Name:      validationResultName(validator),
+		Name:      vres.Name(validator),
 		Namespace: req.Namespace,
 	}
 	if err := r.Get(ctx, nn, vr); err == nil {
-		vres.HandleExistingValidationResult(vr, r.Log)
+		vres.HandleExisting(vr, r.Log)
 	} else {
 		if !apierrs.IsNotFound(err) {
 			l.Error(err, "unexpected error getting ValidationResult")
 		}
-		if err := vres.HandleNewValidationResult(ctx, r.Client, p, buildValidationResult(validator), r.Log); err != nil {
+		if err := vres.HandleNew(ctx, r.Client, p, vres.Build(validator), r.Log); err != nil {
 			return ctrl.Result{}, err
 		}
 		return ctrl.Result{RequeueAfter: time.Millisecond}, nil
@@ -138,7 +135,7 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		resp.AddResult(vrr, err)
 	}
 
-	if err := vres.SafeUpdateValidationResult(ctx, p, vr, resp, r.Log); err != nil {
+	if err := vres.SafeUpdate(ctx, p, vr, resp, r.Log); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -215,30 +212,4 @@ func (r *OciValidatorReconciler) signaturePubKeys(req ctrl.Request, rule v1alpha
 	}
 
 	return pubKeys, nil
-}
-
-func buildValidationResult(validator *v1alpha1.OciValidator) *vapi.ValidationResult {
-	return &vapi.ValidationResult{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      validationResultName(validator),
-			Namespace: validator.Namespace,
-			OwnerReferences: []metav1.OwnerReference{
-				{
-					APIVersion: validator.APIVersion,
-					Kind:       validator.Kind,
-					Name:       validator.Name,
-					UID:        validator.UID,
-					Controller: util.Ptr(true),
-				},
-			},
-		},
-		Spec: vapi.ValidationResultSpec{
-			Plugin:          constants.PluginCode,
-			ExpectedResults: validator.Spec.ResultCount(),
-		},
-	}
-}
-
-func validationResultName(validator *v1alpha1.OciValidator) string {
-	return fmt.Sprintf("validator-plugin-oci-%s", validator.Name)
 }

@@ -12,6 +12,7 @@ import (
 
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
 	vapi "github.com/validator-labs/validator/api/v1alpha1"
+	vres "github.com/validator-labs/validator/pkg/validationresult"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -105,7 +106,7 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 	}
 
 	vr := &vapi.ValidationResult{}
-	vrKey := types.NamespacedName{Name: validationResultName(ociValidator), Namespace: validatorNamespace}
+	vrKey := types.NamespacedName{Name: vres.Name(ociValidator), Namespace: validatorNamespace}
 
 	authSecret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
