@@ -1,5 +1,5 @@
-// Package validators defines the OCI registry rule service and implements the reconcile function for the OCI registry rule.
-package validators
+// Package oci defines the OCI registry rule service and implements the reconcile function for OCI registry rules.
+package oci
 
 import (
 	"context"
@@ -15,22 +15,22 @@ import (
 	"github.com/validator-labs/validator/pkg/util"
 
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
-	"github.com/validator-labs/validator-plugin-oci/internal/constants"
-	"github.com/validator-labs/validator-plugin-oci/pkg/oci"
+	"github.com/validator-labs/validator-plugin-oci/pkg/constants"
+	ocic "github.com/validator-labs/validator-plugin-oci/pkg/ociclient"
 )
 
-// OciRuleService defines the service for OCI registry rules.
-type OciRuleService struct {
+// RuleService defines the service for OCI registry rules.
+type RuleService struct {
 	log       logr.Logger
-	ociClient *oci.Client
+	ociClient *ocic.Client
 }
 
-// Option is a functional option for configuring an OciRuleService.
-type Option func(*OciRuleService)
+// Option is a functional option for configuring a RuleService.
+type Option func(*RuleService)
 
-// NewOciRuleService creates a new OCI registry rule service.
-func NewOciRuleService(log logr.Logger, opts ...Option) *OciRuleService {
-	s := &OciRuleService{
+// NewRuleService creates a new OCI registry rule service.
+func NewRuleService(log logr.Logger, opts ...Option) *RuleService {
+	s := &RuleService{
 		log: log,
 	}
 	for _, o := range opts {
@@ -40,14 +40,14 @@ func NewOciRuleService(log logr.Logger, opts ...Option) *OciRuleService {
 }
 
 // WithOCIClient sets the OCI client for the OCI registry rule service.
-func WithOCIClient(client *oci.Client) Option {
-	return func(s *OciRuleService) {
+func WithOCIClient(client *ocic.Client) Option {
+	return func(s *RuleService) {
 		s.ociClient = client
 	}
 }
 
 // ReconcileOciRegistryRule reconciles an OCI registry rule from the OCIValidator config.
-func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule) (*types.ValidationRuleResult, error) {
+func (s *RuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule) (*types.ValidationRuleResult, error) {
 	l := s.log.V(0).WithValues("rule", rule.Name(), "host", rule.Host)
 	vr := BuildValidationResult(rule)
 
@@ -97,7 +97,7 @@ func (s *OciRuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule)
 }
 
 // validateArtifact validates a single artifact within an OCI registry. Used when either a path to a repo or artifact(s) are specified in an OciRegistryRule.
-func (s *OciRuleService) validateReference(ctx context.Context, ref name.Reference, fullLayerValidation bool, sv v1alpha1.SignatureVerification) ([]string, []error) {
+func (s *RuleService) validateReference(ctx context.Context, ref name.Reference, fullLayerValidation bool, sv v1alpha1.SignatureVerification) ([]string, []error) {
 	details := make([]string, 0)
 	errs := make([]error, 0)
 
@@ -139,7 +139,7 @@ func (s *OciRuleService) validateReference(ctx context.Context, ref name.Referen
 }
 
 // validateRepos validates repos within an OCI registry. Used when no specific artifacts are provided in an OciRegistryRule.
-func (s *OciRuleService) validateRepos(ctx context.Context, rule v1alpha1.OciRegistryRule, vr *types.ValidationRuleResult) ([]string, []error) {
+func (s *RuleService) validateRepos(ctx context.Context, rule v1alpha1.OciRegistryRule, vr *types.ValidationRuleResult) ([]string, []error) {
 	details := make([]string, 0)
 	errs := make([]error, 0)
 
@@ -203,7 +203,7 @@ func (s *OciRuleService) validateRepos(ctx context.Context, rule v1alpha1.OciReg
 	return s.validateReference(ctx, ref, false, rule.SignatureVerification)
 }
 
-func (s *OciRuleService) updateResult(vr *types.ValidationRuleResult, errs []error, errMsg string, details ...string) {
+func (s *RuleService) updateResult(vr *types.ValidationRuleResult, errs []error, errMsg string, details ...string) {
 	if len(errs) > 0 {
 		vr.State = util.Ptr(vapi.ValidationFailed)
 		vr.Condition.Message = errMsg

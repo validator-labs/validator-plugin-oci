@@ -24,15 +24,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/awslabs/amazon-ecr-credential-helper/ecr-login"
-	"github.com/awslabs/amazon-ecr-credential-helper/ecr-login/api"
-	acr "github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
 	"github.com/go-logr/logr"
-	"github.com/google/go-containerregistry/pkg/authn"
-	"github.com/google/go-containerregistry/pkg/v1/google"
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ktypes "k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/cluster-api/util/patch"
@@ -40,14 +34,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	vapi "github.com/validator-labs/validator/api/v1alpha1"
-	"github.com/validator-labs/validator/pkg/types"
-	"github.com/validator-labs/validator/pkg/util"
 	vres "github.com/validator-labs/validator/pkg/validationresult"
 
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
-	"github.com/validator-labs/validator-plugin-oci/internal/constants"
-	val "github.com/validator-labs/validator-plugin-oci/internal/validators"
-	"github.com/validator-labs/validator-plugin-oci/pkg/oci"
+	"github.com/validator-labs/validator-plugin-oci/pkg/validate"
 )
 
 // OciValidatorReconciler reconciles a OciValidator object
@@ -80,16 +70,16 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, err
 	}
 	nn := ktypes.NamespacedName{
-		Name:      validationResultName(validator),
+		Name:      vres.Name(validator),
 		Namespace: req.Namespace,
 	}
 	if err := r.Get(ctx, nn, vr); err == nil {
-		vres.HandleExistingValidationResult(vr, r.Log)
+		vres.HandleExisting(vr, r.Log)
 	} else {
 		if !apierrs.IsNotFound(err) {
 			l.Error(err, "unexpected error getting ValidationResult")
 		}
-		if err := vres.HandleNewValidationResult(ctx, r.Client, p, buildValidationResult(validator), r.Log); err != nil {
+		if err := vres.HandleNew(ctx, r.Client, p, vres.Build(validator), r.Log); err != nil {
 			return ctrl.Result{}, err
 		}
 		return ctrl.Result{RequeueAfter: time.Millisecond}, nil
@@ -98,51 +88,31 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	// Always update the expected result count in case the validator's rules have changed
 	vr.Spec.ExpectedResults = validator.Spec.ResultCount()
 
-	resp := types.ValidationResponse{
-		ValidationRuleResults: make([]*types.ValidationRuleResult, 0, vr.Spec.ExpectedResults),
-		ValidationRuleErrors:  make([]error, 0, vr.Spec.ExpectedResults),
-	}
+	// Fetch OCI registry basic auth secrets and signature verification public keys
+	auths := make([][]string, len(validator.Spec.OciRegistryRules))
+	allPubKeys := make([][][]byte, len(validator.Spec.OciRegistryRules))
 
-	// OCI Registry rules
 	for _, rule := range validator.Spec.OciRegistryRules {
-		vrr := val.BuildValidationResult(rule)
-
 		username, password, err := r.secretKeyAuth(req, rule)
 		if err != nil {
 			l.Error(err, "failed to get secret auth", "ruleName", rule.Name)
-			resp.AddResult(vrr, err)
-			continue
+			return ctrl.Result{}, err
 		}
+		auths = append(auths, []string{username, password})
 
 		pubKeys, err := r.signaturePubKeys(req, rule)
 		if err != nil {
 			l.Error(err, "failed to get signature verification public keys", "ruleName", rule.Name)
-			resp.AddResult(vrr, err)
-			continue
+			return ctrl.Result{}, err
 		}
-
-		ociClient, err := oci.NewOCIClient(
-			oci.WithBasicAuth(username, password),
-			oci.WithMultiAuth(getKeychain(rule.Host)),
-			oci.WithTLSConfig(rule.InsecureSkipTLSVerify, rule.CaCert, ""),
-			oci.WithVerificationPublicKeys(pubKeys),
-		)
-		if err != nil {
-			l.Error(err, "failed to create OCI client", "ruleName", rule.Name)
-			resp.AddResult(vrr, err)
-			continue
-		}
-
-		ociRuleService := val.NewOciRuleService(r.Log, val.WithOCIClient(ociClient))
-
-		vrr, err = ociRuleService.ReconcileOciRegistryRule(rule)
-		if err != nil {
-			l.Error(err, "failed to reconcile OCI Registry rule", "ruleName", rule.Name)
-		}
-		resp.AddResult(vrr, err)
+		allPubKeys = append(allPubKeys, pubKeys)
 	}
 
-	if err := vres.SafeUpdateValidationResult(ctx, p, vr, resp, r.Log); err != nil {
+	// Validate the rules
+	resp := validate.Validate(validator.Spec, auths, allPubKeys, r.Log)
+
+	// Patch the ValidationResult with the latest ValidationRuleResults
+	if err := vres.SafeUpdate(ctx, p, vr, resp, r.Log); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -155,21 +125,6 @@ func (r *OciValidatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.OciValidator{}).
 		Complete(r)
-}
-
-// getKeychain returns the default authn keychain derived from an OCI host.
-func getKeychain(host string) []authn.Keychain {
-	keychain := []authn.Keychain{
-		authn.DefaultKeychain,
-	}
-	if strings.Contains(host, "azurecr.io") {
-		keychain = append(keychain, authn.NewKeychainFromHelper(acr.ACRCredHelper{}))
-	} else if strings.Contains(host, "gcr.io") {
-		keychain = append(keychain, google.Keychain)
-	} else if strings.Contains(host, "ecr.aws") || strings.Contains(host, "amazonaws.com") {
-		keychain = append(keychain, authn.NewKeychainFromHelper(ecr.NewECRHelper(ecr.WithClientFactory(api.DefaultClientFactory{}))))
-	}
-	return keychain
 }
 
 // secretKeyAuth retrieves the username and password from the secret referenced in the rule's auth field.
@@ -234,30 +189,4 @@ func (r *OciValidatorReconciler) signaturePubKeys(req ctrl.Request, rule v1alpha
 	}
 
 	return pubKeys, nil
-}
-
-func buildValidationResult(validator *v1alpha1.OciValidator) *vapi.ValidationResult {
-	return &vapi.ValidationResult{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      validationResultName(validator),
-			Namespace: validator.Namespace,
-			OwnerReferences: []metav1.OwnerReference{
-				{
-					APIVersion: validator.APIVersion,
-					Kind:       validator.Kind,
-					Name:       validator.Name,
-					UID:        validator.UID,
-					Controller: util.Ptr(true),
-				},
-			},
-		},
-		Spec: vapi.ValidationResultSpec{
-			Plugin:          constants.PluginCode,
-			ExpectedResults: validator.Spec.ResultCount(),
-		},
-	}
-}
-
-func validationResultName(validator *v1alpha1.OciValidator) string {
-	return fmt.Sprintf("validator-plugin-oci-%s", validator.Name)
 }

@@ -1,5 +1,5 @@
-// Package oci contains the OCI client interface and implementation.
-package oci
+// Package ociclient contains the OCI client interface and implementation.
+package ociclient
 
 import (
 	"context"
@@ -21,7 +21,7 @@ import (
 	"github.com/validator-labs/validator/pkg/util"
 	klog "k8s.io/klog/v2"
 
-	"github.com/validator-labs/validator-plugin-oci/pkg/oci/verifier"
+	"github.com/validator-labs/validator-plugin-oci/pkg/ociclient/verifier"
 )
 
 const (

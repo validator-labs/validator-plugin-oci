@@ -12,6 +12,7 @@ import (
 
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
 	vapi "github.com/validator-labs/validator/api/v1alpha1"
+	vres "github.com/validator-labs/validator/pkg/validationresult"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -69,22 +70,6 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					},
 				},
 				{
-					RuleName: "auth secret and pubkeys secret provided but missing",
-					Host:     "foo3.registry.io",
-					Auth: v1alpha1.Auth{
-						SecretName: "missing-auth-secret",
-					},
-					Artifacts: []v1alpha1.Artifact{
-						{
-							Ref: "foo/bar:latest",
-						},
-					},
-					SignatureVerification: v1alpha1.SignatureVerification{
-						Provider:   "cosign",
-						SecretName: "missing-pubkeys-secret",
-					},
-				},
-				{
 					RuleName: "auth secret and pubkeys secret provided and created",
 					Host:     "foo3.registry.io",
 					Auth: v1alpha1.Auth{
@@ -105,7 +90,7 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 	}
 
 	vr := &vapi.ValidationResult{}
-	vrKey := types.NamespacedName{Name: validationResultName(ociValidator), Namespace: validatorNamespace}
+	vrKey := types.NamespacedName{Name: vres.Name(ociValidator), Namespace: validatorNamespace}
 
 	authSecret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
