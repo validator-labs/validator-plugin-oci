@@ -3,6 +3,17 @@ entries:
   validator-plugin-oci:
   - apiVersion: v2
     appVersion: 0.0.2
+    created: "2024-08-05T23:30:38.866207099Z"
+    description: Perform various OCI validations (registry authentication, downloading
+      artifacts, etc.)
+    digest: b1cc10131c4393fef064b691b509f273b3f639b193734244854eeffd830d5c9f
+    name: validator-plugin-oci
+    type: application
+    urls:
+    - https://validator-labs.github.io/validator-plugin-oci/validator-plugin-oci-0.0.13.tgz
+    version: 0.0.13
+  - apiVersion: v2
+    appVersion: 0.0.2
     created: "2024-07-26T17:54:57.07011501Z"
     description: Perform various OCI validations (registry authentication, downloading
       artifacts, etc.)
@@ -133,4 +144,4 @@ entries:
     urls:
     - https://spectrocloud-labs.github.io/validator-plugin-oci/validator-plugin-oci-0.0.1.tgz
     version: 0.0.1
-generated: "2024-07-26T17:54:57.069077682Z"
+generated: "2024-08-05T23:30:38.865089151Z"
