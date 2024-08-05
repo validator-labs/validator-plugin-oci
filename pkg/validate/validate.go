@@ -23,12 +23,17 @@ func Validate(spec v1alpha1.OciValidatorSpec, auths [][]string, pubKeys [][][]by
 	for i, rule := range spec.OciRegistryRules {
 		vrr := oci.BuildValidationResult(rule)
 
-		ociClient, err := ocic.NewOCIClient(
-			ocic.WithBasicAuth(auths[i][0], auths[i][1]),
+		opts := []ocic.Option{
 			ocic.WithMultiAuth(auth.GetKeychain(rule.Host)),
 			ocic.WithTLSConfig(rule.InsecureSkipTLSVerify, rule.CaCert, ""),
 			ocic.WithVerificationPublicKeys(pubKeys[i]),
-		)
+		}
+		auth := auths[i]
+		if len(auth) == 2 {
+			opts = append(opts, ocic.WithBasicAuth(auth[0], auth[1]))
+		}
+
+		ociClient, err := ocic.NewOCIClient(opts...)
 		if err != nil {
 			log.Error(err, "failed to create OCI client", "ruleName", rule.Name)
 			resp.AddResult(vrr, err)
