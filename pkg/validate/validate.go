@@ -26,11 +26,14 @@ func Validate(spec v1alpha1.OciValidatorSpec, auths [][]string, pubKeys [][][]by
 		opts := []ocic.Option{
 			ocic.WithMultiAuth(auth.GetKeychain(rule.Host)),
 			ocic.WithTLSConfig(rule.InsecureSkipTLSVerify, rule.CaCert, ""),
-			ocic.WithVerificationPublicKeys(pubKeys[i]),
 		}
-		auth := auths[i]
-		if len(auth) == 2 {
-			opts = append(opts, ocic.WithBasicAuth(auth[0], auth[1]))
+		if len(pubKeys) > i {
+			opts = append(opts, ocic.WithVerificationPublicKeys(pubKeys[i]))
+		}
+		if len(auths) > i {
+			if auth := auths[i]; len(auth) == 2 {
+				opts = append(opts, ocic.WithBasicAuth(auth[0], auth[1]))
+			}
 		}
 
 		ociClient, err := ocic.NewOCIClient(opts...)
