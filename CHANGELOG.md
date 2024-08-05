@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.0.13](https://github.com/validator-labs/validator-plugin-oci/compare/v0.0.12...v0.0.13) (2024-08-05)
+
+
+### Other
+
+* add hook to install validator crds in devspace ([#237](https://github.com/validator-labs/validator-plugin-oci/issues/237)) ([4c51037](https://github.com/validator-labs/validator-plugin-oci/commit/4c51037c7527b5b207e7caedada476f775c2f359))
+
+
+### Dependency Updates
+
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to a8d7d3c ([#233](https://github.com/validator-labs/validator-plugin-oci/issues/233)) ([c422454](https://github.com/validator-labs/validator-plugin-oci/commit/c422454310fab330b2ca024b4fc3e5139f0e2ea9))
+* **deps:** update module github.com/onsi/gomega to v1.34.1 ([#232](https://github.com/validator-labs/validator-plugin-oci/issues/232)) ([253a725](https://github.com/validator-labs/validator-plugin-oci/commit/253a7250f84c74b5221fe19dfd8c138c185ecd6d))
+* **deps:** update module github.com/validator-labs/validator to v0.0.50 ([#230](https://github.com/validator-labs/validator-plugin-oci/issues/230)) ([febe051](https://github.com/validator-labs/validator-plugin-oci/commit/febe051a38bfa162ee01cef58001da82fcc3a966))
+* **deps:** update module github.com/validator-labs/validator to v0.0.51 ([#234](https://github.com/validator-labs/validator-plugin-oci/issues/234)) ([1f82f08](https://github.com/validator-labs/validator-plugin-oci/commit/1f82f08aabc579a303fa1224d7ef94dfe90a6934))
+* **deps:** update module github.com/validator-labs/validator to v0.1.0 ([#236](https://github.com/validator-labs/validator-plugin-oci/issues/236)) ([4a997be](https://github.com/validator-labs/validator-plugin-oci/commit/4a997be722b6f8661be75fa109442accc0fdf573))
+
+
+### Refactoring
+
+* derive authn keychain from host ([#238](https://github.com/validator-labs/validator-plugin-oci/issues/238)) ([a9a3fda](https://github.com/validator-labs/validator-plugin-oci/commit/a9a3fda957ef2035a7d188a8474a333ece4e4979))
+* support direct rule evaluation ([#240](https://github.com/validator-labs/validator-plugin-oci/issues/240)) ([9761384](https://github.com/validator-labs/validator-plugin-oci/commit/9761384be3bdef61060d28c1394bf8ab542ba69d))
+
 ## [0.0.12](https://github.com/validator-labs/validator-plugin-oci/compare/v0.0.11...v0.0.12) (2024-07-26)
 
 
