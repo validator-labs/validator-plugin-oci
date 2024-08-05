@@ -1,4 +1,4 @@
-package validators
+package oci
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
 	"github.com/validator-labs/validator/pkg/types"
 
-	"github.com/validator-labs/validator-plugin-oci/pkg/oci"
+	ocic "github.com/validator-labs/validator-plugin-oci/pkg/ociclient"
 )
 
 const (
@@ -182,14 +182,14 @@ iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ociClient, err := oci.NewOCIClient(
-				oci.WithAnonymousAuth(),
-				oci.WithVerificationPublicKeys(tc.pubKeys),
+			ociClient, err := ocic.NewOCIClient(
+				ocic.WithAnonymousAuth(),
+				ocic.WithVerificationPublicKeys(tc.pubKeys),
 			)
 			if err != nil {
 				t.Error(err)
 			}
-			ociService := NewOciRuleService(logr.Logger{}, WithOCIClient(ociClient))
+			ociService := NewRuleService(logr.Logger{}, WithOCIClient(ociClient))
 
 			ctx := context.Background()
 			details, errs := ociService.validateReference(ctx, tc.ref, tc.layerValidation, tc.sv)
@@ -249,11 +249,11 @@ func TestValidateRepos(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ociClient, err := oci.NewOCIClient(oci.WithAnonymousAuth())
+			ociClient, err := ocic.NewOCIClient(ocic.WithAnonymousAuth())
 			if err != nil {
 				t.Error(err)
 			}
-			ociService := NewOciRuleService(logr.Logger{}, WithOCIClient(ociClient))
+			ociService := NewRuleService(logr.Logger{}, WithOCIClient(ociClient))
 
 			rule := v1alpha1.OciRegistryRule{
 				Host:                  tc.host,
@@ -326,11 +326,11 @@ func TestReconcileOciRegistryRule(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ociClient, err := oci.NewOCIClient(oci.WithAnonymousAuth())
+			ociClient, err := ocic.NewOCIClient(ocic.WithAnonymousAuth())
 			if err != nil {
 				t.Error(err)
 			}
-			ociService := NewOciRuleService(logr.Logger{}, WithOCIClient(ociClient))
+			ociService := NewRuleService(logr.Logger{}, WithOCIClient(ociClient))
 
 			_, err = ociService.ReconcileOciRegistryRule(tc.rule)
 

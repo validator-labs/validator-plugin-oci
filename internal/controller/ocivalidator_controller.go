@@ -24,12 +24,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/awslabs/amazon-ecr-credential-helper/ecr-login"
-	"github.com/awslabs/amazon-ecr-credential-helper/ecr-login/api"
-	acr "github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
 	"github.com/go-logr/logr"
-	"github.com/google/go-containerregistry/pkg/authn"
-	"github.com/google/go-containerregistry/pkg/v1/google"
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -45,9 +40,10 @@ import (
 	vres "github.com/validator-labs/validator/pkg/validationresult"
 
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
-	"github.com/validator-labs/validator-plugin-oci/internal/constants"
-	val "github.com/validator-labs/validator-plugin-oci/internal/validators"
+	"github.com/validator-labs/validator-plugin-oci/pkg/auth"
+	"github.com/validator-labs/validator-plugin-oci/pkg/constants"
 	"github.com/validator-labs/validator-plugin-oci/pkg/oci"
+	ocic "github.com/validator-labs/validator-plugin-oci/pkg/ociclient"
 )
 
 // OciValidatorReconciler reconciles a OciValidator object
@@ -105,7 +101,7 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	// OCI Registry rules
 	for _, rule := range validator.Spec.OciRegistryRules {
-		vrr := val.BuildValidationResult(rule)
+		vrr := oci.BuildValidationResult(rule)
 
 		username, password, err := r.secretKeyAuth(req, rule)
 		if err != nil {
@@ -121,11 +117,11 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			continue
 		}
 
-		ociClient, err := oci.NewOCIClient(
-			oci.WithBasicAuth(username, password),
-			oci.WithMultiAuth(getKeychain(rule.Host)),
-			oci.WithTLSConfig(rule.InsecureSkipTLSVerify, rule.CaCert, ""),
-			oci.WithVerificationPublicKeys(pubKeys),
+		ociClient, err := ocic.NewOCIClient(
+			ocic.WithBasicAuth(username, password),
+			ocic.WithMultiAuth(auth.GetKeychain(rule.Host)),
+			ocic.WithTLSConfig(rule.InsecureSkipTLSVerify, rule.CaCert, ""),
+			ocic.WithVerificationPublicKeys(pubKeys),
 		)
 		if err != nil {
 			l.Error(err, "failed to create OCI client", "ruleName", rule.Name)
@@ -133,9 +129,9 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			continue
 		}
 
-		ociRuleService := val.NewOciRuleService(r.Log, val.WithOCIClient(ociClient))
+		svc := oci.NewRuleService(r.Log, oci.WithOCIClient(ociClient))
 
-		vrr, err = ociRuleService.ReconcileOciRegistryRule(rule)
+		vrr, err = svc.ReconcileOciRegistryRule(rule)
 		if err != nil {
 			l.Error(err, "failed to reconcile OCI Registry rule", "ruleName", rule.Name)
 		}
@@ -155,21 +151,6 @@ func (r *OciValidatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.OciValidator{}).
 		Complete(r)
-}
-
-// getKeychain returns the default authn keychain derived from an OCI host.
-func getKeychain(host string) []authn.Keychain {
-	keychain := []authn.Keychain{
-		authn.DefaultKeychain,
-	}
-	if strings.Contains(host, "azurecr.io") {
-		keychain = append(keychain, authn.NewKeychainFromHelper(acr.ACRCredHelper{}))
-	} else if strings.Contains(host, "gcr.io") {
-		keychain = append(keychain, google.Keychain)
-	} else if strings.Contains(host, "ecr.aws") || strings.Contains(host, "amazonaws.com") {
-		keychain = append(keychain, authn.NewKeychainFromHelper(ecr.NewECRHelper(ecr.WithClientFactory(api.DefaultClientFactory{}))))
-	}
-	return keychain
 }
 
 // secretKeyAuth retrieves the username and password from the secret referenced in the rule's auth field.
