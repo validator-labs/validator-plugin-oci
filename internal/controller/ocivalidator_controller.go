@@ -34,13 +34,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	vapi "github.com/validator-labs/validator/api/v1alpha1"
-	"github.com/validator-labs/validator/pkg/types"
 	vres "github.com/validator-labs/validator/pkg/validationresult"
 
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
-	"github.com/validator-labs/validator-plugin-oci/pkg/auth"
-	"github.com/validator-labs/validator-plugin-oci/pkg/oci"
-	ocic "github.com/validator-labs/validator-plugin-oci/pkg/ociclient"
+	"github.com/validator-labs/validator-plugin-oci/pkg/validate"
 )
 
 // OciValidatorReconciler reconciles a OciValidator object
@@ -91,50 +88,30 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	// Always update the expected result count in case the validator's rules have changed
 	vr.Spec.ExpectedResults = validator.Spec.ResultCount()
 
-	resp := types.ValidationResponse{
-		ValidationRuleResults: make([]*types.ValidationRuleResult, 0, vr.Spec.ExpectedResults),
-		ValidationRuleErrors:  make([]error, 0, vr.Spec.ExpectedResults),
-	}
+	// Fetch OCI registry basic auth secrets and signature verification public keys
+	auths := make([][]string, len(validator.Spec.OciRegistryRules))
+	allPubKeys := make([][][]byte, len(validator.Spec.OciRegistryRules))
 
-	// OCI Registry rules
 	for _, rule := range validator.Spec.OciRegistryRules {
-		vrr := oci.BuildValidationResult(rule)
-
 		username, password, err := r.secretKeyAuth(req, rule)
 		if err != nil {
 			l.Error(err, "failed to get secret auth", "ruleName", rule.Name)
-			resp.AddResult(vrr, err)
-			continue
+			return ctrl.Result{}, err
 		}
+		auths = append(auths, []string{username, password})
 
 		pubKeys, err := r.signaturePubKeys(req, rule)
 		if err != nil {
 			l.Error(err, "failed to get signature verification public keys", "ruleName", rule.Name)
-			resp.AddResult(vrr, err)
-			continue
+			return ctrl.Result{}, err
 		}
-
-		ociClient, err := ocic.NewOCIClient(
-			ocic.WithBasicAuth(username, password),
-			ocic.WithMultiAuth(auth.GetKeychain(rule.Host)),
-			ocic.WithTLSConfig(rule.InsecureSkipTLSVerify, rule.CaCert, ""),
-			ocic.WithVerificationPublicKeys(pubKeys),
-		)
-		if err != nil {
-			l.Error(err, "failed to create OCI client", "ruleName", rule.Name)
-			resp.AddResult(vrr, err)
-			continue
-		}
-
-		svc := oci.NewRuleService(r.Log, oci.WithOCIClient(ociClient))
-
-		vrr, err = svc.ReconcileOciRegistryRule(rule)
-		if err != nil {
-			l.Error(err, "failed to reconcile OCI Registry rule", "ruleName", rule.Name)
-		}
-		resp.AddResult(vrr, err)
+		allPubKeys = append(allPubKeys, pubKeys)
 	}
 
+	// Validate the rules
+	resp := validate.Validate(validator.Spec, auths, allPubKeys, r.Log)
+
+	// Patch the ValidationResult with the latest ValidationRuleResults
 	if err := vres.SafeUpdate(ctx, p, vr, resp, r.Log); err != nil {
 		return ctrl.Result{}, err
 	}
