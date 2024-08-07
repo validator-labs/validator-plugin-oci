@@ -3,7 +3,7 @@ module github.com/validator-labs/validator-plugin-oci
 go 1.22.5
 
 require (
-	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20240730143543-a8d7d3c42ca1
+	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20240807144652-27a1eeba0782
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
 	github.com/go-logr/logr v1.4.2
 	github.com/google/go-containerregistry v0.20.2
@@ -54,7 +54,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.15 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.15 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ecr v1.31.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ecr v1.32.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.25.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.17 // indirect
