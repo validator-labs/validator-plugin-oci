@@ -9,11 +9,11 @@ spec:
       host: "oci-airgap.spectrocloud.dev"
       artifacts:
         - ref: "spectro-images/gcr.io/spectro-images-fips/kube-apiserver:v1.26.5"
-          layerValidation: true
         - ref: "spectro-images/gcr.io/spectro-images-fips/kube-scheduler@sha256:65ae8fd8713ede1977d26991821ba7eb3beb48ec575b31947568f30dbdd36862"
-          layerValidation: true
         - ref: "spectro-packs/spectro-packs/archive/vault:0.25.0"
+          skipLayerValidation: true
         - ref: "spectro-packs/spectro-packs/archive/spectro-mgmt@sha256:ddbac6e7732bf90a4e674a01bf279ce27ea8691530b8d209e6fe77477e0fa406"
+          skipLayerValidation: true
       auth:
         secretName: oci-airgap-credentials
       caCert: |-
@@ -40,15 +40,17 @@ spec:
     # private ecr registry with no artifact specified
     - name: "private ecr registry"
       host: "745150053801.dkr.ecr.us-east-1.amazonaws.com"
+      skipLayerValidation: true
       auth:
         secretName: ecr-credentials
 
     # private oci registry with signature verification enabled
     - name: "private oci registry with signature verification enabled"
       host: "registry.hub.docker.com"
+      skipLayerValidation: true
       artifacts:
         - ref: "ahmadibraspectrocloud/validator-plugin-oci:signed"
-          layerValidation: true
+          skipLayerValidation: false
       signatureVerification:
         secretName: "cosign-public-keys"
       auth:
