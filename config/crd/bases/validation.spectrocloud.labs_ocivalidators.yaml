@@ -50,13 +50,6 @@ spec:
                       items:
                         description: Artifact defines an OCI artifact to be validated.
                         properties:
-                          layerValidation:
-                            description: |-
-                              LayerValidation specifies whether deep validation of the artifact layers should be performed.
-                              The existence of layers is always validated, but this option allows for the deep validation of the layers.
-                              See more details here:
-                              https://github.com/google/go-containerregistry/blob/8dadbe76ff8c20d0e509406f04b7eade43baa6c1/pkg/v1/validate/image.go#L105
-                            type: boolean
                           ref:
                             description: |-
                               Ref is the path to the artifact in the host registry that should be validated.
@@ -68,6 +61,10 @@ spec:
 
                               When no tag or digest are specified, the default tag "latest" is used.
                             type: string
+                          skipLayerValidation:
+                            description: SkipLayerValidation overrides the OciRegistryRule
+                              level SkiplayerValidation for a particular artifact.
+                            type: boolean
                         required:
                         - ref
                         type: object
@@ -117,6 +114,13 @@ spec:
                       - provider
                       - secretName
                       type: object
+                    skipLayerValidation:
+                      description: |-
+                        SkipLayerValidation specifies whether deep validation of the artifact layers should be skipped.
+                        The existence of layers will always validated whether this option is enabled or disabled.
+                        See more details here:
+                        https://github.com/google/go-containerregistry/blob/8dadbe76ff8c20d0e509406f04b7eade43baa6c1/pkg/v1/validate/image.go#L105
+                      type: boolean
                   required:
                   - host
                   - name
