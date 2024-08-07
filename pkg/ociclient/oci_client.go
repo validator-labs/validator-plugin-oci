@@ -168,9 +168,9 @@ func (c *Client) PullImage(ref name.Reference) (v1.Image, error) {
 }
 
 // ValidateImage validates the given image.
-func (c *Client) ValidateImage(image v1.Image, fullLayerValidation bool) error {
+func (c *Client) ValidateImage(image v1.Image, skipLayerValidation bool) error {
 	var validateOpts []validate.Option
-	if !fullLayerValidation {
+	if skipLayerValidation {
 		validateOpts = append(validateOpts, validate.Fast)
 	}
 	return validate.Image(image, validateOpts...)

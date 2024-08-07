@@ -80,7 +80,9 @@ func (s *RuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule) (*
 			continue
 		}
 
-		d, e := s.validateReference(ctx, ref, artifact.LayerValidation, rule.SignatureVerification)
+		skipLayerValidation := s.shouldSkipLayerValidation(rule, artifact)
+
+		d, e := s.validateReference(ctx, ref, skipLayerValidation, rule.SignatureVerification)
 		if len(e) > 0 {
 			l.Error(e[len(e)-1], errMsg, "artifact", artifact)
 		}
@@ -96,8 +98,15 @@ func (s *RuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule) (*
 	return vr, err
 }
 
+func (s *RuleService) shouldSkipLayerValidation(rule v1alpha1.OciRegistryRule, artifact v1alpha1.Artifact) bool {
+	if artifact.SkipLayerValidation == nil {
+		return rule.SkipLayerValidation
+	}
+	return *artifact.SkipLayerValidation
+}
+
 // validateArtifact validates a single artifact within an OCI registry. Used when either a path to a repo or artifact(s) are specified in an OciRegistryRule.
-func (s *RuleService) validateReference(ctx context.Context, ref name.Reference, fullLayerValidation bool, sv v1alpha1.SignatureVerification) ([]string, []error) {
+func (s *RuleService) validateReference(ctx context.Context, ref name.Reference, skipLayerValidation bool, sv v1alpha1.SignatureVerification) ([]string, []error) {
 	details := make([]string, 0)
 	errs := make([]error, 0)
 
@@ -117,7 +126,7 @@ func (s *RuleService) validateReference(ctx context.Context, ref name.Reference,
 	}
 
 	// validate image
-	if err := s.ociClient.ValidateImage(img, fullLayerValidation); err != nil {
+	if err := s.ociClient.ValidateImage(img, skipLayerValidation); err != nil {
 		details = append(details, fmt.Sprintf("failed validation for artifact %s", ref.Name()))
 		errs = append(errs, err)
 		return details, errs
