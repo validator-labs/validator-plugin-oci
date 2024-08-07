@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
 	"github.com/validator-labs/validator/pkg/types"
+	"github.com/validator-labs/validator/pkg/util"
 
 	ocic "github.com/validator-labs/validator-plugin-oci/pkg/ociclient"
 )
@@ -339,6 +340,77 @@ func TestReconcileOciRegistryRule(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestShouldSkipLayerValidation(t *testing.T) {
+	testCases := []struct {
+		name     string
+		rule     v1alpha1.OciRegistryRule
+		artifact v1alpha1.Artifact
+		expected bool
+	}{
+		{
+			name:     "Rule SkipLayerValidation = false, Artifact SkipLayerValidation = nil",
+			rule:     v1alpha1.OciRegistryRule{},
+			artifact: v1alpha1.Artifact{},
+			expected: false,
+		},
+		{
+			name: "Rule SkipLayerValidation = false, Artifact SkipLayerValidation = true",
+			rule: v1alpha1.OciRegistryRule{},
+			artifact: v1alpha1.Artifact{
+				SkipLayerValidation: util.Ptr(true),
+			},
+			expected: true,
+		},
+		{
+			name: "Rule SkipLayerValidation = false, Artifact SkipLayerValidation = false",
+			rule: v1alpha1.OciRegistryRule{},
+			artifact: v1alpha1.Artifact{
+				SkipLayerValidation: util.Ptr(false),
+			},
+			expected: false,
+		},
+		{
+			name: "Rule SkipLayerValidation = true, Artifact SkipLayerValidation = nil",
+			rule: v1alpha1.OciRegistryRule{
+				SkipLayerValidation: true,
+			},
+			artifact: v1alpha1.Artifact{},
+			expected: true,
+		},
+		{
+			name: "Rule SkipLayerValidation = true, Artifact SkipLayerValidation = true",
+			rule: v1alpha1.OciRegistryRule{
+				SkipLayerValidation: true,
+			},
+			artifact: v1alpha1.Artifact{
+				SkipLayerValidation: util.Ptr(true),
+			},
+			expected: true,
+		},
+		{
+			name: "Rule SkipLayerValidation = true, Artifact SkipLayerValidation = false",
+			rule: v1alpha1.OciRegistryRule{
+				SkipLayerValidation: true,
+			},
+			artifact: v1alpha1.Artifact{
+				SkipLayerValidation: util.Ptr(false),
+			},
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ociClient, err := ocic.NewOCIClient(ocic.WithAnonymousAuth())
+			if err != nil {
+				t.Error(err)
+			}
+			ociService := NewRuleService(logr.Logger{}, WithOCIClient(ociClient))
+			assert.Equal(t, tc.expected, ociService.shouldSkipLayerValidation(tc.rule, tc.artifact))
 		})
 	}
 }
