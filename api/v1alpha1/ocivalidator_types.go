@@ -46,6 +46,12 @@ type OciRegistryRule struct {
 	// Host is the URI of an OCI registry.
 	Host string `json:"host" yaml:"host"`
 
+	// SkipLayerValidation specifies whether deep validation of the artifact layers should be skipped.
+	// The existence of layers will always validated whether this option is enabled or disabled.
+	// See more details here:
+	// https://github.com/google/go-containerregistry/blob/8dadbe76ff8c20d0e509406f04b7eade43baa6c1/pkg/v1/validate/image.go#L105
+	SkipLayerValidation bool `json:"skipLayerValidation,omitempty" yaml:"skipLayerValidation,omitempty"`
+
 	// Artifacts is a slice of artifacts in the OCI registry that should be validated.
 	Artifacts []Artifact `json:"artifacts,omitempty" yaml:"artifacts,omitempty"`
 
@@ -78,11 +84,8 @@ type Artifact struct {
 	// When no tag or digest are specified, the default tag "latest" is used.
 	Ref string `json:"ref" yaml:"ref"`
 
-	// LayerValidation specifies whether deep validation of the artifact layers should be performed.
-	// The existence of layers is always validated, but this option allows for the deep validation of the layers.
-	// See more details here:
-	// https://github.com/google/go-containerregistry/blob/8dadbe76ff8c20d0e509406f04b7eade43baa6c1/pkg/v1/validate/image.go#L105
-	LayerValidation bool `json:"layerValidation,omitempty" yaml:"layerValidation,omitempty"`
+	// SkipLayerValidation overrides the OciRegistryRule level SkiplayerValidation for a particular artifact.
+	SkipLayerValidation *bool `json:"skipLayerValidation,omitempty" yaml:"skipLayerValidation,omitempty"`
 }
 
 // Auth defines the authentication information for the registry.

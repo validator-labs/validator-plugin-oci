@@ -10,9 +10,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
 	vapi "github.com/validator-labs/validator/api/v1alpha1"
+	"github.com/validator-labs/validator/pkg/util"
 	vres "github.com/validator-labs/validator/pkg/validationresult"
+
+	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -43,12 +45,25 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					},
 				},
 				{
-					RuleName: "layer validation enabled",
+					RuleName:            "layer validation skipped on rule level",
+					Host:                "foo.registry.io",
+					SkipLayerValidation: true,
+					Artifacts: []v1alpha1.Artifact{
+						{
+							Ref: "foo/bar:latest",
+						},
+					},
+					SignatureVerification: v1alpha1.SignatureVerification{
+						Provider: "cosign",
+					},
+				},
+				{
+					RuleName: "layer validation skipped on artifact level",
 					Host:     "foo.registry.io",
 					Artifacts: []v1alpha1.Artifact{
 						{
-							Ref:             "foo/bar:latest",
-							LayerValidation: true,
+							Ref:                 "foo/bar:latest",
+							SkipLayerValidation: util.Ptr(true),
 						},
 					},
 					SignatureVerification: v1alpha1.SignatureVerification{
@@ -61,8 +76,8 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					CaCert:   "dummy-ca-cert",
 					Artifacts: []v1alpha1.Artifact{
 						{
-							Ref:             "foo/bar:latest",
-							LayerValidation: true,
+							Ref:                 "foo/bar:latest",
+							SkipLayerValidation: util.Ptr(true),
 						},
 					},
 					SignatureVerification: v1alpha1.SignatureVerification{

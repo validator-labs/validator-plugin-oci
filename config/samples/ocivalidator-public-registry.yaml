@@ -2,6 +2,7 @@ apiVersion: validation.spectrocloud.labs/v1alpha1
 kind: OciValidator
 metadata:
   name: ocivalidator-sample-public-oci-registries
+  namespace: validator
 spec:
   ociRegistryRules:
     # public oci registry artifact with tag
@@ -9,21 +10,18 @@ spec:
       host: "docker.io"
       artifacts:
         - ref: "library/redis:7.2.4"
-          layerValidation: true
 
     # public oci registry artifact referenced by default "latest" tag
     - name: "public oci registry with default latest tag"
       host: "registry.hub.docker.com"
       artifacts:
         - ref: "ahmadibraspectrocloud/kubebuilder-cron"
-          layerValidation: true
 
     # public oci registry with signature verification enabled
     - name: "public oci registry with signature verification enabled"
       host: "registry.hub.docker.com"
       artifacts:
         - ref: "ahmadibraspectrocloud/kb-guestbook:signed"
-          layerValidation: true
       signatureVerification:
         secretName: "cosign-public-keys"
 
@@ -32,4 +30,3 @@ spec:
       host: "public.ecr.aws"
       artifacts:
         - ref: "u5n5j0b4/oci-test-public"
-          layerValidation: true

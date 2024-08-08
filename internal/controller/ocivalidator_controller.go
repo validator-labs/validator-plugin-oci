@@ -89,23 +89,23 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	vr.Spec.ExpectedResults = validator.Spec.ResultCount()
 
 	// Fetch OCI registry basic auth secrets and signature verification public keys
-	auths := make([][]string, len(validator.Spec.OciRegistryRules))
-	allPubKeys := make([][][]byte, len(validator.Spec.OciRegistryRules))
+	auths := make(map[string][]string)
+	allPubKeys := make(map[string][][]byte)
 
 	for _, rule := range validator.Spec.OciRegistryRules {
 		username, password, err := r.secretKeyAuth(req, rule)
 		if err != nil {
-			l.Error(err, "failed to get secret auth", "ruleName", rule.Name)
+			l.Error(err, "failed to get secret auth", "ruleName", rule.Name())
 			return ctrl.Result{}, err
 		}
-		auths = append(auths, []string{username, password})
+		auths[rule.Name()] = []string{username, password}
 
 		pubKeys, err := r.signaturePubKeys(req, rule)
 		if err != nil {
-			l.Error(err, "failed to get signature verification public keys", "ruleName", rule.Name)
+			l.Error(err, "failed to get signature verification public keys", "ruleName", rule.Name())
 			return ctrl.Result{}, err
 		}
-		allPubKeys = append(allPubKeys, pubKeys)
+		allPubKeys[rule.Name()] = pubKeys
 	}
 
 	// Validate the rules

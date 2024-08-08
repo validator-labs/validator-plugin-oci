@@ -10,7 +10,7 @@ CHART_NAME=validator-plugin-oci
 
 .PHONY: dev
 dev: ## Run a controller via devspace
-	devspace dev -n validator-plugin-oci-system
+	devspace dev -n validator
 
 # Static Analysis / CI
 

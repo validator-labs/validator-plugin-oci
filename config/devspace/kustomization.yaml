@@ -18,7 +18,7 @@ patches:
       labels:
         control-plane: controller-manager
       name: controller-manager
-      namespace: validator-plugin-oci-system
+      namespace: validator
     spec:
       template:
         spec:
