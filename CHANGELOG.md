@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.1.0](https://github.com/validator-labs/validator-plugin-oci/compare/v0.0.13...v0.1.0) (2024-08-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* default to full layer validation and add support for setting it at rule level with overrides at artifact level ([#248](https://github.com/validator-labs/validator-plugin-oci/issues/248))
+
+### Features
+
+* default to full layer validation and add support for setting it at rule level with overrides at artifact level ([#248](https://github.com/validator-labs/validator-plugin-oci/issues/248)) ([cd95262](https://github.com/validator-labs/validator-plugin-oci/commit/cd9526254b84d1df7f2153e909ec949bef0ec447))
+
+
+### Dependency Updates
+
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to 27a1eeb ([#246](https://github.com/validator-labs/validator-plugin-oci/issues/246)) ([d39fc6d](https://github.com/validator-labs/validator-plugin-oci/commit/d39fc6dd08a0a847518fafb40a74e6e9ffb0de9c))
+* **deps:** update module github.com/google/go-containerregistry to v0.20.2 ([#241](https://github.com/validator-labs/validator-plugin-oci/issues/241)) ([d305570](https://github.com/validator-labs/validator-plugin-oci/commit/d30557032784603f57902c73a507e304ab6647c3))
+* **deps:** update module github.com/onsi/ginkgo/v2 to v2.20.0 ([#247](https://github.com/validator-labs/validator-plugin-oci/issues/247)) ([c48f0cf](https://github.com/validator-labs/validator-plugin-oci/commit/c48f0cf92e1ff5ab7ce53a21157709e5f91ccf3e))
+* **deps:** update module github.com/sigstore/cosign/v2 to v2.4.0 ([#245](https://github.com/validator-labs/validator-plugin-oci/issues/245)) ([4b3da58](https://github.com/validator-labs/validator-plugin-oci/commit/4b3da586fe9f31e857d5535a893bfbc98656675b))
+* **deps:** update module github.com/sigstore/sigstore to v1.8.8 ([#244](https://github.com/validator-labs/validator-plugin-oci/issues/244)) ([f0c239b](https://github.com/validator-labs/validator-plugin-oci/commit/f0c239bf085149ff117d216e9b5102e7718e6afd))
+
 ## [0.0.13](https://github.com/validator-labs/validator-plugin-oci/compare/v0.0.12...v0.0.13) (2024-08-05)
 
 
