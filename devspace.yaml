@@ -21,7 +21,7 @@ images:
 
 deployments:
   validator-plugin-oci:
-    namespace: validator-plugin-oci-system
+    namespace: validator
     kubectl:
       kustomize: true
       manifests:
