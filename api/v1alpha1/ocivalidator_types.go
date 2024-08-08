@@ -89,10 +89,17 @@ type Artifact struct {
 }
 
 // Auth defines the authentication information for the registry.
+// Either SecretName or (Username and Password) must be provided. If all are provided, SecretName takes precedence.
 type Auth struct {
 	// SecretName is the name of the Kubernetes Secret that exists in the same namespace as the OciValidator
 	// and that contains the credentials used to authenticate to the OCI Registry.
-	SecretName string `json:"secretName" yaml:"secretName"`
+	SecretName string `json:"secretName,omitempty" yaml:"secretName,omitempty"`
+
+	// Username is the username used to authenticate to the OCI Registry.
+	Username string `json:"username,omitempty" yaml:"username,omitempty"`
+
+	// Password is the password used to authenticate to the OCI Registry.
+	Password string `json:"password,omitempty" yaml:"password,omitempty"`
 }
 
 // SignatureVerification defines the provider and secret name to verify the signatures of artifacts in an OCI registry.
