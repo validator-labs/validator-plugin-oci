@@ -95,14 +95,14 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	for _, rule := range validator.Spec.OciRegistryRules {
 		username, password, err := r.secretKeyAuth(req, rule)
 		if err != nil {
-			l.Error(err, "failed to get secret auth", "ruleName", rule.Name)
+			l.Error(err, "failed to get secret auth", "ruleName", rule.Name())
 			return ctrl.Result{}, err
 		}
 		auths = append(auths, []string{username, password})
 
 		pubKeys, err := r.signaturePubKeys(req, rule)
 		if err != nil {
-			l.Error(err, "failed to get signature verification public keys", "ruleName", rule.Name)
+			l.Error(err, "failed to get signature verification public keys", "ruleName", rule.Name())
 			return ctrl.Result{}, err
 		}
 		allPubKeys = append(allPubKeys, pubKeys)

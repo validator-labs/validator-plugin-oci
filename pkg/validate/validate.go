@@ -38,7 +38,7 @@ func Validate(spec v1alpha1.OciValidatorSpec, auths [][]string, pubKeys [][][]by
 
 		ociClient, err := ocic.NewOCIClient(opts...)
 		if err != nil {
-			log.Error(err, "failed to create OCI client", "ruleName", rule.Name)
+			log.Error(err, "failed to create OCI client", "ruleName", rule.Name())
 			resp.AddResult(vrr, err)
 			continue
 		}
@@ -47,7 +47,7 @@ func Validate(spec v1alpha1.OciValidatorSpec, auths [][]string, pubKeys [][][]by
 
 		vrr, err = svc.ReconcileOciRegistryRule(rule)
 		if err != nil {
-			log.Error(err, "failed to reconcile OCI Registry rule", "ruleName", rule.Name)
+			log.Error(err, "failed to reconcile OCI Registry rule", "ruleName", rule.Name())
 		}
 		resp.AddResult(vrr, err)
 	}
