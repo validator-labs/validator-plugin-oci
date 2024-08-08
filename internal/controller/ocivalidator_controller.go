@@ -93,7 +93,7 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	allPubKeys := make(map[string][][]byte)
 
 	for _, rule := range validator.Spec.OciRegistryRules {
-		username, password, err := r.secretKeyAuth(req, rule)
+		username, password, err := r.auth(req, rule)
 		if err != nil {
 			l.Error(err, "failed to get secret auth", "ruleName", rule.Name())
 			return ctrl.Result{}, err
@@ -127,11 +127,13 @@ func (r *OciValidatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-// secretKeyAuth retrieves the username and password from the secret referenced in the rule's auth field.
+// auth retrieves the username and password from the rule's auth field.
+// If a secretName is referenced in the rule's auth field, then the secret is fetched and the username and password are retrieved from the secret.
 // Any additional key-value pairs in the secret are set as environment variables, to be picked up by auth keychains (e.g. ECR, Azure).
-func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.OciRegistryRule) (string, string, error) {
+// If a secretName is not provided, then the username and password are returned from the auth field as provided.
+func (r *OciValidatorReconciler) auth(req ctrl.Request, rule v1alpha1.OciRegistryRule) (string, string, error) {
 	if rule.Auth.SecretName == "" {
-		return "", "", nil
+		return rule.Auth.Username, rule.Auth.Password, nil
 	}
 
 	authSecret := &corev1.Secret{}
