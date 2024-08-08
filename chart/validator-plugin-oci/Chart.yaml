@@ -4,5 +4,5 @@ description: >-
   Perform various OCI validations (registry authentication, downloading
   artifacts, etc.)
 type: application
-version: 0.0.13
+version: 0.1.0
 appVersion: 0.0.2
