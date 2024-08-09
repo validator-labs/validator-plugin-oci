@@ -155,7 +155,7 @@ type OciValidator struct {
 
 // GetKind returns the OCI validator's kind.
 func (v OciValidator) GetKind() string {
-	return reflect.TypeOf(OciValidator{}).Name()
+	return reflect.TypeOf(v).Name()
 }
 
 // PluginCode returns the OCI validator's plugin code.
