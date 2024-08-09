@@ -37,8 +37,14 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 		Spec: v1alpha1.OciValidatorSpec{
 			OciRegistryRules: []v1alpha1.OciRegistryRule{
 				{
-					RuleName:  "empty artifact list",
-					Host:      "foo1.registry.io",
+					RuleName: "basic auth and empty artifact list",
+					Host:     "foo1.registry.io",
+					Auth: v1alpha1.Auth{
+						Basic: &v1alpha1.BasicAuth{
+							Username: "userName",
+							Password: "pa$$w0rd",
+						},
+					},
 					Artifacts: []v1alpha1.Artifact{},
 					SignatureVerification: v1alpha1.SignatureVerification{
 						Provider: "cosign",
@@ -71,9 +77,12 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					},
 				},
 				{
-					RuleName: "ca cert provided",
+					RuleName: "secret auth and ca cert provided",
 					Host:     "foo2.registry.io",
-					CaCert:   "dummy-ca-cert",
+					Auth: v1alpha1.Auth{
+						SecretName: util.Ptr("auth-secret"),
+					},
+					CaCert: "dummy-ca-cert",
 					Artifacts: []v1alpha1.Artifact{
 						{
 							Ref:                 "foo/bar:latest",
@@ -85,10 +94,14 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					},
 				},
 				{
-					RuleName: "auth secret and pubkeys secret provided and created",
+					RuleName: "ecr auth and pubkeys secret provided and created",
 					Host:     "foo3.registry.io",
 					Auth: v1alpha1.Auth{
-						SecretName: util.Ptr("auth-secret"),
+						ECR: &v1alpha1.ECRAuth{
+							AccessKeyID:     "accessKeyID",
+							SecretAccessKey: "secretAccessKey",
+							SessionToken:    "sessionToken",
+						},
 					},
 					Artifacts: []v1alpha1.Artifact{
 						{
