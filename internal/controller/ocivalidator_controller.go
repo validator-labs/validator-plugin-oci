@@ -132,12 +132,24 @@ func (r *OciValidatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 // Any additional key-value pairs in the secret are set as environment variables, to be picked up by auth keychains (e.g. ECR, Azure).
 // If a secretName is not provided, then the username and password are returned from the auth field as provided.
 func (r *OciValidatorReconciler) auth(req ctrl.Request, rule v1alpha1.OciRegistryRule) (string, string, error) {
-	if rule.Auth.SecretName == "" {
-		return rule.Auth.Username, rule.Auth.Password, nil
+	if rule.Auth.SecretName != nil {
+		return r.secretKeyAuth(req, rule)
 	}
 
+	if rule.Auth.Basic != nil {
+		return rule.Auth.Basic.Username, rule.Auth.Basic.Password, nil
+	}
+
+	if rule.Auth.ECR != nil {
+		return r.ecrAuth(rule)
+	}
+
+	return "", "", nil
+}
+
+func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.OciRegistryRule) (string, string, error) {
 	authSecret := &corev1.Secret{}
-	nn := ktypes.NamespacedName{Name: rule.Auth.SecretName, Namespace: req.Namespace}
+	nn := ktypes.NamespacedName{Name: *rule.Auth.SecretName, Namespace: req.Namespace}
 
 	if err := r.Get(context.Background(), nn, authSecret); err != nil {
 		return "", "", fmt.Errorf("failed to fetch auth secret %s/%s for rule %s: %w", nn.Namespace, nn.Name, rule.Name(), err)
@@ -164,6 +176,30 @@ func (r *OciValidatorReconciler) auth(req ctrl.Request, rule v1alpha1.OciRegistr
 	}
 
 	return username, password, nil
+}
+
+func (r *OciValidatorReconciler) ecrAuth(rule v1alpha1.OciRegistryRule) (string, string, error) {
+
+	accessKeyEnv := "AWS_ACCESS_KEY_ID"
+	secretAccessKeyEnv := "AWS_SECRET_ACCESS_KEY"
+	sessionTokenEnv := "AWS_SESSION_TOKEN"
+
+	if err := os.Setenv(accessKeyEnv, rule.Auth.ECR.AccessKeyID); err != nil {
+		return "", "", err
+	}
+	r.Log.Info("Set environment variable", "key", accessKeyEnv)
+
+	if err := os.Setenv(secretAccessKeyEnv, rule.Auth.ECR.SecretAccessKey); err != nil {
+		return "", "", err
+	}
+	r.Log.Info("Set environment variable", "key", secretAccessKeyEnv)
+
+	if err := os.Setenv(sessionTokenEnv, rule.Auth.ECR.SessionToken); err != nil {
+		return "", "", err
+	}
+	r.Log.Info("Set environment variable", "key", sessionTokenEnv)
+
+	return "", "", nil
 }
 
 func (r *OciValidatorReconciler) signaturePubKeys(req ctrl.Request, rule v1alpha1.OciRegistryRule) ([][]byte, error) {

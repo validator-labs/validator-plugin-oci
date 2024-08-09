@@ -88,7 +88,7 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					RuleName: "auth secret and pubkeys secret provided and created",
 					Host:     "foo3.registry.io",
 					Auth: v1alpha1.Auth{
-						SecretName: "auth-secret",
+						SecretName: util.Ptr("auth-secret"),
 					},
 					Artifacts: []v1alpha1.Artifact{
 						{
