@@ -5,18 +5,17 @@ metadata:
   namespace: validator
 spec:
   ociRegistryRules:
-    # private oci registry artifacts requiring auth and a caCert
+    # private oci registry artifacts using basic auth and a caCert
     - name: "private oci registry"
       host: "oci-airgap.spectrocloud.dev"
       artifacts:
         - ref: "spectro-images/gcr.io/spectro-images-fips/kube-apiserver:v1.26.5"
-        - ref: "spectro-images/gcr.io/spectro-images-fips/kube-scheduler@sha256:65ae8fd8713ede1977d26991821ba7eb3beb48ec575b31947568f30dbdd36862"
         - ref: "spectro-packs/spectro-packs/archive/vault:0.25.0"
           skipLayerValidation: true
-        - ref: "spectro-packs/spectro-packs/archive/spectro-mgmt@sha256:ddbac6e7732bf90a4e674a01bf279ce27ea8691530b8d209e6fe77477e0fa406"
-          skipLayerValidation: true
       auth:
-        secretName: oci-airgap-credentials
+        basic:
+          username: some-user
+          password: some-password
       caCert: |-
         -----BEGIN CERTIFICATE-----
         MIIDFDCCAfygAwIBAgIRAMH3ayQe/aI0+V48a4ByMaQwDQYJKoZIhvcNAQELBQAw
@@ -38,18 +37,22 @@ spec:
         Ff489Qoo2jUnESf+bQdW3rzc1AZ2wpnh
         -----END CERTIFICATE-----
 
-    # private ecr registry with no artifact specified
+    # private ecr registry with ecr auth and no artifact specified
     - name: "private ecr registry"
       host: "745150053801.dkr.ecr.us-east-1.amazonaws.com"
       skipLayerValidation: true
       auth:
-        secretName: ecr-credentials
+        ecr:
+          accessKeyID: some-access-key-id
+          secretAccessKey: some-secret-access-key
+          sessionToken: some-optional-session-token
 
-    # private oci registry with signature verification enabled
+    # private oci registry with secret key auth and signature verification enabled
     - name: "private oci registry with signature verification enabled"
       host: "registry.hub.docker.com"
       skipLayerValidation: true
       artifacts:
+        - ref: "ahmadibraspectrocloud/validator:signed"
         - ref: "ahmadibraspectrocloud/validator-plugin-oci:signed"
           skipLayerValidation: false
       signatureVerification:

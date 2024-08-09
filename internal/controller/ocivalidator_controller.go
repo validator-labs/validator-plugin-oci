@@ -128,9 +128,8 @@ func (r *OciValidatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 // auth retrieves the username and password from the rule's auth field.
-// If a secretName is referenced in the rule's auth field, then the secret is fetched and the username and password are retrieved from the secret.
+// If a secretName is provided in the rule's auth field, then the secret is fetched and the username and password are retrieved from the secret.
 // Any additional key-value pairs in the secret are set as environment variables, to be picked up by auth keychains (e.g. ECR, Azure).
-// If a secretName is not provided, then the username and password are returned from the auth field as provided.
 func (r *OciValidatorReconciler) auth(req ctrl.Request, rule v1alpha1.OciRegistryRule) (string, string, error) {
 	if rule.Auth.SecretName != nil {
 		return r.secretKeyAuth(req, rule)
@@ -180,9 +179,9 @@ func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.O
 
 func (r *OciValidatorReconciler) ecrAuth(rule v1alpha1.OciRegistryRule) (string, string, error) {
 
-	accessKeyEnv := "AWS_ACCESS_KEY_ID"
-	secretAccessKeyEnv := "AWS_SECRET_ACCESS_KEY"
-	sessionTokenEnv := "AWS_SESSION_TOKEN"
+	accessKeyEnv := "AWS_ACCESS_KEY_ID"           // #nosec
+	secretAccessKeyEnv := "AWS_SECRET_ACCESS_KEY" // #nosec
+	sessionTokenEnv := "AWS_SESSION_TOKEN"        // #nosec
 
 	if err := os.Setenv(accessKeyEnv, rule.Auth.ECR.AccessKeyID); err != nil {
 		return "", "", err
