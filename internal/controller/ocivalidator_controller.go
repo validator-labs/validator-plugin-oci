@@ -51,6 +51,12 @@ type OciValidatorReconciler struct {
 //+kubebuilder:rbac:groups=validation.spectrocloud.labs,resources=ocivalidators/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=validation.spectrocloud.labs,resources=ocivalidators/finalizers,verbs=update
 
+const (
+	accessKeyEnv       = "AWS_ACCESS_KEY_ID"     // #nosec
+	secretAccessKeyEnv = "AWS_SECRET_ACCESS_KEY" // #nosec
+	sessionTokenEnv    = "AWS_SESSION_TOKEN"     // #nosec
+)
+
 // Reconcile reconciles each rule found in each OCIValidator in the cluster and creates ValidationResults accordingly
 func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	l := r.Log.V(0).WithValues("name", req.Name, "namespace", req.Namespace)
@@ -93,7 +99,7 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	allPubKeys := make(map[string][][]byte)
 
 	for _, rule := range validator.Spec.OciRegistryRules {
-		username, password, err := r.secretKeyAuth(req, rule)
+		username, password, err := r.auth(req, rule)
 		if err != nil {
 			l.Error(err, "failed to get secret auth", "ruleName", rule.Name())
 			return ctrl.Result{}, err
@@ -127,15 +133,32 @@ func (r *OciValidatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-// secretKeyAuth retrieves the username and password from the secret referenced in the rule's auth field.
+// auth retrieves the username and password from the rule's auth field.
+// If a secretName is provided in the rule's auth field, then the secret is fetched and the username and password are retrieved from the secret.
 // Any additional key-value pairs in the secret are set as environment variables, to be picked up by auth keychains (e.g. ECR, Azure).
+func (r *OciValidatorReconciler) auth(req ctrl.Request, rule v1alpha1.OciRegistryRule) (string, string, error) {
+	if rule.Auth.SecretName != nil {
+		return r.secretKeyAuth(req, rule)
+	}
+
+	if rule.Auth.Basic != nil {
+		return rule.Auth.Basic.Username, rule.Auth.Basic.Password, nil
+	}
+
+	if rule.Auth.ECR != nil {
+		return r.ecrAuth(rule)
+	}
+
+	return "", "", nil
+}
+
 func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.OciRegistryRule) (string, string, error) {
-	if rule.Auth.SecretName == "" {
+	if *rule.Auth.SecretName == "" {
 		return "", "", nil
 	}
 
 	authSecret := &corev1.Secret{}
-	nn := ktypes.NamespacedName{Name: rule.Auth.SecretName, Namespace: req.Namespace}
+	nn := ktypes.NamespacedName{Name: *rule.Auth.SecretName, Namespace: req.Namespace}
 
 	if err := r.Get(context.Background(), nn, authSecret); err != nil {
 		return "", "", fmt.Errorf("failed to fetch auth secret %s/%s for rule %s: %w", nn.Namespace, nn.Name, rule.Name(), err)
@@ -162,6 +185,25 @@ func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.O
 	}
 
 	return username, password, nil
+}
+
+func (r *OciValidatorReconciler) ecrAuth(rule v1alpha1.OciRegistryRule) (string, string, error) {
+	if err := os.Setenv(accessKeyEnv, rule.Auth.ECR.AccessKeyID); err != nil {
+		return "", "", err
+	}
+	r.Log.Info("Set environment variable", "key", accessKeyEnv)
+
+	if err := os.Setenv(secretAccessKeyEnv, rule.Auth.ECR.SecretAccessKey); err != nil {
+		return "", "", err
+	}
+	r.Log.Info("Set environment variable", "key", secretAccessKeyEnv)
+
+	if err := os.Setenv(sessionTokenEnv, rule.Auth.ECR.SessionToken); err != nil {
+		return "", "", err
+	}
+	r.Log.Info("Set environment variable", "key", sessionTokenEnv)
+
+	return "", "", nil
 }
 
 func (r *OciValidatorReconciler) signaturePubKeys(req ctrl.Request, rule v1alpha1.OciRegistryRule) ([][]byte, error) {

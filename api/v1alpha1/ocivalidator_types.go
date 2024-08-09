@@ -89,10 +89,39 @@ type Artifact struct {
 }
 
 // Auth defines the authentication information for the registry.
+// One of SecretName, Basic, or ECR must be provided for a private registry.
+// If multiple fields are provided, the order of precedence is SecretName, Basic, ECR.
 type Auth struct {
 	// SecretName is the name of the Kubernetes Secret that exists in the same namespace as the OciValidator
 	// and that contains the credentials used to authenticate to the OCI Registry.
-	SecretName string `json:"secretName" yaml:"secretName"`
+	SecretName *string `json:"secretName,omitempty" yaml:"secretName,omitempty"`
+
+	// BasicAuth is the username and password used to authenticate to the OCI registry.
+	Basic *BasicAuth `json:"basic,omitempty" yaml:"basic,omitempty"`
+
+	// ECRAuth is the access key ID, secret access key, and session token used to authenticate to ECR.
+	ECR *ECRAuth `json:"ecr,omitempty" yaml:"ecr,omitempty"`
+}
+
+// BasicAuth defines the username and password used to authenticate to the OCI registry.
+type BasicAuth struct {
+	// Username is the username used to authenticate to the OCI Registry.
+	Username string `json:"username" yaml:"username"`
+
+	// Password is the password used to authenticate to the OCI Registry.
+	Password string `json:"password" yaml:"password"`
+}
+
+// ECRAuth defines the access key ID, secret access key, and session token used to authenticate to ECR.
+type ECRAuth struct {
+	// AccessKeyID is the AWS access key ID used to authenticate to ECR.
+	AccessKeyID string `json:"accessKeyID" yaml:"accessKeyID"`
+
+	// SecretAccessKey is the AWS secret access key used to authenticate to ECR.
+	SecretAccessKey string `json:"secretAccessKey" yaml:"secretAccessKey"`
+
+	// SessionToken is the AWS session token used to authenticate to ECR.
+	SessionToken string `json:"sessionToken,omitempty" yaml:"sessionToken,omitempty"`
 }
 
 // SignatureVerification defines the provider and secret name to verify the signatures of artifacts in an OCI registry.

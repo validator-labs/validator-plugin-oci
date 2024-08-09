@@ -73,13 +73,47 @@ spec:
                       description: Auth provides authentication information for the
                         registry.
                       properties:
+                        basic:
+                          description: BasicAuth is the username and password used
+                            to authenticate to the OCI registry.
+                          properties:
+                            password:
+                              description: Password is the password used to authenticate
+                                to the OCI Registry.
+                              type: string
+                            username:
+                              description: Username is the username used to authenticate
+                                to the OCI Registry.
+                              type: string
+                          required:
+                          - password
+                          - username
+                          type: object
+                        ecr:
+                          description: ECRAuth is the access key ID, secret access
+                            key, and session token used to authenticate to ECR.
+                          properties:
+                            accessKeyID:
+                              description: AccessKeyID is the AWS access key ID used
+                                to authenticate to ECR.
+                              type: string
+                            secretAccessKey:
+                              description: SecretAccessKey is the AWS secret access
+                                key used to authenticate to ECR.
+                              type: string
+                            sessionToken:
+                              description: SessionToken is the AWS session token used
+                                to authenticate to ECR.
+                              type: string
+                          required:
+                          - accessKeyID
+                          - secretAccessKey
+                          type: object
                         secretName:
                           description: |-
                             SecretName is the name of the Kubernetes Secret that exists in the same namespace as the OciValidator
                             and that contains the credentials used to authenticate to the OCI Registry.
                           type: string
-                      required:
-                      - secretName
                       type: object
                     caCert:
                       description: CaCert is the CA certificate of the OCI registry.
