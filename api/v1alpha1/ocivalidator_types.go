@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"reflect"
+
 	"github.com/validator-labs/validator-plugin-oci/pkg/constants"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -149,6 +151,11 @@ type OciValidator struct {
 
 	Spec   OciValidatorSpec   `json:"spec,omitempty"`
 	Status OciValidatorStatus `json:"status,omitempty"`
+}
+
+// GetKind returns the OCI validator's kind.
+func (v OciValidator) GetKind() string {
+	return reflect.TypeOf(OciValidator{}).Name()
 }
 
 // PluginCode returns the OCI validator's plugin code.
