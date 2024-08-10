@@ -14,12 +14,14 @@ spec:
     # public oci registry artifact referenced by default "latest" tag
     - name: "public oci registry with default latest tag"
       host: "registry.hub.docker.com"
+      validationType: "full"
       artifacts:
         - ref: "ahmadibraspectrocloud/kubebuilder-cron"
 
     # public oci registry with signature verification enabled
     - name: "public oci registry with signature verification enabled"
       host: "registry.hub.docker.com"
+      validationType: "fast"
       artifacts:
         - ref: "ahmadibraspectrocloud/kb-guestbook:signed"
       signatureVerification:

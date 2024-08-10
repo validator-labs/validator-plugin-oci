@@ -61,10 +61,14 @@ spec:
 
                               When no tag or digest are specified, the default tag "latest" is used.
                             type: string
-                          skipLayerValidation:
-                            description: SkipLayerValidation overrides the OciRegistryRule
-                              level SkiplayerValidation for a particular artifact.
-                            type: boolean
+                          validationType:
+                            description: ValidationType overrides the OciRegistryRule
+                              level ValidationType for a particular artifact.
+                            enum:
+                            - full
+                            - fast
+                            - none
+                            type: string
                         required:
                         - ref
                         type: object
@@ -148,16 +152,28 @@ spec:
                       - provider
                       - secretName
                       type: object
-                    skipLayerValidation:
+                    validationType:
+                      default: none
                       description: |-
-                        SkipLayerValidation specifies whether deep validation of the artifact layers should be skipped.
-                        The existence of layers will always validated whether this option is enabled or disabled.
-                        See more details here:
-                        https://github.com/google/go-containerregistry/blob/8dadbe76ff8c20d0e509406f04b7eade43baa6c1/pkg/v1/validate/image.go#L105
-                      type: boolean
+                        ValidationType specifies which (if any) type of validation is performed on the artifacts.
+                        Valid values are "full", "fast", and "none". When set to "none", the artifact will not be pulled and no extra validation will be performed.
+                        For both "full" and "fast" validationType, the following validations will be executed:
+                        - Layers existence will be validated
+                        - Config digest, size, content, and type will be validated
+                        - Manifest digest, content, and size will be validated
+                        For "full" validationType, the following additional validations will be performed:
+                        - Layer digest, diffID, size, and media type will be validated
+                        See more details about validation here:
+                        https://github.com/google/go-containerregistry/blob/8dadbe76ff8c20d0e509406f04b7eade43baa6c1/pkg/v1/validate/image.go#L30
+                      enum:
+                      - full
+                      - fast
+                      - none
+                      type: string
                   required:
                   - host
                   - name
+                  - validationType
                   type: object
                 maxItems: 5
                 type: array

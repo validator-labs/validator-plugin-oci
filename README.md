@@ -13,7 +13,7 @@ The OCI validator plugin reconciles `OciValidator` custom resources to perform t
 
 1. Validate OCI registry authentication
 2. Validate the existence of arbitrary OCI artifacts (pack, image, etc.)
-3. Validate downloading arbitrary OCI artifacts
+3. If `ValidationType` is set to `full` or `fast`, downloads the OCI artifacts and verifies their layers, manifests, and configs
 
 Each `OciValidator` CR is (re)-processed every two minutes to continuously ensure that your OCI registry matches the expected state.
 

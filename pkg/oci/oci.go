@@ -80,9 +80,9 @@ func (s *RuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule) (*
 			continue
 		}
 
-		skipLayerValidation := s.shouldSkipLayerValidation(rule, artifact)
+		vType := s.validationType(rule, artifact)
 
-		d, e := s.validateReference(ctx, ref, skipLayerValidation, rule.SignatureVerification)
+		d, e := s.validateReference(ctx, ref, vType, rule.SignatureVerification)
 		if len(e) > 0 {
 			l.Error(e[len(e)-1], errMsg, "artifact", artifact)
 		}
@@ -98,15 +98,16 @@ func (s *RuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule) (*
 	return vr, err
 }
 
-func (s *RuleService) shouldSkipLayerValidation(rule v1alpha1.OciRegistryRule, artifact v1alpha1.Artifact) bool {
-	if artifact.SkipLayerValidation == nil {
-		return rule.SkipLayerValidation
+func (s *RuleService) validationType(rule v1alpha1.OciRegistryRule, artifact v1alpha1.Artifact) v1alpha1.ValidationType {
+	if artifact.ValidationType != nil {
+		return *artifact.ValidationType
 	}
-	return *artifact.SkipLayerValidation
+
+	return rule.ValidationType
 }
 
 // validateArtifact validates a single artifact within an OCI registry. Used when either a path to a repo or artifact(s) are specified in an OciRegistryRule.
-func (s *RuleService) validateReference(ctx context.Context, ref name.Reference, skipLayerValidation bool, sv v1alpha1.SignatureVerification) ([]string, []error) {
+func (s *RuleService) validateReference(ctx context.Context, ref name.Reference, vType v1alpha1.ValidationType, sv v1alpha1.SignatureVerification) ([]string, []error) {
 	details := make([]string, 0)
 	errs := make([]error, 0)
 
@@ -114,6 +115,22 @@ func (s *RuleService) validateReference(ctx context.Context, ref name.Reference,
 	if _, err := s.ociClient.Head(ref); err != nil {
 		details = append(details, fmt.Sprintf("failed to get descriptor for artifact %s", ref.Name()))
 		errs = append(errs, err)
+		return details, errs
+	}
+
+	// verify image signature (optional)
+	if sv.SecretName != "" {
+		verifyDetails, verifyErrs := s.ociClient.VerifySignature(ctx, ref)
+		if len(verifyDetails) > 0 {
+			details = append(details, verifyDetails...)
+		}
+		if len(verifyErrs) > 0 {
+			errs = append(errs, verifyErrs...)
+		}
+	}
+
+	if vType == v1alpha1.ValidationTypeNone {
+		details = append(details, fmt.Sprintf("verified artifact %s", ref.Name()))
 		return details, errs
 	}
 
@@ -126,23 +143,12 @@ func (s *RuleService) validateReference(ctx context.Context, ref name.Reference,
 	}
 
 	// validate image
-	if err := s.ociClient.ValidateImage(img, skipLayerValidation); err != nil {
+	if err := s.ociClient.ValidateImage(img, vType); err != nil {
 		details = append(details, fmt.Sprintf("failed validation for artifact %s", ref.Name()))
 		errs = append(errs, err)
 		return details, errs
 	}
 	details = append(details, fmt.Sprintf("pulled and validated artifact %s", ref.Name()))
-
-	// verify image signature (optional)
-	if sv.SecretName != "" {
-		verifyDetails, verifyErrs := s.ociClient.VerifySignature(ctx, ref)
-		if len(verifyDetails) > 0 {
-			details = append(details, verifyDetails...)
-		}
-		if len(verifyErrs) > 0 {
-			errs = append(errs, verifyErrs...)
-		}
-	}
 
 	return details, errs
 }
@@ -209,7 +215,7 @@ func (s *RuleService) validateRepos(ctx context.Context, rule v1alpha1.OciRegist
 		return details, errs
 	}
 
-	return s.validateReference(ctx, ref, false, rule.SignatureVerification)
+	return s.validateReference(ctx, ref, rule.ValidationType, rule.SignatureVerification)
 }
 
 func (s *RuleService) updateResult(vr *types.ValidationRuleResult, errs []error, errMsg string, details ...string) {

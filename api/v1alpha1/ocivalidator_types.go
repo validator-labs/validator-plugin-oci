@@ -48,11 +48,19 @@ type OciRegistryRule struct {
 	// Host is the URI of an OCI registry.
 	Host string `json:"host" yaml:"host"`
 
-	// SkipLayerValidation specifies whether deep validation of the artifact layers should be skipped.
-	// The existence of layers will always validated whether this option is enabled or disabled.
-	// See more details here:
-	// https://github.com/google/go-containerregistry/blob/8dadbe76ff8c20d0e509406f04b7eade43baa6c1/pkg/v1/validate/image.go#L105
-	SkipLayerValidation bool `json:"skipLayerValidation,omitempty" yaml:"skipLayerValidation,omitempty"`
+	// ValidationType specifies which (if any) type of validation is performed on the artifacts.
+	// Valid values are "full", "fast", and "none". When set to "none", the artifact will not be pulled and no extra validation will be performed.
+	// For both "full" and "fast" validationType, the following validations will be executed:
+	// - Layers existence will be validated
+	// - Config digest, size, content, and type will be validated
+	// - Manifest digest, content, and size will be validated
+	// For "full" validationType, the following additional validations will be performed:
+	// - Layer digest, diffID, size, and media type will be validated
+	// See more details about validation here:
+	// https://github.com/google/go-containerregistry/blob/8dadbe76ff8c20d0e509406f04b7eade43baa6c1/pkg/v1/validate/image.go#L30
+	// +kubebuilder:validation:Enum=full;fast;none
+	// +kubebuilder:default:=none
+	ValidationType ValidationType `json:"validationType" yaml:"validationType"`
 
 	// Artifacts is a slice of artifacts in the OCI registry that should be validated.
 	Artifacts []Artifact `json:"artifacts,omitempty" yaml:"artifacts,omitempty"`
@@ -70,6 +78,18 @@ type OciRegistryRule struct {
 	SignatureVerification SignatureVerification `json:"signatureVerification,omitempty" yaml:"signatureVerification,omitempty"`
 }
 
+// ValidationType defines the type of extra validation to perform on the artifacts.
+type ValidationType string
+
+const (
+	// ValidationTypeFull specifies full validation of the artifacts.
+	ValidationTypeFull ValidationType = "full"
+	// ValidationTypeFast specifies fast validation of the artifacts.
+	ValidationTypeFast ValidationType = "fast"
+	// ValidationTypeNone specifies no extra validation of the artifacts, artifacts will not be pulled.
+	ValidationTypeNone ValidationType = "none"
+)
+
 // Name returns the name of the OciRegistryRule.
 func (r OciRegistryRule) Name() string {
 	return r.RuleName
@@ -86,8 +106,9 @@ type Artifact struct {
 	// When no tag or digest are specified, the default tag "latest" is used.
 	Ref string `json:"ref" yaml:"ref"`
 
-	// SkipLayerValidation overrides the OciRegistryRule level SkiplayerValidation for a particular artifact.
-	SkipLayerValidation *bool `json:"skipLayerValidation,omitempty" yaml:"skipLayerValidation,omitempty"`
+	// ValidationType overrides the OciRegistryRule level ValidationType for a particular artifact.
+	// +kubebuilder:validation:Enum=full;fast;none
+	ValidationType *ValidationType `json:"validationType,omitempty" yaml:"validationType,omitempty"`
 }
 
 // Auth defines the authentication information for the registry.

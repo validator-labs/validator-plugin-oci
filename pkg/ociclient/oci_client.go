@@ -21,6 +21,7 @@ import (
 	"github.com/validator-labs/validator/pkg/util"
 	klog "k8s.io/klog/v2"
 
+	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
 	"github.com/validator-labs/validator-plugin-oci/pkg/ociclient/verifier"
 )
 
@@ -168,9 +169,9 @@ func (c *Client) PullImage(ref name.Reference) (v1.Image, error) {
 }
 
 // ValidateImage validates the given image.
-func (c *Client) ValidateImage(image v1.Image, skipLayerValidation bool) error {
+func (c *Client) ValidateImage(image v1.Image, vType v1alpha1.ValidationType) error {
 	var validateOpts []validate.Option
-	if skipLayerValidation {
+	if vType == v1alpha1.ValidationTypeFast {
 		validateOpts = append(validateOpts, validate.Fast)
 	}
 	return validate.Image(image, validateOpts...)
