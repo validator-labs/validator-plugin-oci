@@ -265,6 +265,7 @@ func TestValidateRepos(t *testing.T) {
 			rule := v1alpha1.OciRegistryRule{
 				Host:                  tc.host,
 				SignatureVerification: v1alpha1.SignatureVerification{},
+				ValidationType:        v1alpha1.ValidationTypeNone,
 			}
 			details, errs := ociService.validateRepos(context.Background(), rule, &types.ValidationRuleResult{})
 

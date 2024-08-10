@@ -59,6 +59,7 @@ type OciRegistryRule struct {
 	// See more details about validation here:
 	// https://github.com/google/go-containerregistry/blob/8dadbe76ff8c20d0e509406f04b7eade43baa6c1/pkg/v1/validate/image.go#L30
 	// +kubebuilder:validation:Enum=full;fast;none
+	// +kubebuilder:default:=none
 	ValidationType ValidationType `json:"validationType" yaml:"validationType"`
 
 	// Artifacts is a slice of artifacts in the OCI registry that should be validated.

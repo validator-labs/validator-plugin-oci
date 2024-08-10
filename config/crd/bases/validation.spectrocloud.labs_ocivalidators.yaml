@@ -153,6 +153,7 @@ spec:
                       - secretName
                       type: object
                     validationType:
+                      default: none
                       description: |-
                         ValidationType specifies which (if any) type of validation is performed on the artifacts.
                         Valid values are "full", "fast", and "none". When set to "none", the artifact will not be pulled and no extra validation will be performed.
