@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.2.0](https://github.com/validator-labs/validator-plugin-oci/compare/v0.1.0...v0.2.0) (2024-08-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* ensure we only pull artifacts when running full or fast layer validation ([#256](https://github.com/validator-labs/validator-plugin-oci/issues/256))
+
+### Features
+
+* add GetKind to satisfy ValidationRule ([#255](https://github.com/validator-labs/validator-plugin-oci/issues/255)) ([c1942b7](https://github.com/validator-labs/validator-plugin-oci/commit/c1942b7a710406fe358424447d476b52ed43009f))
+* add support for basic and ecr auth for direct invocation ([#250](https://github.com/validator-labs/validator-plugin-oci/issues/250)) ([2b99278](https://github.com/validator-labs/validator-plugin-oci/commit/2b992780f1cf6da1395a3fe1fa64abab12e3111e))
+
+
+### Bug Fixes
+
+* ensure we only pull artifacts when running full or fast layer validation ([#256](https://github.com/validator-labs/validator-plugin-oci/issues/256)) ([d1a9c20](https://github.com/validator-labs/validator-plugin-oci/commit/d1a9c2047b53fb3993f7250f0ca1bad1134f9ad7))
+
+
+### Dependency Updates
+
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to 0ed0161 ([#251](https://github.com/validator-labs/validator-plugin-oci/issues/251)) ([92d0177](https://github.com/validator-labs/validator-plugin-oci/commit/92d0177e337a898e0b3ac2d60635a0b8cd9cef96))
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to ac94a34 ([#254](https://github.com/validator-labs/validator-plugin-oci/issues/254)) ([79e44cc](https://github.com/validator-labs/validator-plugin-oci/commit/79e44cc469a0ba15753bf2d7f23bfc08fdee60f7))
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to daddeb8 ([#253](https://github.com/validator-labs/validator-plugin-oci/issues/253)) ([0c599b5](https://github.com/validator-labs/validator-plugin-oci/commit/0c599b55c5250ce6218dbe3704687756ae85c889))
+* **deps:** update module github.com/validator-labs/validator to v0.1.2 ([#239](https://github.com/validator-labs/validator-plugin-oci/issues/239)) ([80d23b0](https://github.com/validator-labs/validator-plugin-oci/commit/80d23b0a02b74b9da1d74b96cee20996da9a0cbd))
+
 ## [0.1.0](https://github.com/validator-labs/validator-plugin-oci/compare/v0.0.13...v0.1.0) (2024-08-08)
 
 
