@@ -8,10 +8,11 @@ spec:
     # private oci registry artifacts using basic auth and a caCert
     - name: "private oci registry"
       host: "oci-airgap.spectrocloud.dev"
+      validationType: "full"
       artifacts:
         - ref: "spectro-images/gcr.io/spectro-images-fips/kube-apiserver:v1.26.5"
+          validationType: "fast"
         - ref: "spectro-packs/spectro-packs/archive/vault:0.25.0"
-          skipLayerValidation: true
       auth:
         basic:
           username: some-user
@@ -40,7 +41,7 @@ spec:
     # private ecr registry with ecr auth and no artifact specified
     - name: "private ecr registry"
       host: "745150053801.dkr.ecr.us-east-1.amazonaws.com"
-      skipLayerValidation: true
+      validationType: "none"
       auth:
         ecr:
           accessKeyID: some-access-key-id
@@ -50,11 +51,10 @@ spec:
     # private oci registry with secret key auth and signature verification enabled
     - name: "private oci registry with signature verification enabled"
       host: "registry.hub.docker.com"
-      skipLayerValidation: true
+      validationType: "fast"
       artifacts:
         - ref: "ahmadibraspectrocloud/validator:signed"
         - ref: "ahmadibraspectrocloud/validator-plugin-oci:signed"
-          skipLayerValidation: false
       signatureVerification:
         secretName: "cosign-public-keys"
       auth:

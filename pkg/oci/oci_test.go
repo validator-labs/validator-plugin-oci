@@ -6,6 +6,8 @@ import (
 	"net"
 	"net/http/httptest"
 	"net/url"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/go-logr/logr"
@@ -109,43 +111,43 @@ func TestValidateReference(t *testing.T) {
 	}
 
 	testCases := []struct {
-		name            string
-		ref             name.Reference
-		layerValidation bool
-		pubKeys         [][]byte
-		sv              v1alpha1.SignatureVerification
-		expectedDetail  string
-		expectErr       bool
+		name           string
+		ref            name.Reference
+		validationType v1alpha1.ValidationType
+		pubKeys        [][]byte
+		sv             v1alpha1.SignatureVerification
+		expectedDetail string
+		expectErr      bool
 	}{
 		{
-			name:            "Pass: valid ref, no layer validation",
-			ref:             validRef,
-			layerValidation: false,
-			pubKeys:         nil,
-			expectedDetail:  fmt.Sprintf("pulled and validated artifact 127.0.0.1:%d/test/oci-image:latest", port),
-			expectErr:       false,
+			name:           "Pass: valid ref, no layer validation",
+			ref:            validRef,
+			validationType: v1alpha1.ValidationTypeNone,
+			pubKeys:        nil,
+			expectedDetail: fmt.Sprintf("verified artifact 127.0.0.1:%d/test/oci-image:latest", port),
+			expectErr:      false,
 		},
 		{
-			name:            "Pass: valid ref, layer validation",
-			ref:             validRef,
-			layerValidation: true,
-			pubKeys:         nil,
-			expectedDetail:  fmt.Sprintf("pulled and validated artifact 127.0.0.1:%d/test/oci-image:latest", port),
-			expectErr:       false,
+			name:           "Pass: valid ref, layer validation",
+			ref:            validRef,
+			validationType: v1alpha1.ValidationTypeFast,
+			pubKeys:        nil,
+			expectedDetail: fmt.Sprintf("pulled and validated artifact 127.0.0.1:%d/test/oci-image:latest", port),
+			expectErr:      false,
 		},
 		{
-			name:            "Fail: invalid ref",
-			ref:             invalidRef,
-			layerValidation: false,
-			pubKeys:         nil,
-			expectedDetail:  "failed to get descriptor for artifact",
-			expectErr:       true,
+			name:           "Fail: invalid ref",
+			ref:            invalidRef,
+			validationType: v1alpha1.ValidationTypeNone,
+			pubKeys:        nil,
+			expectedDetail: "failed to get descriptor for artifact",
+			expectErr:      true,
 		},
 		{
-			name:            "Fail: valid ref, signature verification enabled with invalid keys",
-			ref:             validRef,
-			layerValidation: true,
-			pubKeys:         [][]byte{[]byte("invalid-pub-key-1"), []byte("invalid-pub-key-2")},
+			name:           "Fail: valid ref, signature verification enabled with invalid keys",
+			ref:            validRef,
+			validationType: v1alpha1.ValidationTypeFull,
+			pubKeys:        [][]byte{[]byte("invalid-pub-key-1"), []byte("invalid-pub-key-2")},
 			sv: v1alpha1.SignatureVerification{
 				SecretName: "secret",
 			},
@@ -153,10 +155,10 @@ func TestValidateReference(t *testing.T) {
 			expectErr:      true,
 		},
 		{
-			name:            "Fail: valid ref, signature verification enabled with no keys",
-			ref:             validRef,
-			layerValidation: true,
-			pubKeys:         [][]byte{},
+			name:           "Fail: valid ref, signature verification enabled with no keys",
+			ref:            validRef,
+			validationType: v1alpha1.ValidationTypeFast,
+			pubKeys:        [][]byte{},
 			sv: v1alpha1.SignatureVerification{
 				SecretName: "secret",
 			},
@@ -164,9 +166,9 @@ func TestValidateReference(t *testing.T) {
 			expectErr:      true,
 		},
 		{
-			name:            "Fail: valid ref, signature verification enabled with invalid public key",
-			ref:             validRef,
-			layerValidation: true,
+			name:           "Fail: valid ref, signature verification enabled with invalid public key",
+			ref:            validRef,
+			validationType: v1alpha1.ValidationTypeFull,
 			pubKeys: [][]byte{
 				[]byte(`-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKPuCo9AmJCpqGWhefjbhkFcr1GA3
@@ -193,12 +195,16 @@ iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
 			ociService := NewRuleService(logr.Logger{}, WithOCIClient(ociClient))
 
 			ctx := context.Background()
-			details, errs := ociService.validateReference(ctx, tc.ref, tc.layerValidation, tc.sv)
+			details, errs := ociService.validateReference(ctx, tc.ref, tc.validationType, tc.sv)
 
 			if tc.expectedDetail == "" {
 				assert.Empty(t, details)
 			} else {
-				assert.Contains(t, details[len(details)-1], tc.expectedDetail)
+				//assert.Contains(t, details[len(details)-1], tc.expectedDetail)
+
+				assert.True(t, slices.ContainsFunc(details, func(s string) bool {
+					return strings.Contains(s, tc.expectedDetail)
+				}))
 			}
 			assert.Equal(t, tc.expectErr, len(errs) > 0)
 		})
@@ -231,7 +237,7 @@ func TestValidateRepos(t *testing.T) {
 		{
 			name:           "Pass: valid registry",
 			host:           urlWithArtifact.Host,
-			expectedDetail: fmt.Sprintf("pulled and validated artifact 127.0.0.1:%d/test/oci-image:latest", port),
+			expectedDetail: fmt.Sprintf("verified artifact 127.0.0.1:%d/test/oci-image:latest", port),
 			expectErr:      false,
 		},
 		{
@@ -344,62 +350,128 @@ func TestReconcileOciRegistryRule(t *testing.T) {
 	}
 }
 
-func TestShouldSkipLayerValidation(t *testing.T) {
+func TestValidationType(t *testing.T) {
 	testCases := []struct {
 		name     string
 		rule     v1alpha1.OciRegistryRule
 		artifact v1alpha1.Artifact
-		expected bool
+		expected v1alpha1.ValidationType
 	}{
 		{
-			name:     "Rule SkipLayerValidation = false, Artifact SkipLayerValidation = nil",
-			rule:     v1alpha1.OciRegistryRule{},
-			artifact: v1alpha1.Artifact{},
-			expected: false,
-		},
-		{
-			name: "Rule SkipLayerValidation = false, Artifact SkipLayerValidation = true",
-			rule: v1alpha1.OciRegistryRule{},
-			artifact: v1alpha1.Artifact{
-				SkipLayerValidation: util.Ptr(true),
-			},
-			expected: true,
-		},
-		{
-			name: "Rule SkipLayerValidation = false, Artifact SkipLayerValidation = false",
-			rule: v1alpha1.OciRegistryRule{},
-			artifact: v1alpha1.Artifact{
-				SkipLayerValidation: util.Ptr(false),
-			},
-			expected: false,
-		},
-		{
-			name: "Rule SkipLayerValidation = true, Artifact SkipLayerValidation = nil",
+			name: "Rule: ValidationType = none; Artifact ValidationType = nil",
 			rule: v1alpha1.OciRegistryRule{
-				SkipLayerValidation: true,
+				ValidationType: v1alpha1.ValidationTypeNone,
 			},
 			artifact: v1alpha1.Artifact{},
-			expected: true,
+			expected: v1alpha1.ValidationTypeNone,
 		},
 		{
-			name: "Rule SkipLayerValidation = true, Artifact SkipLayerValidation = true",
+			name: "Rule: ValidationType = none; Artifact ValidationType = none",
 			rule: v1alpha1.OciRegistryRule{
-				SkipLayerValidation: true,
+				ValidationType: v1alpha1.ValidationTypeNone,
 			},
 			artifact: v1alpha1.Artifact{
-				SkipLayerValidation: util.Ptr(true),
+				ValidationType: util.Ptr(v1alpha1.ValidationTypeNone),
 			},
-			expected: true,
+			expected: v1alpha1.ValidationTypeNone,
 		},
 		{
-			name: "Rule SkipLayerValidation = true, Artifact SkipLayerValidation = false",
+			name: "Rule: ValidationType = none; Artifact ValidationType = fast",
 			rule: v1alpha1.OciRegistryRule{
-				SkipLayerValidation: true,
+				ValidationType: v1alpha1.ValidationTypeNone,
 			},
 			artifact: v1alpha1.Artifact{
-				SkipLayerValidation: util.Ptr(false),
+				ValidationType: util.Ptr(v1alpha1.ValidationTypeFast),
 			},
-			expected: false,
+			expected: v1alpha1.ValidationTypeFast,
+		},
+		{
+			name: "Rule: ValidationType = none; Artifact ValidationType = full",
+			rule: v1alpha1.OciRegistryRule{
+				ValidationType: v1alpha1.ValidationTypeNone,
+			},
+			artifact: v1alpha1.Artifact{
+				ValidationType: util.Ptr(v1alpha1.ValidationTypeFull),
+			},
+			expected: v1alpha1.ValidationTypeFull,
+		},
+
+		{
+			name: "Rule: ValidationType = fast; Artifact ValidationType = nil",
+			rule: v1alpha1.OciRegistryRule{
+				ValidationType: v1alpha1.ValidationTypeFast,
+			},
+			artifact: v1alpha1.Artifact{},
+			expected: v1alpha1.ValidationTypeFast,
+		},
+		{
+			name: "Rule: ValidationType = fast; Artifact ValidationType = none",
+			rule: v1alpha1.OciRegistryRule{
+				ValidationType: v1alpha1.ValidationTypeFast,
+			},
+			artifact: v1alpha1.Artifact{
+				ValidationType: util.Ptr(v1alpha1.ValidationTypeNone),
+			},
+			expected: v1alpha1.ValidationTypeNone,
+		},
+		{
+			name: "Rule: ValidationType = fast; Artifact ValidationType = fast",
+			rule: v1alpha1.OciRegistryRule{
+				ValidationType: v1alpha1.ValidationTypeFast,
+			},
+			artifact: v1alpha1.Artifact{
+				ValidationType: util.Ptr(v1alpha1.ValidationTypeFast),
+			},
+			expected: v1alpha1.ValidationTypeFast,
+		},
+		{
+			name: "Rule: ValidationType = fast; Artifact ValidationType = full",
+			rule: v1alpha1.OciRegistryRule{
+				ValidationType: v1alpha1.ValidationTypeFast,
+			},
+			artifact: v1alpha1.Artifact{
+				ValidationType: util.Ptr(v1alpha1.ValidationTypeFull),
+			},
+			expected: v1alpha1.ValidationTypeFull,
+		},
+
+		{
+			name: "Rule: ValidationType = full; Artifact ValidationType = nil",
+			rule: v1alpha1.OciRegistryRule{
+				ValidationType: v1alpha1.ValidationTypeFull,
+			},
+			artifact: v1alpha1.Artifact{},
+			expected: v1alpha1.ValidationTypeFull,
+		},
+		{
+			name: "Rule: ValidationType = full; Artifact ValidationType = none",
+			rule: v1alpha1.OciRegistryRule{
+				ValidationType: v1alpha1.ValidationTypeFull,
+			},
+			artifact: v1alpha1.Artifact{
+				ValidationType: util.Ptr(v1alpha1.ValidationTypeNone),
+			},
+			expected: v1alpha1.ValidationTypeNone,
+		},
+		{
+			name: "Rule: ValidationType = full; Artifact ValidationType = fast",
+			rule: v1alpha1.OciRegistryRule{
+				ValidationType: v1alpha1.ValidationTypeFull,
+			},
+			artifact: v1alpha1.Artifact{
+				ValidationType: util.Ptr(v1alpha1.ValidationTypeFast),
+			},
+			expected: v1alpha1.ValidationTypeFast,
+		},
+		{
+			name: "Rule: ValidationType = full; Artifact ValidationType = full",
+			rule: v1alpha1.OciRegistryRule{
+				ValidationType: v1alpha1.ValidationTypeFull,
+			},
+			artifact: v1alpha1.Artifact{
+				ValidationType: util.Ptr(v1alpha1.ValidationTypeFull),
+			},
+			expected: v1alpha1.ValidationTypeFull,
 		},
 	}
 
@@ -410,7 +482,7 @@ func TestShouldSkipLayerValidation(t *testing.T) {
 				t.Error(err)
 			}
 			ociService := NewRuleService(logr.Logger{}, WithOCIClient(ociClient))
-			assert.Equal(t, tc.expected, ociService.shouldSkipLayerValidation(tc.rule, tc.artifact))
+			assert.Equal(t, tc.expected, ociService.validationType(tc.rule, tc.artifact))
 		})
 	}
 }

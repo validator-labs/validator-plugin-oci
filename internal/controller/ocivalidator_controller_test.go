@@ -37,8 +37,9 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 		Spec: v1alpha1.OciValidatorSpec{
 			OciRegistryRules: []v1alpha1.OciRegistryRule{
 				{
-					RuleName: "basic auth and empty artifact list",
-					Host:     "foo1.registry.io",
+					RuleName:       "basic auth and empty artifact list",
+					Host:           "foo1.registry.io",
+					ValidationType: v1alpha1.ValidationTypeNone,
 					Auth: v1alpha1.Auth{
 						Basic: &v1alpha1.BasicAuth{
 							Username: "userName",
@@ -51,9 +52,9 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					},
 				},
 				{
-					RuleName:            "layer validation skipped on rule level",
-					Host:                "foo.registry.io",
-					SkipLayerValidation: true,
+					RuleName:       "full layer validation enabled on rule level",
+					Host:           "foo.registry.io",
+					ValidationType: v1alpha1.ValidationTypeFull,
 					Artifacts: []v1alpha1.Artifact{
 						{
 							Ref: "foo/bar:latest",
@@ -64,12 +65,13 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					},
 				},
 				{
-					RuleName: "layer validation skipped on artifact level",
-					Host:     "foo.registry.io",
+					RuleName:       "fast layer validation enabled on artifact level",
+					Host:           "foo.registry.io",
+					ValidationType: v1alpha1.ValidationTypeNone,
 					Artifacts: []v1alpha1.Artifact{
 						{
-							Ref:                 "foo/bar:latest",
-							SkipLayerValidation: util.Ptr(true),
+							Ref:            "foo/bar:latest",
+							ValidationType: util.Ptr(v1alpha1.ValidationTypeFast),
 						},
 					},
 					SignatureVerification: v1alpha1.SignatureVerification{
@@ -77,16 +79,17 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					},
 				},
 				{
-					RuleName: "secret auth and ca cert provided",
-					Host:     "foo2.registry.io",
+					RuleName:       "secret auth and ca cert provided",
+					Host:           "foo2.registry.io",
+					ValidationType: v1alpha1.ValidationTypeNone,
 					Auth: v1alpha1.Auth{
 						SecretName: util.Ptr("auth-secret"),
 					},
 					CaCert: "dummy-ca-cert",
 					Artifacts: []v1alpha1.Artifact{
 						{
-							Ref:                 "foo/bar:latest",
-							SkipLayerValidation: util.Ptr(true),
+							Ref:            "foo/bar:latest",
+							ValidationType: util.Ptr(v1alpha1.ValidationTypeFast),
 						},
 					},
 					SignatureVerification: v1alpha1.SignatureVerification{
@@ -94,8 +97,9 @@ var _ = Describe("OCIValidator controller", Ordered, func() {
 					},
 				},
 				{
-					RuleName: "ecr auth and pubkeys secret provided and created",
-					Host:     "foo3.registry.io",
+					RuleName:       "ecr auth and pubkeys secret provided and created",
+					Host:           "foo3.registry.io",
+					ValidationType: v1alpha1.ValidationTypeNone,
 					Auth: v1alpha1.Auth{
 						ECR: &v1alpha1.ECRAuth{
 							AccessKeyID:     "accessKeyID",
