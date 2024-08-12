@@ -104,14 +104,18 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			l.Error(err, "failed to get secret auth", "ruleName", rule.Name())
 			return ctrl.Result{}, err
 		}
-		auths[rule.Name()] = []string{username, password}
+		if username != "" || password != "" {
+			auths[rule.Name()] = []string{username, password}
+		}
 
 		pubKeys, err := r.signaturePubKeys(req, rule)
 		if err != nil {
 			l.Error(err, "failed to get signature verification public keys", "ruleName", rule.Name())
 			return ctrl.Result{}, err
 		}
-		allPubKeys[rule.Name()] = pubKeys
+		if pubKeys != nil {
+			allPubKeys[rule.Name()] = pubKeys
+		}
 	}
 
 	// Validate the rules
