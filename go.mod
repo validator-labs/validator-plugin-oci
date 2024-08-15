@@ -12,12 +12,12 @@ require (
 	github.com/sigstore/cosign/v2 v2.4.0
 	github.com/sigstore/sigstore v1.8.8
 	github.com/stretchr/testify v1.9.0
-	github.com/validator-labs/validator v0.1.3
+	github.com/validator-labs/validator v0.1.5
 	k8s.io/api v0.31.0
 	k8s.io/apimachinery v0.31.0
 	k8s.io/client-go v0.31.0
 	k8s.io/klog/v2 v2.130.1
-	sigs.k8s.io/cluster-api v1.8.0
+	sigs.k8s.io/cluster-api v1.8.1
 	sigs.k8s.io/controller-runtime v0.19.0
 )
 
