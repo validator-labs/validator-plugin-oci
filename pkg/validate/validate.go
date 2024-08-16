@@ -26,6 +26,15 @@ func Validate(spec v1alpha1.OciValidatorSpec, authMap map[string][]string, pubKe
 	for _, rule := range spec.OciRegistryRules {
 		vrr := oci.BuildValidationResult(rule)
 
+		if rule.Auth.ECR != nil {
+			err := configureEcrEnvVars(rule, log)
+			if err != nil {
+				log.Error(err, "failed to configure ECR environment variables", "ruleName", rule.Name())
+			}
+			resp.AddResult(vrr, err)
+			continue
+		}
+
 		opts := []ocic.Option{
 			ocic.WithMultiAuth(auth.GetKeychain(rule.Host)),
 			ocic.WithTLSConfig(rule.InsecureSkipTLSVerify, rule.CaCert, ""),
@@ -38,15 +47,6 @@ func Validate(spec v1alpha1.OciValidatorSpec, authMap map[string][]string, pubKe
 			if len(auths) == 2 {
 				opts = append(opts, ocic.WithBasicAuth(auths[0], auths[1]))
 			}
-		}
-
-		if rule.Auth.ECR != nil {
-			err := configureEcrEnvVars(rule, log)
-			if err != nil {
-				log.Error(err, "failed to configure ECR environment variables", "ruleName", rule.Name())
-			}
-			resp.AddResult(vrr, err)
-			continue
 		}
 
 		ociClient, err := ocic.NewOCIClient(opts...)
