@@ -2,12 +2,15 @@
 package validate
 
 import (
+	"os"
+
 	"github.com/go-logr/logr"
 
 	"github.com/validator-labs/validator/pkg/types"
 
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
 	"github.com/validator-labs/validator-plugin-oci/pkg/auth"
+	"github.com/validator-labs/validator-plugin-oci/pkg/constants"
 	"github.com/validator-labs/validator-plugin-oci/pkg/oci"
 	ocic "github.com/validator-labs/validator-plugin-oci/pkg/ociclient"
 )
@@ -37,6 +40,15 @@ func Validate(spec v1alpha1.OciValidatorSpec, authMap map[string][]string, pubKe
 			}
 		}
 
+		if rule.Auth.ECR != nil {
+			err := configureEcrEnvVars(rule, log)
+			if err != nil {
+				log.Error(err, "failed to configure ECR environment variables", "ruleName", rule.Name())
+			}
+			resp.AddResult(vrr, err)
+			continue
+		}
+
 		ociClient, err := ocic.NewOCIClient(opts...)
 		if err != nil {
 			log.Error(err, "failed to create OCI client", "ruleName", rule.Name())
@@ -54,4 +66,25 @@ func Validate(spec v1alpha1.OciValidatorSpec, authMap map[string][]string, pubKe
 	}
 
 	return resp
+}
+
+func configureEcrEnvVars(rule v1alpha1.OciRegistryRule, log logr.Logger) error {
+	if err := os.Setenv(constants.AwsAccessKey, rule.Auth.ECR.AccessKeyID); err != nil {
+		return err
+	}
+	log.Info("Set environment variable", "key", constants.AwsAccessKey, "ruleName", rule.Name())
+
+	if err := os.Setenv(constants.AwsSecretAccessKey, rule.Auth.ECR.SecretAccessKey); err != nil {
+		return err
+	}
+	log.Info("Set environment variable", "key", constants.AwsSecretAccessKey, "ruleName", rule.Name())
+
+	if rule.Auth.ECR.SessionToken != "" {
+		if err := os.Setenv(constants.AwsSessionToken, rule.Auth.ECR.SessionToken); err != nil {
+			return err
+		}
+		log.Info("Set environment variable", "key", constants.AwsSessionToken, "ruleName", rule.Name())
+	}
+
+	return nil
 }
