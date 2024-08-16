@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.2.1](https://github.com/validator-labs/validator-plugin-oci/compare/v0.2.0...v0.2.1) (2024-08-16)
+
+
+### Bug Fixes
+
+* support private ecr registry validation with a per rule aws env vars ([#268](https://github.com/validator-labs/validator-plugin-oci/issues/268)) ([42a5610](https://github.com/validator-labs/validator-plugin-oci/commit/42a5610e1ec2e82f0fb436178f23f7572d72b1d7))
+
+
+### Other
+
+* only add auth and pubkeys when they're not empty ([#260](https://github.com/validator-labs/validator-plugin-oci/issues/260)) ([5b21888](https://github.com/validator-labs/validator-plugin-oci/commit/5b21888dfe908105d7eb9cd5bb7d7d6e94b0c406))
+
+
+### Dependency Updates
+
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to d4ae6cf ([#265](https://github.com/validator-labs/validator-plugin-oci/issues/265)) ([1c4f7f2](https://github.com/validator-labs/validator-plugin-oci/commit/1c4f7f2b442ccfdaa66cc8ab8e233b92f6124ff8))
+* **deps:** update module github.com/validator-labs/validator to v0.1.3 ([#258](https://github.com/validator-labs/validator-plugin-oci/issues/258)) ([4161664](https://github.com/validator-labs/validator-plugin-oci/commit/4161664b33699cbc993e3fdef33d526da6f3d692))
+* **deps:** update module github.com/validator-labs/validator to v0.1.5 ([#263](https://github.com/validator-labs/validator-plugin-oci/issues/263)) ([a5fc455](https://github.com/validator-labs/validator-plugin-oci/commit/a5fc455143a9033ffca1c4fecfc342ebf1b25648))
+* **deps:** update module sigs.k8s.io/cluster-api to v1.8.0 ([#261](https://github.com/validator-labs/validator-plugin-oci/issues/261)) ([9847a0a](https://github.com/validator-labs/validator-plugin-oci/commit/9847a0ac4fde8f91dd5ea68f83db79edafbd1a61))
+* **deps:** update module sigs.k8s.io/controller-runtime to v0.18.5 ([#262](https://github.com/validator-labs/validator-plugin-oci/issues/262)) ([e2f73a2](https://github.com/validator-labs/validator-plugin-oci/commit/e2f73a2da8baf6c6298d5bebe2d0051ff11139f6))
+* **deps:** update module sigs.k8s.io/controller-runtime to v0.19.0 ([#267](https://github.com/validator-labs/validator-plugin-oci/issues/267)) ([eaa40aa](https://github.com/validator-labs/validator-plugin-oci/commit/eaa40aa633c3b1b67ad349229a7e09694eeaed53))
+
 ## [0.2.0](https://github.com/validator-labs/validator-plugin-oci/compare/v0.1.0...v0.2.0) (2024-08-10)
 
 
