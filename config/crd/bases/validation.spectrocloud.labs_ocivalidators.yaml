@@ -72,6 +72,7 @@ spec:
                         required:
                         - ref
                         type: object
+                      minItems: 1
                       type: array
                     auth:
                       description: Auth provides authentication information for the
