@@ -63,6 +63,7 @@ type OciRegistryRule struct {
 	ValidationType ValidationType `json:"validationType" yaml:"validationType"`
 
 	// Artifacts is a slice of artifacts in the OCI registry that should be validated.
+	// +kubebuilder:validation:MinItems=1
 	Artifacts []Artifact `json:"artifacts,omitempty" yaml:"artifacts,omitempty"`
 
 	// Auth provides authentication information for the registry.

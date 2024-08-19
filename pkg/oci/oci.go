@@ -54,22 +54,9 @@ func (s *RuleService) ReconcileOciRegistryRule(rule v1alpha1.OciRegistryRule) (*
 	var err error
 	ctx := context.Background()
 
-	errMsg := "failed to validate repositories in registry"
-	if len(rule.Artifacts) == 0 {
-		details, errs := s.validateRepos(ctx, rule, vr)
-
-		if len(errs) > 0 {
-			l.Error(errs[len(errs)-1], errMsg)
-			err = errors.New(errMsg)
-		}
-		s.updateResult(vr, errs, errMsg, details...)
-
-		return vr, err
-	}
-
 	details := make([]string, 0)
 	errs := make([]error, 0)
-	errMsg = "failed to validate artifact in registry"
+	errMsg := "failed to validate artifact in registry"
 
 	for _, artifact := range rule.Artifacts {
 		ref, err := generateRef(rule.Host, artifact.Ref, vr)
@@ -151,71 +138,6 @@ func (s *RuleService) validateReference(ctx context.Context, ref name.Reference,
 	details = append(details, fmt.Sprintf("pulled and validated artifact %s", ref.Name()))
 
 	return details, errs
-}
-
-// validateRepos validates repos within an OCI registry. Used when no specific artifacts are provided in an OciRegistryRule.
-func (s *RuleService) validateRepos(ctx context.Context, rule v1alpha1.OciRegistryRule, vr *types.ValidationRuleResult) ([]string, []error) {
-	details := make([]string, 0)
-	errs := make([]error, 0)
-
-	reg, err := name.NewRegistry(rule.Host)
-	if err != nil {
-		details = append(details, fmt.Sprintf("failed to get registry %s", rule.Host))
-		errs = append(errs, err)
-		return details, errs
-	}
-
-	repoList, err := s.ociClient.Catalog(ctx, reg)
-	if err != nil {
-		details = append(details, fmt.Sprintf("failed to list repositories in registry %s", rule.Host))
-		errs = append(errs, err)
-		return details, errs
-	}
-
-	if len(repoList) == 0 {
-		details = append(details, fmt.Sprintf("no repositories found in registry %s", rule.Host))
-		return details, errs
-	}
-
-	var repo name.Repository
-	var ref name.Reference
-	foundArtifact := false
-
-	for _, curRepo := range repoList {
-		repo, err = name.NewRepository(rule.Host + "/" + curRepo)
-		if err != nil {
-			errs = append(errs, err)
-			details = append(details, fmt.Sprintf("failed to get repository %s/%s", rule.Host, curRepo))
-			continue
-		}
-
-		tags, err := s.ociClient.List(repo)
-		if err != nil {
-			errs = append(errs, err)
-			details = append(details, fmt.Sprintf("failed to get tags for repository %s/%s", rule.Host, curRepo))
-			continue
-		}
-		if len(tags) == 0 {
-			details = append(details, fmt.Sprintf("no tags found in repository %s/%s", rule.Host, curRepo))
-			continue
-		}
-
-		tag := tags[0]
-		ref, err = generateRef(rule.Host, fmt.Sprintf("%s:%s", curRepo, tag), vr)
-		if err != nil {
-			errs = append(errs, err)
-			details = append(details, fmt.Sprintf("failed to generate reference for artifact %s/%s:%s", rule.Host, curRepo, tag))
-			continue
-		}
-
-		foundArtifact = true
-		break
-	}
-	if !foundArtifact {
-		return details, errs
-	}
-
-	return s.validateReference(ctx, ref, rule.ValidationType, rule.SignatureVerification)
 }
 
 func (s *RuleService) updateResult(vr *types.ValidationRuleResult, errs []error, errMsg string, details ...string) {

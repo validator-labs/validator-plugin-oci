@@ -41,6 +41,8 @@ spec:
     # private ecr registry with ecr auth and no artifact specified
     - name: "private ecr registry"
       host: "745150053801.dkr.ecr.us-east-1.amazonaws.com"
+      artifacts:
+        - ref: "oci-test:latest"
       auth:
         ecr:
           accessKeyID: some-access-key-id
