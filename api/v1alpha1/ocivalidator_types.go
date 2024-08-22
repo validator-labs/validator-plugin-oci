@@ -19,8 +19,11 @@ package v1alpha1
 import (
 	"reflect"
 
-	"github.com/validator-labs/validator-plugin-oci/pkg/constants"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/validator-labs/validator/pkg/validationrule"
+
+	"github.com/validator-labs/validator-plugin-oci/pkg/constants"
 )
 
 // OciValidatorSpec defines the desired state of OciValidator.
@@ -42,6 +45,8 @@ func (s OciValidatorSpec) ResultCount() int {
 
 // OciRegistryRule defines the validation rule for an OCI registry.
 type OciRegistryRule struct {
+	validationrule.ManuallyNamed `json:"-"`
+
 	// Name is a unique name for the OciRegistryRule.
 	RuleName string `json:"name" yaml:"name"`
 
@@ -79,6 +84,8 @@ type OciRegistryRule struct {
 	SignatureVerification SignatureVerification `json:"signatureVerification,omitempty" yaml:"signatureVerification,omitempty"`
 }
 
+var _ validationrule.Interface = (*OciRegistryRule)(nil)
+
 // ValidationType defines the type of extra validation to perform on the artifacts.
 type ValidationType string
 
@@ -94,6 +101,11 @@ const (
 // Name returns the name of the OciRegistryRule.
 func (r OciRegistryRule) Name() string {
 	return r.RuleName
+}
+
+// SetName sets the name of the OciRegistryRule.
+func (r *OciRegistryRule) SetName(name string) {
+	r.RuleName = name
 }
 
 // Artifact defines an OCI artifact to be validated.
