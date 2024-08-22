@@ -12,7 +12,7 @@ require (
 	github.com/sigstore/cosign/v2 v2.4.0
 	github.com/sigstore/sigstore v1.8.8
 	github.com/stretchr/testify v1.9.0
-	github.com/validator-labs/validator v0.1.6
+	github.com/validator-labs/validator v0.1.7
 	k8s.io/api v0.31.0
 	k8s.io/apimachinery v0.31.0
 	k8s.io/client-go v0.31.0
@@ -203,4 +203,4 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-// replace github.com/validator-labs/validator v0.0.46 => ../validator
+// replace github.com/validator-labs/validator => ../validator
