@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.3.0](https://github.com/validator-labs/validator-plugin-oci/compare/v0.2.1...v0.3.0) (2024-08-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* enforce that at least 1 artifact is added to the OciRegistryRule ([#270](https://github.com/validator-labs/validator-plugin-oci/issues/270))
+
+### Features
+
+* enforce that at least 1 artifact is added to the OciRegistryRule ([#270](https://github.com/validator-labs/validator-plugin-oci/issues/270)) ([8bf6d7a](https://github.com/validator-labs/validator-plugin-oci/commit/8bf6d7a5d9e424deb70c4ce183fd023ab7359d76))
+
+
+### Dependency Updates
+
+* **deps:** update module github.com/onsi/ginkgo/v2 to v2.20.1 ([#272](https://github.com/validator-labs/validator-plugin-oci/issues/272)) ([2eeac2e](https://github.com/validator-labs/validator-plugin-oci/commit/2eeac2e6d28310fa5d4a6c2b8b55a5ef4e2e1d0a))
+* **deps:** update module github.com/validator-labs/validator to v0.1.6 ([#269](https://github.com/validator-labs/validator-plugin-oci/issues/269)) ([7e22d45](https://github.com/validator-labs/validator-plugin-oci/commit/7e22d45fd611943fe3cb3747b52730b7392d3845))
+
+
+### Refactoring
+
+* make each rule implement `validationrule.Interface` ([#273](https://github.com/validator-labs/validator-plugin-oci/issues/273)) ([d0a661b](https://github.com/validator-labs/validator-plugin-oci/commit/d0a661b2ac00b16d0c3a3693cef61fd803fa3832))
+
 ## [0.2.1](https://github.com/validator-labs/validator-plugin-oci/compare/v0.2.0...v0.2.1) (2024-08-16)
 
 
