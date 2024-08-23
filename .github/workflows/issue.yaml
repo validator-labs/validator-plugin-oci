@@ -1,0 +1,10 @@
+name: Create Issue
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  create-issue:
+    uses: validator-labs/workflows/.github/workflows/issue.yaml@main
+    secrets: inherit
