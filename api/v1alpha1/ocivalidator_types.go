@@ -21,6 +21,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/validator-labs/validator/pkg/plugins"
 	"github.com/validator-labs/validator/pkg/validationrule"
 
 	"github.com/validator-labs/validator-plugin-oci/pkg/constants"
@@ -32,6 +33,8 @@ type OciValidatorSpec struct {
 	// +kubebuilder:validation:XValidation:message="OciRegistryRules must have a unique RuleName",rule="self.all(e, size(self.filter(x, x.name == e.name)) == 1)"
 	OciRegistryRules []OciRegistryRule `json:"ociRegistryRules,omitempty" yaml:"ociRegistryRules,omitempty"`
 }
+
+var _ plugins.PluginSpec = (*OciValidatorSpec)(nil)
 
 // PluginCode returns the OCI validator's plugin code.
 func (s OciValidatorSpec) PluginCode() string {
