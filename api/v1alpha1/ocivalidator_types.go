@@ -45,7 +45,7 @@ func (s OciValidatorSpec) ResultCount() int {
 
 // OciRegistryRule defines the validation rule for an OCI registry.
 type OciRegistryRule struct {
-	validationrule.ManuallyNamed `json:"-"`
+	validationrule.ManuallyNamed `json:",inline"`
 
 	// Name is a unique name for the OciRegistryRule.
 	RuleName string `json:"name" yaml:"name"`
