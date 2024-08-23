@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.1](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.0...v0.3.1) (2024-08-23)
+
+
+### Bug Fixes
+
+* embedding structs related to `validationrule.Interface` ([#276](https://github.com/validator-labs/validator-plugin-oci/issues/276)) ([f141e24](https://github.com/validator-labs/validator-plugin-oci/commit/f141e24b31a4dbe3360de147dab333bab8ad45cf))
+
+
+### Other
+
+* assert that PluginSpec is implemented ([#275](https://github.com/validator-labs/validator-plugin-oci/issues/275)) ([36a7268](https://github.com/validator-labs/validator-plugin-oci/commit/36a72683c562d717671e6d897bdc8de35ac3e899))
+
 ## [0.3.0](https://github.com/validator-labs/validator-plugin-oci/compare/v0.2.1...v0.3.0) (2024-08-22)
 
 
