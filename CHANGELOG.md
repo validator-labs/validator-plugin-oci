@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.2](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.1...v0.3.2) (2024-08-24)
+
+
+### Bug Fixes
+
+* YAML rendering of structs embedded in rules ([#283](https://github.com/validator-labs/validator-plugin-oci/issues/283)) ([b86e6b9](https://github.com/validator-labs/validator-plugin-oci/commit/b86e6b917e6d67d7383a80a00541d967d3e52fa7))
+
+
+### Dependency Updates
+
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to ae5ff3e ([#280](https://github.com/validator-labs/validator-plugin-oci/issues/280)) ([f99fdbd](https://github.com/validator-labs/validator-plugin-oci/commit/f99fdbdef79ccb657cf269d189043e9f7c1c8e70))
+
 ## [0.3.1](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.0...v0.3.1) (2024-08-23)
 
 
