@@ -144,6 +144,12 @@ spec:
                           enum:
                           - cosign
                           type: string
+                        publicKeys:
+                          description: PublicKeys is a slice of public keys used to
+                            verify the signatures of artifacts in the OciRegistryRule.
+                          items:
+                            type: string
+                          type: array
                         secretName:
                           description: |-
                             SecretName is the name of the Kubernetes Secret that exists in the same namespace as the OciValidator

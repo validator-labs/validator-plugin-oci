@@ -181,11 +181,21 @@ func (r *OciValidatorReconciler) secretKeyAuth(req ctrl.Request, rule v1alpha1.O
 	return username, password, nil
 }
 
+// signaturePubKeys retrieves the public keys that are used for signature verification.
+// If a secretName is provided in the SignatureVerification field, then the secret is fetched and the pub keys are retrieved from the secret.
+// Otherwise, the public keys are retrieved from the inline PublicKeys field if provided.
 func (r *OciValidatorReconciler) signaturePubKeys(req ctrl.Request, rule v1alpha1.OciRegistryRule) ([][]byte, error) {
-	if rule.SignatureVerification.SecretName == "" {
-		return nil, nil
+	if rule.SignatureVerification.SecretName != "" {
+		return r.signaturePubKeysSecret(req, rule)
 	}
 
+	if rule.SignatureVerification.PublicKeys != nil && len(rule.SignatureVerification.PublicKeys) > 0 {
+		return r.signaturePubKeysInline(rule.SignatureVerification.PublicKeys), nil
+	}
+
+	return nil, nil
+}
+func (r *OciValidatorReconciler) signaturePubKeysSecret(req ctrl.Request, rule v1alpha1.OciRegistryRule) ([][]byte, error) {
 	pubKeysSecret := &corev1.Secret{}
 	nn := ktypes.NamespacedName{Name: rule.SignatureVerification.SecretName, Namespace: req.Namespace}
 
@@ -206,4 +216,14 @@ func (r *OciValidatorReconciler) signaturePubKeys(req ctrl.Request, rule v1alpha
 	}
 
 	return pubKeys, nil
+}
+
+func (r *OciValidatorReconciler) signaturePubKeysInline(pKeys []string) [][]byte {
+	pubKeys := make([][]byte, 0)
+
+	for _, key := range pKeys {
+		pubKeys = append(pubKeys, []byte(key))
+	}
+
+	return pubKeys
 }
