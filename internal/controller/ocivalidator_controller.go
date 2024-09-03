@@ -219,10 +219,10 @@ func (r *OciValidatorReconciler) signaturePubKeysSecret(req ctrl.Request, rule v
 }
 
 func (r *OciValidatorReconciler) signaturePubKeysInline(pKeys []string) [][]byte {
-	pubKeys := make([][]byte, 0)
+	pubKeys := make([][]byte, len(pKeys))
 
-	for _, key := range pKeys {
-		pubKeys = append(pubKeys, []byte(key))
+	for i, key := range pKeys {
+		pubKeys[i] = []byte(key)
 	}
 
 	return pubKeys
