@@ -223,7 +223,7 @@ func init() {
 
 // BasicAuthsDirect returns a map of basic authentication details for each rule when invoked directly.
 func (s *OciValidatorSpec) BasicAuthsDirect() map[string][]string {
-	auths := make(map[string][]string, 0)
+	auths := make(map[string][]string)
 
 	for _, r := range s.OciRegistryRules {
 		if r.Auth.Basic != nil {
@@ -237,7 +237,7 @@ func (s *OciValidatorSpec) BasicAuthsDirect() map[string][]string {
 
 // AllPubKeysDirect returns a map of public keys for each rule when invoked directly.
 func (s *OciValidatorSpec) AllPubKeysDirect() map[string][][]byte {
-	pubKeysMap := make(map[string][][]byte, 0)
+	pubKeysMap := make(map[string][][]byte)
 
 	for _, r := range s.OciRegistryRules {
 		if r.SignatureVerification.PublicKeys == nil || len(r.SignatureVerification.PublicKeys) == 0 {

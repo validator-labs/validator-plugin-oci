@@ -106,7 +106,7 @@ func (s *RuleService) validateReference(ctx context.Context, ref name.Reference,
 	}
 
 	// verify image signature (optional)
-	if sv.SecretName != "" {
+	if sv.SecretName != "" || (sv.PublicKeys != nil && len(sv.PublicKeys) > 0) {
 		verifyDetails, verifyErrs := s.ociClient.VerifySignature(ctx, ref)
 		if len(verifyDetails) > 0 {
 			details = append(details, verifyDetails...)

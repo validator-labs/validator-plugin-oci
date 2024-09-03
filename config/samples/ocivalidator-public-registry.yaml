@@ -19,13 +19,33 @@ spec:
         - ref: "ahmadibraspectrocloud/kubebuilder-cron"
 
     # public oci registry with signature verification enabled
-    - name: "public oci registry with signature verification enabled"
+    - name: "public oci registry with signature verification enabled via a pubkey secret"
       host: "registry.hub.docker.com"
       validationType: "fast"
       artifacts:
         - ref: "ahmadibraspectrocloud/kb-guestbook:signed"
       signatureVerification:
         secretName: "cosign-public-keys"
+
+    # public oci registry with signature verification enabled
+    - name: "public oci registry with signature verification enabled via inline pubkey"
+      host: "registry.hub.docker.com"
+      validationType: "fast"
+      artifacts:
+        - ref: "ahmadibraspectrocloud/kb-guestbook:signed"
+      signatureVerification:
+        secretName: ""
+        publicKeys:
+          - |-
+            -----BEGIN PUBLIC KEY-----
+            MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKPuCo9AmJCpqGWhefjbhkFcr1GA3
+            iNa765seE3jYC3MGUe5h52393Dhy7B5bXGsg6EfPpNYamlAEWjxCpHF3Lg==
+            -----END PUBLIC KEY-----
+          - |-
+            -----BEGIN PUBLIC KEY-----
+            AnotherPublicKey
+            -----END PUBLIC KEY-----
+
 
     # public ecr registry artifact referenced by default "latest" tag
     - name: "public ecr registry"
