@@ -24,7 +24,7 @@ The following table lists the configurable parameters of the Validator-plugin-oc
 | `controllerManager.manager.containerSecurityContext.allowPrivilegeEscalation` |  | `false` |
 | `controllerManager.manager.containerSecurityContext.capabilities.drop` |  | `["ALL"]` |
 | `controllerManager.manager.image.repository` |  | `"quay.io/validator-labs/validator-plugin-oci"` |
-| `controllerManager.manager.image.tag` | x-release-please-version | `"v0.3.2"` |
+| `controllerManager.manager.image.tag` | x-release-please-version | `"v0.3.3"` |
 | `controllerManager.manager.resources.limits.cpu` |  | `"500m"` |
 | `controllerManager.manager.resources.limits.memory` |  | `"128Mi"` |
 | `controllerManager.manager.resources.requests.cpu` |  | `"10m"` |
