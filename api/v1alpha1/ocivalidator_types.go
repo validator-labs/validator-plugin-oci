@@ -173,6 +173,9 @@ type SignatureVerification struct {
 	// SecretName is the name of the Kubernetes Secret that exists in the same namespace as the OciValidator
 	// and that contains the trusted public keys used to sign artifacts in the OciRegistryRule.
 	SecretName string `json:"secretName" yaml:"secretName"`
+
+	// PublicKeys is a slice of public keys used to verify the signatures of artifacts in the OciRegistryRule.
+	PublicKeys []string `json:"publicKeys,omitempty" yaml:"publicKeys,omitempty"`
 }
 
 // OciValidatorStatus defines the observed state of OciValidator.
@@ -216,4 +219,37 @@ type OciValidatorList struct {
 
 func init() {
 	SchemeBuilder.Register(&OciValidator{}, &OciValidatorList{})
+}
+
+// BasicAuthsDirect returns a map of basic authentication details for each rule when invoked directly.
+func (s *OciValidatorSpec) BasicAuthsDirect() map[string][]string {
+	auths := make(map[string][]string)
+
+	for _, r := range s.OciRegistryRules {
+		if r.Auth.Basic != nil {
+			auths[r.Name()] = []string{r.Auth.Basic.Username, r.Auth.Basic.Password}
+			continue
+		}
+	}
+
+	return auths
+}
+
+// AllPubKeysDirect returns a map of public keys for each rule when invoked directly.
+func (s *OciValidatorSpec) AllPubKeysDirect() map[string][][]byte {
+	pubKeysMap := make(map[string][][]byte)
+
+	for _, r := range s.OciRegistryRules {
+		if r.SignatureVerification.PublicKeys == nil || len(r.SignatureVerification.PublicKeys) == 0 {
+			continue
+		}
+
+		pubKeys := make([][]byte, len(r.SignatureVerification.PublicKeys))
+		for i, pk := range r.SignatureVerification.PublicKeys {
+			pubKeys[i] = []byte(pk)
+		}
+		pubKeysMap[r.Name()] = pubKeys
+	}
+
+	return pubKeysMap
 }
