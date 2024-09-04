@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.3.3](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.2...v0.3.3) (2024-09-04)
+
+
+### Features
+
+* add support for configuring signature verification pubkeys inline ([#289](https://github.com/validator-labs/validator-plugin-oci/issues/289)) ([a9c17b5](https://github.com/validator-labs/validator-plugin-oci/commit/a9c17b5ef7159af56653c6a8877c05bd71f4daad))
+
+
+### Dependency Updates
+
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to 5dc58b6 ([#284](https://github.com/validator-labs/validator-plugin-oci/issues/284)) ([7efe2ad](https://github.com/validator-labs/validator-plugin-oci/commit/7efe2ad73ce98a7516fcd6da30f0728ad02186e1))
+* **deps:** update module github.com/onsi/ginkgo/v2 to v2.20.2 ([#286](https://github.com/validator-labs/validator-plugin-oci/issues/286)) ([846edc6](https://github.com/validator-labs/validator-plugin-oci/commit/846edc6a77ecf5b04329e4e73fe4868fadaf4e75))
+* **deps:** update module github.com/onsi/gomega to v1.34.2 ([#287](https://github.com/validator-labs/validator-plugin-oci/issues/287)) ([d527f3c](https://github.com/validator-labs/validator-plugin-oci/commit/d527f3c37a816bb5441e5e5246ec5bdee7e08be9))
+* **deps:** update module github.com/sigstore/sigstore to v1.8.9 ([#288](https://github.com/validator-labs/validator-plugin-oci/issues/288)) ([e4d1fa8](https://github.com/validator-labs/validator-plugin-oci/commit/e4d1fa8d6c0c0a22deebc0cab2514a66ee39d99b))
+* **deps:** update module github.com/validator-labs/validator to v0.1.9 ([#277](https://github.com/validator-labs/validator-plugin-oci/issues/277)) ([7089509](https://github.com/validator-labs/validator-plugin-oci/commit/708950980697a17a7274359b34d7769f04a01a6d))
+
 ## [0.3.2](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.1...v0.3.2) (2024-08-24)
 
 
