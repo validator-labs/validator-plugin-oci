@@ -240,7 +240,7 @@ func (s *OciValidatorSpec) AllPubKeysDirect() map[string][][]byte {
 	pubKeysMap := make(map[string][][]byte)
 
 	for _, r := range s.OciRegistryRules {
-		if r.SignatureVerification.PublicKeys == nil || len(r.SignatureVerification.PublicKeys) == 0 {
+		if len(r.SignatureVerification.PublicKeys) == 0 {
 			continue
 		}
 
