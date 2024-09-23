@@ -189,7 +189,7 @@ func (r *OciValidatorReconciler) signaturePubKeys(req ctrl.Request, rule v1alpha
 		return r.signaturePubKeysSecret(req, rule)
 	}
 
-	if rule.SignatureVerification.PublicKeys != nil && len(rule.SignatureVerification.PublicKeys) > 0 {
+	if len(rule.SignatureVerification.PublicKeys) > 0 {
 		return r.signaturePubKeysInline(rule.SignatureVerification.PublicKeys), nil
 	}
 
