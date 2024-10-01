@@ -15,4 +15,7 @@ const (
 	AwsSecretAccessKey = "AWS_SECRET_ACCESS_KEY" // #nosec
 	// AwsSessionToken is the key for the AWS session token
 	AwsSessionToken = "AWS_SESSION_TOKEN" // #nosec
+
+	// ReconciliationFrequencyAnnotation is annotation key for reconciliation frequency
+	ReconciliationFrequencyAnnotation = "validation.validator.labs/reconciliation-frequency"
 )

@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -37,6 +38,7 @@ import (
 	vres "github.com/validator-labs/validator/pkg/validationresult"
 
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
+	"github.com/validator-labs/validator-plugin-oci/pkg/constants"
 	"github.com/validator-labs/validator-plugin-oci/pkg/validate"
 )
 
@@ -120,8 +122,23 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, err
 	}
 
-	l.Info("Requeuing for re-validation in two minutes.")
-	return ctrl.Result{RequeueAfter: time.Second * 120}, nil
+	// Capturing reconciliation frequency from annotations .
+	// Defaulting to 120 seconds if annotation is not found.
+	var frequency time.Duration
+	if secondsString, ok := validator.Annotations[constants.ReconciliationFrequencyAnnotation]; ok {
+		seconds, err := strconv.Atoi(secondsString)
+		if err != nil {
+			l.Info("failed to convert frequency annotation: defaulting to 120 seconds")
+			frequency = time.Second * 120
+		} else {
+			frequency = time.Second * time.Duration(seconds)
+		}
+	} else {
+		frequency = time.Second * 120
+	}
+
+	l.Info("Requeuing for re-validation.")
+	return ctrl.Result{RequeueAfter: frequency}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
