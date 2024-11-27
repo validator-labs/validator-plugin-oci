@@ -122,7 +122,7 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	frequencyResult := plugins.FrequencyFromAnnotations(l, validator.Annotations)
-	l.Info("Requeuing for re-validation in ", "minutes", frequencyResult.RequeueAfter)
+	l.Info("Requeuing for re-validation in ", "seconds", frequencyResult.RequeueAfter)
 
 	return frequencyResult, nil
 }
