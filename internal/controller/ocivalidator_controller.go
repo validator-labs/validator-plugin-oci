@@ -34,6 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	vapi "github.com/validator-labs/validator/api/v1alpha1"
+	"github.com/validator-labs/validator/pkg/plugins"
 	vres "github.com/validator-labs/validator/pkg/validationresult"
 
 	"github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
@@ -120,8 +121,10 @@ func (r *OciValidatorReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, err
 	}
 
-	l.Info("Requeuing for re-validation in two minutes.")
-	return ctrl.Result{RequeueAfter: time.Second * 120}, nil
+	frequencyResult := plugins.FrequencyFromAnnotations(l, validator.Annotations)
+	l.Info("Requeuing for re-validation in ", "seconds", frequencyResult.RequeueAfter)
+
+	return frequencyResult, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

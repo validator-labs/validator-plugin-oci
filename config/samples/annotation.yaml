@@ -1,0 +1,13 @@
+apiVersion: validation.spectrocloud.labs/v1alpha1
+kind: OciValidator
+metadata:
+  name: ocivalidator-sample-public-oci-registries
+  namespace: validator
+  annotations:
+    validation.validator.labs/reconciliation-frequency: "10"
+spec:
+  ociRegistryRules:
+    - name: "public oci registry with tag"
+      host: "docker.io"
+      artifacts:
+        - ref: "library/redis:7.2.4"
