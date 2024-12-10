@@ -37,6 +37,7 @@ import (
 
 	validationv1alpha1 "github.com/validator-labs/validator-plugin-oci/api/v1alpha1"
 	"github.com/validator-labs/validator-plugin-oci/internal/controller"
+	validatorv1alpha1 "github.com/validator-labs/validator/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -47,7 +48,7 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
+	utilruntime.Must(validatorv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(validationv1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
@@ -116,6 +117,13 @@ func main() {
 		// TODO(user): If CertDir, CertName, and KeyName are not specified, controller-runtime will automatically
 		// generate self-signed certificates for the metrics server. While convenient for development and testing,
 		// this setup is not recommended for production.
+
+		// TODO(user): If cert-manager is enabled in config/default/kustomization.yaml,
+		// you can uncomment the following lines to use the certificate managed by cert-manager.
+
+		// metricsServerOptions.CertDir = "/tmp/k8s-metrics-server/metrics-certs"
+		// metricsServerOptions.CertName = "tls.crt"
+		// metricsServerOptions.KeyName = "tls.key"
 	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
