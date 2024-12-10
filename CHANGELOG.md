@@ -1,5 +1,58 @@
 # Changelog
 
+## [0.3.4](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.3...v0.3.4) (2024-12-10)
+
+
+### Features
+
+* added reconciliation frequency annotation ([#327](https://github.com/validator-labs/validator-plugin-oci/issues/327)) ([ba2bc7c](https://github.com/validator-labs/validator-plugin-oci/commit/ba2bc7cf2f6ee5375c351c66bbee93c4d54c5dc7))
+
+
+### Other
+
+* make reviewable ([#303](https://github.com/validator-labs/validator-plugin-oci/issues/303)) ([7d64638](https://github.com/validator-labs/validator-plugin-oci/commit/7d646383fc4dec19b432c81cb402632aacef50e8))
+* make reviewable ([#307](https://github.com/validator-labs/validator-plugin-oci/issues/307)) ([23889ab](https://github.com/validator-labs/validator-plugin-oci/commit/23889ab93ef044ce37cf67640056aa7f9e56056a))
+* make reviewable ([#308](https://github.com/validator-labs/validator-plugin-oci/issues/308)) ([fb0bdc8](https://github.com/validator-labs/validator-plugin-oci/commit/fb0bdc83daab44b29fe063c1bc24acc1161fb3bd))
+* re-scaffold project ([#334](https://github.com/validator-labs/validator-plugin-oci/issues/334)) ([9f2660b](https://github.com/validator-labs/validator-plugin-oci/commit/9f2660bf6d1e33a2a41b083652973f31eef1265b))
+* update build gsm ([977f75c](https://github.com/validator-labs/validator-plugin-oci/commit/977f75caeb0a6fbacf72f9d4dcd2f523e76d70ca))
+* update renovate.json ([afecc4e](https://github.com/validator-labs/validator-plugin-oci/commit/afecc4ee762e5e6d5ad8e210af8dc2815c1ceb6f))
+* Update renovate.json ([607c5d8](https://github.com/validator-labs/validator-plugin-oci/commit/607c5d89bddde10f5ebb61f2eecb95d9692b5e1b))
+
+
+### Dependency Updates
+
+* **deps:** update all non-major dependencies ([#312](https://github.com/validator-labs/validator-plugin-oci/issues/312)) ([9701333](https://github.com/validator-labs/validator-plugin-oci/commit/9701333ee1586f662a96eb002df7710b03c3ebbb))
+* **deps:** update build digest to 3463b98 ([#315](https://github.com/validator-labs/validator-plugin-oci/issues/315)) ([9d34e83](https://github.com/validator-labs/validator-plugin-oci/commit/9d34e836286f6b7816ed07b5c4f8a6838b27c644))
+* **deps:** update build digest to 3840c9d ([#318](https://github.com/validator-labs/validator-plugin-oci/issues/318)) ([a34faaf](https://github.com/validator-labs/validator-plugin-oci/commit/a34faaf062d68083a81c313729862cd8c453faf5))
+* **deps:** update build digest to 5ffe724 ([#319](https://github.com/validator-labs/validator-plugin-oci/issues/319)) ([3c2a763](https://github.com/validator-labs/validator-plugin-oci/commit/3c2a7633f4a892dcfd8bb2b1aaa9f489a94fc791))
+* **deps:** update build digest to a46a554 ([#322](https://github.com/validator-labs/validator-plugin-oci/issues/322)) ([afbc85d](https://github.com/validator-labs/validator-plugin-oci/commit/afbc85d93e556e51c93f1f1ab0af26939cd727ac))
+* **deps:** update build digest to db64f63 ([#314](https://github.com/validator-labs/validator-plugin-oci/issues/314)) ([86ebfc0](https://github.com/validator-labs/validator-plugin-oci/commit/86ebfc0e0f4ac9bca00660a098b40fa1ab4def7b))
+* **deps:** update build digest to dd09b58 ([#321](https://github.com/validator-labs/validator-plugin-oci/issues/321)) ([b987563](https://github.com/validator-labs/validator-plugin-oci/commit/b98756376b539db10397f8e29cda8c4450bcc7c2))
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to 4b041aa ([#316](https://github.com/validator-labs/validator-plugin-oci/issues/316)) ([96e5133](https://github.com/validator-labs/validator-plugin-oci/commit/96e5133683bf5f5abf2cba6bc57b402d4da1ad23))
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to 7ab30f8 ([#317](https://github.com/validator-labs/validator-plugin-oci/issues/317)) ([69164a5](https://github.com/validator-labs/validator-plugin-oci/commit/69164a5766fff48f4384e643e82399e751136b9c))
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to 92ffab8 ([#320](https://github.com/validator-labs/validator-plugin-oci/issues/320)) ([423dc64](https://github.com/validator-labs/validator-plugin-oci/commit/423dc645336a738fe9bfb2724c695530bd8a3033))
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to b9e7404 ([#328](https://github.com/validator-labs/validator-plugin-oci/issues/328)) ([e5fdeb1](https://github.com/validator-labs/validator-plugin-oci/commit/e5fdeb1c8dd6c457494c32d6289b28eae917f051))
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to c3c6ff6 ([#304](https://github.com/validator-labs/validator-plugin-oci/issues/304)) ([c62dabe](https://github.com/validator-labs/validator-plugin-oci/commit/c62dabe30ea20b87319a699bbfd9524fc374ec27))
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to cb9aea3 ([#313](https://github.com/validator-labs/validator-plugin-oci/issues/313)) ([8886395](https://github.com/validator-labs/validator-plugin-oci/commit/88863951a46523a17566531690e0beabe68b3e69))
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to e21b7a4 ([#293](https://github.com/validator-labs/validator-plugin-oci/issues/293)) ([de70e53](https://github.com/validator-labs/validator-plugin-oci/commit/de70e53dbeb2ed9149a52053594c2318699b8d06))
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to e718692 ([#300](https://github.com/validator-labs/validator-plugin-oci/issues/300)) ([aea4e84](https://github.com/validator-labs/validator-plugin-oci/commit/aea4e84c8ed4dd9319c7045434228c8152968801))
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to fb97845 ([#309](https://github.com/validator-labs/validator-plugin-oci/issues/309)) ([ba51baf](https://github.com/validator-labs/validator-plugin-oci/commit/ba51bafeb10f3f61aae23ad9bea8a988a42f4307))
+* **deps:** update kubernetes packages to v0.31.1 ([#296](https://github.com/validator-labs/validator-plugin-oci/issues/296)) ([2d5d1df](https://github.com/validator-labs/validator-plugin-oci/commit/2d5d1df4080ef8786ce130310a82988d47f3036b))
+* **deps:** update kubernetes packages to v0.31.2 ([#305](https://github.com/validator-labs/validator-plugin-oci/issues/305)) ([fcc770c](https://github.com/validator-labs/validator-plugin-oci/commit/fcc770c941c4dd69c3d96c263c3c0233c54b325e))
+* **deps:** update module github.com/onsi/ginkgo/v2 to v2.21.0 ([#310](https://github.com/validator-labs/validator-plugin-oci/issues/310)) ([ceca186](https://github.com/validator-labs/validator-plugin-oci/commit/ceca186d95010bfc6e57b2c6fcb7d6ba2242c1ce))
+* **deps:** update module github.com/onsi/gomega to v1.35.0 ([#311](https://github.com/validator-labs/validator-plugin-oci/issues/311)) ([2614708](https://github.com/validator-labs/validator-plugin-oci/commit/2614708a319fa38eee79f3e74e3e259440a19219))
+* **deps:** update module github.com/onsi/gomega to v1.36.0 ([#325](https://github.com/validator-labs/validator-plugin-oci/issues/325)) ([976b60a](https://github.com/validator-labs/validator-plugin-oci/commit/976b60a0f6c0001963ea8a0148bda9189cdff45b))
+* **deps:** update module github.com/stretchr/testify to v1.10.0 ([#324](https://github.com/validator-labs/validator-plugin-oci/issues/324)) ([e8a10cd](https://github.com/validator-labs/validator-plugin-oci/commit/e8a10cdc6e3445040fc5a4d3be60b7ae80e5c7f1))
+* **deps:** update module github.com/validator-labs/validator to v0.1.10 ([#290](https://github.com/validator-labs/validator-plugin-oci/issues/290)) ([9188bac](https://github.com/validator-labs/validator-plugin-oci/commit/9188bac978735cbdae4f39c93d3b61e3be64f614))
+* **deps:** update module github.com/validator-labs/validator to v0.1.11 ([#294](https://github.com/validator-labs/validator-plugin-oci/issues/294)) ([5e23703](https://github.com/validator-labs/validator-plugin-oci/commit/5e23703dfa219ff17c53738ffaa8149508dc1089))
+* **deps:** update module github.com/validator-labs/validator to v0.1.12 ([#299](https://github.com/validator-labs/validator-plugin-oci/issues/299)) ([cb78a3d](https://github.com/validator-labs/validator-plugin-oci/commit/cb78a3d07567e99a3fa41664b05da5f26f7eb504))
+* **deps:** update module github.com/validator-labs/validator to v0.1.13 ([#323](https://github.com/validator-labs/validator-plugin-oci/issues/323)) ([c19fcfd](https://github.com/validator-labs/validator-plugin-oci/commit/c19fcfdfb475029b85e29178698039ed42477689))
+* **deps:** update module github.com/validator-labs/validator to v0.1.14 ([#329](https://github.com/validator-labs/validator-plugin-oci/issues/329)) ([6eb352c](https://github.com/validator-labs/validator-plugin-oci/commit/6eb352cc0aee93a930f285088309c6e9decc54a5))
+* **deps:** update module sigs.k8s.io/cluster-api to v1.8.2 ([#292](https://github.com/validator-labs/validator-plugin-oci/issues/292)) ([7564460](https://github.com/validator-labs/validator-plugin-oci/commit/75644604faead1e2057c54694defc3159cfce3a2))
+* **deps:** update module sigs.k8s.io/cluster-api to v1.8.3 ([#295](https://github.com/validator-labs/validator-plugin-oci/issues/295)) ([58f06d8](https://github.com/validator-labs/validator-plugin-oci/commit/58f06d869b831afe6ceb1c55dd3c561a4088043e))
+* **deps:** update module sigs.k8s.io/cluster-api to v1.8.4 ([#301](https://github.com/validator-labs/validator-plugin-oci/issues/301)) ([b2dfe52](https://github.com/validator-labs/validator-plugin-oci/commit/b2dfe52c266ae8e90b524feace8ca3df936886f5))
+* **deps:** update module sigs.k8s.io/controller-runtime to v0.19.1 ([#306](https://github.com/validator-labs/validator-plugin-oci/issues/306)) ([1aaf840](https://github.com/validator-labs/validator-plugin-oci/commit/1aaf84009d40fe1783ec052c8491a1dd3ed8f275))
+
 ## [0.3.3](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.2...v0.3.3) (2024-09-04)
 
 
