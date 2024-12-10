@@ -196,7 +196,7 @@ func (c *Client) WriteLayer(layer v1.Layer, path string, opts ImageOptions) erro
 	if err != nil {
 		return fmt.Errorf("failed to read layer content: %w", err)
 	}
-	if err := os.MkdirAll(opts.OutDir, 0750); err != nil {
+	if err := os.MkdirAll(opts.OutDir, 0644); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 	if err := os.WriteFile(path, content, 0600); err != nil {
