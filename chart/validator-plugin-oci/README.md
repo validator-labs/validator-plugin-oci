@@ -11,16 +11,7 @@ The following table lists the configurable parameters of the Validator-plugin-oc
 
 | Parameter                | Description             | Default        |
 | ------------------------ | ----------------------- | -------------- |
-| `controllerManager.kubeRbacProxy.args` |  | `["--secure-listen-address=0.0.0.0:8443", "--upstream=http://127.0.0.1:8080/", "--logtostderr=true", "--v=0"]` |
-| `controllerManager.kubeRbacProxy.containerSecurityContext.allowPrivilegeEscalation` |  | `false` |
-| `controllerManager.kubeRbacProxy.containerSecurityContext.capabilities.drop` |  | `["ALL"]` |
-| `controllerManager.kubeRbacProxy.image.repository` |  | `"gcr.io/kubebuilder/kube-rbac-proxy"` |
-| `controllerManager.kubeRbacProxy.image.tag` |  | `"v0.16.0"` |
-| `controllerManager.kubeRbacProxy.resources.limits.cpu` |  | `"500m"` |
-| `controllerManager.kubeRbacProxy.resources.limits.memory` |  | `"128Mi"` |
-| `controllerManager.kubeRbacProxy.resources.requests.cpu` |  | `"5m"` |
-| `controllerManager.kubeRbacProxy.resources.requests.memory` |  | `"64Mi"` |
-| `controllerManager.manager.args` |  | `["--health-probe-bind-address=:8081", "--leader-elect"]` |
+| `controllerManager.manager.args` |  | `["--health-probe-bind-address=:8081", "--metrics-bind-address=:8443", "--leader-elect"]` |
 | `controllerManager.manager.containerSecurityContext.allowPrivilegeEscalation` |  | `false` |
 | `controllerManager.manager.containerSecurityContext.capabilities.drop` |  | `["ALL"]` |
 | `controllerManager.manager.image.repository` |  | `"quay.io/validator-labs/validator-plugin-oci"` |

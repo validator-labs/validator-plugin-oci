@@ -181,8 +181,8 @@ type SignatureVerification struct {
 // OciValidatorStatus defines the observed state of OciValidator.
 type OciValidatorStatus struct{}
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // OciValidator is the Schema for the ocivalidators API.
 type OciValidator struct {
@@ -208,7 +208,7 @@ func (v OciValidator) ResultCount() int {
 	return v.Spec.ResultCount()
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 
 // OciValidatorList contains a list of OciValidator.
 type OciValidatorList struct {
