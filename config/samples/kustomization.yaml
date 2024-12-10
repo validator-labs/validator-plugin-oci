@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- validation_v1alpha1_ocivalidator.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples
