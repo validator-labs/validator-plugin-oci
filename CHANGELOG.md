@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.5](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.4...v0.3.5) (2024-12-12)
+
+
+### Dependency Updates
+
+* **deps:** update all non-major dependencies ([#330](https://github.com/validator-labs/validator-plugin-oci/issues/330)) ([0d1923f](https://github.com/validator-labs/validator-plugin-oci/commit/0d1923f33917d74f3770b8ff0191c62d03f170e3))
+* **deps:** update all non-major dependencies ([#336](https://github.com/validator-labs/validator-plugin-oci/issues/336)) ([ae1fa60](https://github.com/validator-labs/validator-plugin-oci/commit/ae1fa606bd509b5dd13c0148e6e35f6325062208))
+* **deps:** update build digest to 5e4aaa9 ([#332](https://github.com/validator-labs/validator-plugin-oci/issues/332)) ([3996772](https://github.com/validator-labs/validator-plugin-oci/commit/3996772b52c0bedc8e7513ab574a128d20ac5ab1))
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to 69e8c24 ([#333](https://github.com/validator-labs/validator-plugin-oci/issues/333)) ([b35eb81](https://github.com/validator-labs/validator-plugin-oci/commit/b35eb81a00f301cec135fc6169c9e1a8be902c52))
+
 ## [0.3.4](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.3...v0.3.4) (2024-12-10)
 
 
