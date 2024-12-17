@@ -11,7 +11,7 @@ controllerManager:
         - ALL
     image:
       repository: quay.io/validator-labs/validator-plugin-oci
-      tag: v0.3.4  # x-release-please-version
+      tag: v0.3.5  # x-release-please-version
     resources:
       limits:
         cpu: 500m

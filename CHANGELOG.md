@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.5](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.4...v0.3.5) (2024-12-16)
+
+
+### Bug Fixes
+
+* metrics targetPort https -&gt; 8443 ([#338](https://github.com/validator-labs/validator-plugin-oci/issues/338)) ([8ed195b](https://github.com/validator-labs/validator-plugin-oci/commit/8ed195bccff56b1c0604048ff5c214f81935ac32))
+
+
+### Dependency Updates
+
+* **deps:** update all non-major dependencies ([#330](https://github.com/validator-labs/validator-plugin-oci/issues/330)) ([0d1923f](https://github.com/validator-labs/validator-plugin-oci/commit/0d1923f33917d74f3770b8ff0191c62d03f170e3))
+* **deps:** update all non-major dependencies ([#336](https://github.com/validator-labs/validator-plugin-oci/issues/336)) ([ae1fa60](https://github.com/validator-labs/validator-plugin-oci/commit/ae1fa606bd509b5dd13c0148e6e35f6325062208))
+* **deps:** update build digest to 5e4aaa9 ([#332](https://github.com/validator-labs/validator-plugin-oci/issues/332)) ([3996772](https://github.com/validator-labs/validator-plugin-oci/commit/3996772b52c0bedc8e7513ab574a128d20ac5ab1))
+* **deps:** update build digest to 9734871 ([#339](https://github.com/validator-labs/validator-plugin-oci/issues/339)) ([c6c48ba](https://github.com/validator-labs/validator-plugin-oci/commit/c6c48bafb5da152eeec058617c6b3d726fb0e769))
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to 69e8c24 ([#333](https://github.com/validator-labs/validator-plugin-oci/issues/333)) ([b35eb81](https://github.com/validator-labs/validator-plugin-oci/commit/b35eb81a00f301cec135fc6169c9e1a8be902c52))
+* **deps:** update module github.com/sigstore/sigstore to v1.8.11 ([#337](https://github.com/validator-labs/validator-plugin-oci/issues/337)) ([65714e1](https://github.com/validator-labs/validator-plugin-oci/commit/65714e1dd0d24f54804a8a89501ac71f253f257c))
+
 ## [0.3.4](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.3...v0.3.4) (2024-12-10)
 
 
