@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.6](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.5...v0.3.6) (2024-12-19)
+
+
+### Dependency Updates
+
+* **deps:** update build digest to aa32dd3 ([#343](https://github.com/validator-labs/validator-plugin-oci/issues/343)) ([6b64af5](https://github.com/validator-labs/validator-plugin-oci/commit/6b64af55dfa93448b0933e434703398caabff21b))
+* **deps:** update module github.com/validator-labs/validator to v0.1.16 ([#342](https://github.com/validator-labs/validator-plugin-oci/issues/342)) ([389e15c](https://github.com/validator-labs/validator-plugin-oci/commit/389e15c7df1ce8619423ac17461d4c7f3b332d47))
+* **deps:** update module sigs.k8s.io/cluster-api to v1.9.1 ([#340](https://github.com/validator-labs/validator-plugin-oci/issues/340)) ([9947bb0](https://github.com/validator-labs/validator-plugin-oci/commit/9947bb052d1937fd63671274095e6a962066ff98))
+
 ## [0.3.5](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.4...v0.3.5) (2024-12-16)
 
 
