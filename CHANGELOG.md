@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.6](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.5...v0.3.6) (2024-12-21)
+
+
+### Dependency Updates
+
+* **deps:** update build digest to aa32dd3 ([#343](https://github.com/validator-labs/validator-plugin-oci/issues/343)) ([6b64af5](https://github.com/validator-labs/validator-plugin-oci/commit/6b64af55dfa93448b0933e434703398caabff21b))
+* **deps:** update github.com/awslabs/amazon-ecr-credential-helper/ecr-login digest to 08549e0 ([#346](https://github.com/validator-labs/validator-plugin-oci/issues/346)) ([439c98a](https://github.com/validator-labs/validator-plugin-oci/commit/439c98abcd025c745565364f3bdaf0c8d4b670eb))
+* **deps:** update module github.com/onsi/ginkgo/v2 to v2.22.1 ([#344](https://github.com/validator-labs/validator-plugin-oci/issues/344)) ([26f19a9](https://github.com/validator-labs/validator-plugin-oci/commit/26f19a92dc8bd7c1a6776677020ea40ad78cf0e2))
+* **deps:** update module github.com/validator-labs/validator to v0.1.16 ([#342](https://github.com/validator-labs/validator-plugin-oci/issues/342)) ([389e15c](https://github.com/validator-labs/validator-plugin-oci/commit/389e15c7df1ce8619423ac17461d4c7f3b332d47))
+* **deps:** update module sigs.k8s.io/cluster-api to v1.9.1 ([#340](https://github.com/validator-labs/validator-plugin-oci/issues/340)) ([9947bb0](https://github.com/validator-labs/validator-plugin-oci/commit/9947bb052d1937fd63671274095e6a962066ff98))
+* **deps:** update module sigs.k8s.io/cluster-api to v1.9.2 ([#345](https://github.com/validator-labs/validator-plugin-oci/issues/345)) ([dfd4592](https://github.com/validator-labs/validator-plugin-oci/commit/dfd459256d287d642ae77bc898cebe1dc980e06a))
+
 ## [0.3.5](https://github.com/validator-labs/validator-plugin-oci/compare/v0.3.4...v0.3.5) (2024-12-16)
 
 
