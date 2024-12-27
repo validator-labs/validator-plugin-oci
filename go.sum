@@ -145,10 +145,10 @@ github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.26 h1:zXFLuEuMMUOvEARXFU
 github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.26/go.mod h1:3o2Wpy0bogG1kyOPrgkXA8pgIfEEv0+m19O9D5+W8y8=
 github.com/aws/aws-sdk-go-v2/internal/ini v1.8.1 h1:VaRN3TlFdd6KxX1x3ILT5ynH6HvKgqdiXoTxAF4HQcQ=
 github.com/aws/aws-sdk-go-v2/internal/ini v1.8.1/go.mod h1:FbtygfRFze9usAadmnGJNc8KsP346kEe+y2/oyhGAGc=
-github.com/aws/aws-sdk-go-v2/service/ecr v1.36.9 h1:o87i3qYJ9tfjvGnPTY06xJPo5sygktCJVvxODLwWmR4=
-github.com/aws/aws-sdk-go-v2/service/ecr v1.36.9/go.mod h1:NqKnlZvLl4Tp2UH/GEc/nhbjmPQhwOXmLp2eldiszLM=
-github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.28.0 h1:OElnqLgWDmbgpR29UnLc+rDLhzxEbwRP1QqpefpHLuI=
-github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.28.0/go.mod h1:aHMIyHh+6N2w3CY24J9JoV5ADnGuMZ7dnOJTzO0Txik=
+github.com/aws/aws-sdk-go-v2/service/ecr v1.37.0 h1:rqKJYFTIFCFBaOTxbAk9enxesUTWmLbYXErh9Xa3FSQ=
+github.com/aws/aws-sdk-go-v2/service/ecr v1.37.0/go.mod h1:NqKnlZvLl4Tp2UH/GEc/nhbjmPQhwOXmLp2eldiszLM=
+github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.28.1 h1:JNvYD16cxbdI5Zrq+e0J80OrMKYvQ2sVeD+W9sq5Gt8=
+github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.28.1/go.mod h1:aHMIyHh+6N2w3CY24J9JoV5ADnGuMZ7dnOJTzO0Txik=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.1 h1:iXtILhvDxB6kPvEXgsDhGaZCSC6LQET5ZHSdJozeI0Y=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.1/go.mod h1:9nu0fVANtYiAePIBh2/pFUSwtJ402hLnp854CNoDOeE=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.7 h1:8eUsivBQzZHqe/3FE+cqwfH+0p5Jo8PFM/QYQSmeZ+M=
@@ -163,8 +163,8 @@ github.com/aws/aws-sdk-go-v2/service/sts v1.33.3 h1:Xgv/hyNgvLda/M9l9qxXc4UFSgpp
 github.com/aws/aws-sdk-go-v2/service/sts v1.33.3/go.mod h1:5Gn+d+VaaRgsjewpMvGazt0WfcFO+Md4wLOuBfGR9Bc=
 github.com/aws/smithy-go v1.22.1 h1:/HPHZQ0g7f4eUeK6HKglFz8uwVfZKgoI25rb/J+dnro=
 github.com/aws/smithy-go v1.22.1/go.mod h1:irrKGvNn1InZwb2d7fkIRNucdfwR8R+Ts3wxYa/cJHg=
-github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20241224233519-784ec95838e0 h1:T0+ZedvwN8e7sjO2CvY/LPJ8LNLWhq3mDYk1Zs9KS0I=
-github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20241224233519-784ec95838e0/go.mod h1:sy7eXTgen3Ip0nNXxuQxytvJ0m/LSPketGVXJsdjm6U=
+github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20241227172826-c97b94eac159 h1:nInKoiKhglzD87LZ66eiTCHBen1QrE0AWuCmFVSPfgQ=
+github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20241227172826-c97b94eac159/go.mod h1:oO3inhSTqfeTU7JwquRhOEiV8E8hYcAM+lnE4kEv6xA=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/blang/semver v3.5.1+incompatible h1:cQNTCjp13qL8KC3Nbxr/y2Bqb63oX6wdnnjpJbkM4JQ=
