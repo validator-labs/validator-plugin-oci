@@ -3,7 +3,7 @@ module github.com/validator-labs/validator-plugin-oci
 go 1.23.3
 
 require (
-	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20250122231607-9c4d930e8fce
+	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20250123200327-cce4a4abc80d
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
 	github.com/go-logr/logr v1.4.2
 	github.com/google/go-containerregistry v0.20.3
