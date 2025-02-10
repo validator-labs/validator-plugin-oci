@@ -1,6 +1,6 @@
 module github.com/validator-labs/validator-plugin-oci
 
-go 1.23.3
+go 1.23.6
 
 require (
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20250127194757-14dfc70fe71c
