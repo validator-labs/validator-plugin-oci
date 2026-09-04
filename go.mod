@@ -3,22 +3,22 @@ module github.com/validator-labs/validator-plugin-oci
 go 1.23.6
 
 require (
-	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.9.1
+	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.12.0
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
-	github.com/go-logr/logr v1.4.2
-	github.com/google/go-containerregistry v0.20.3
-	github.com/onsi/ginkgo/v2 v2.22.2
-	github.com/onsi/gomega v1.36.2
-	github.com/sigstore/cosign/v2 v2.4.3
-	github.com/sigstore/sigstore v1.8.15
-	github.com/stretchr/testify v1.10.0
+	github.com/go-logr/logr v1.4.4
+	github.com/google/go-containerregistry v0.22.1
+	github.com/onsi/ginkgo/v2 v2.32.1
+	github.com/onsi/gomega v1.43.0
+	github.com/sigstore/cosign/v2 v2.6.5
+	github.com/sigstore/sigstore v1.10.9
+	github.com/stretchr/testify v1.12.1
 	github.com/validator-labs/validator v0.1.16
-	k8s.io/api v0.32.2
-	k8s.io/apimachinery v0.32.2
-	k8s.io/client-go v0.32.2
-	k8s.io/klog/v2 v2.130.1
-	sigs.k8s.io/cluster-api v1.9.5
-	sigs.k8s.io/controller-runtime v0.20.2
+	k8s.io/api v0.37.0
+	k8s.io/apimachinery v0.37.0
+	k8s.io/client-go v0.37.0
+	k8s.io/klog/v2 v2.140.0
+	sigs.k8s.io/cluster-api v1.14.1
+	sigs.k8s.io/controller-runtime v0.25.0
 )
 
 require (
